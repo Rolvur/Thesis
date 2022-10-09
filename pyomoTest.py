@@ -2,7 +2,7 @@ from pyomo.environ import *
 #https://jckantor.github.io/CBE30338/06.04-Linear-Production-Model-in-Pyomo.html
 # create a model
 model = ConcreteModel()
-
+#lala
 # declare decision variables
 model.x = Var(domain=NonNegativeReals)
 model.y = Var(domain=NonNegativeReals)
