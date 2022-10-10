@@ -1,4 +1,11 @@
 from pyomo.environ import *
+import numpy as np 
+
+a = np.arange(10)
+
+print("List: ",a)
+
+#MAMAMSLASDaæoojæsdæljasdasdasd
 #https://jckantor.github.io/CBE30338/06.04-Linear-Production-Model-in-Pyomo.html
 # create a model
 model = ConcreteModel()
@@ -32,3 +39,6 @@ print('\nConstraints')
 print('Demand  = ', model.demand())
 print('Labor A = ', model.laborA())
 print('Labor B = ', model.laborB())
+
+
+
