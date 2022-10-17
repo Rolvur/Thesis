@@ -1,11 +1,13 @@
 from cProfile import label
 import sys, os
 sys.path.append('C:/Users/Rolvur Reinert/Desktop/Data/Python_data')
-from Data_process import df_solar_prod
+from Data_process import df_solar_prod, df_DKDA_raw, df_FIafrr2020_raw, df_SEafrr2020_raw
 import pandas as pd 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
+import seaborn as sns
+from IPython.display import display
 
 ####################### Plot ####################### 
 #Selecting time range for DataFrame
@@ -27,7 +29,29 @@ x2019['time'] = x2019['time'].astype(str)
 x2020['time'] = x2020['time'].apply(pd.to_datetime) 
 
 
+## Calculate correlations EXAMPLE 
+df_FIafrr2020_raw
+df_SEafrr2020_raw
+TimeRange2020_FI = (df_FIafrr2020_raw['Start time UTC+02:00'] > '2020-01-01') & (df_FIafrr2020_raw['Start time UTC+02:00']  <= '2020-12-31')
 
+TimeRange2020_SE = (df_SEafrr2020_raw['Period'] > '2020-01-01') & (df_SEafrr2020_raw['Period']  <= '2020-12-31')
+
+df_FI2020 = df_FIafrr2020_raw[TimeRange2020_FI]
+df_SE2020 = df_SEafrr2020_raw[TimeRange2020_SE]
+
+df = pd.DataFrame() #Creating empty dataframe
+
+
+df['Finland Up'] = df_FI2020['Automatic Frequency Restoration Reserve, price, up']
+df = df.reset_index(drop=True)
+df['Sweden Up'] = df_SE2020['aFRR Upp Pris (EUR/MW)']
+matrix = df.corr() 
+
+print(matrix)
+sns.heatmap(matrix)
+
+matrix.style.background_gradient(cmap='coolwarm')
+plt.show()
 
 
 #Plot (Gruped bar) 
