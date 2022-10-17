@@ -1,63 +1,51 @@
+from cProfile import label
 import sys, os
 sys.path.append('C:/Users/Rolvur Reinert/Desktop/Data/Python_data')
 from Data_process import df_solar_prod
 import pandas as pd 
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
 
 ####################### Plot ####################### 
 #Selecting time range for DataFrame
-TimeRange2020 = (df_solar_prod['time'] > '2020-01-01') & (df_solar_prod['time'] <= '2020-01-31')
-TimeRange2021 = (df_solar_prod['time'] > '2021-01-01') & (df_solar_prod['time'] <= '2021-01-31')
+TimeRange2019 = (df_solar_prod['time'] > '2019-01-01') & (df_solar_prod['time'] <= '2019-12-31')
+TimeRange2020 = (df_solar_prod['time'] > '2020-01-01') & (df_solar_prod['time'] <= '2020-12-31')
 
+df2019 = df_solar_prod.loc[TimeRange2019]
 df2020 = df_solar_prod.loc[TimeRange2020]
-df2021 = df_solar_prod.loc[TimeRange2021]
 
 #Grupe by mean so getting average of a periode(e.g. month)
+x2019 = df2019.groupby(pd.PeriodIndex(df2019['time'], freq="M"))['P'].mean().reset_index()
 x2020 = df2020.groupby(pd.PeriodIndex(df2020['time'], freq="M"))['P'].mean().reset_index()
-x2021 = df2021.groupby(pd.PeriodIndex(df2021['time'], freq="M"))['P'].mean().reset_index()
 
 
-x2020['time'] = x2020['time'].astype(str)
+x2019['time'] = x2019['time'].astype(str)
 x2020['time'] = x2020['time'].apply(pd.to_datetime) 
 
-x2021['time'] = x2021['time'].astype(str)
-x2021['time'] = x2021['time'].apply(pd.to_datetime) 
-
-
-x_axis = x2021['time']
-
-
-plt.bar(x_axis, x2020['P'], color ='maroon', width = 0.5,
-        edgecolor ='grey', label ='Avg Prod 2020')
-plt.bar(x_axis, x2021['P'], color ='g', width = 0.5,
-        edgecolor ='grey', label ='Avg Prod 2020')
+x2019['time'] = x2019['time'].astype(str)
+x2020['time'] = x2020['time'].apply(pd.to_datetime) 
 
 
 
 
 
+#Plot (Gruped bar) 
 
-plt.legend()
-plt.show()
+x_axis = np.arange(12) #Number of  stamps on x axis (Months)
+x_label = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'August', 'Sept','Okt', 'Nov', 'Dec']
+width = 0.3
 
+fig, ax = plt.subplots()
 
-plt.subplots_adjust(bottom=0.2)
+fig1 = ax.bar(x_axis-width,x2019['P'],width = width, label ='Avg Prod 2019') 
+fig2 = ax.bar(x_axis,x2020['P'],width = width ,label ='Avg Prod 2020')
 
-#Plot general
-plt.title('PV Production')
-
-#Axis config
-plt.xlabel("Time")
-plt.ylabel("MW")
-
-plt.tight_layout()
+ax.set_ylabel('[MW/h]')
+ax.set_title('PV Production')
+plt.xticks(x_axis,x_label) 
 plt.xticks(rotation=25)
-ax=plt.gca()
-xfmt = md.DateFormatter('%Y-%m')
-ax.xaxis.set_major_formatter(xfmt)
-
-plt.bar(x_axis,y_axis, color = 'maroon', width=5)
+plt.legend()
 plt.show()
 
 
