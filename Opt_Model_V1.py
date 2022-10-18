@@ -1,30 +1,7 @@
 import pyomo.environ as pe
 import pyomo.opt as po
 
-#______________________CONSTANTS
-P_pem_cap = 52.5 # MW capacity 
-P_pem_min = 0.05*P_pem_cap
-P_com = 3 #MW
-P_H2O = 0.5 #MW
-P_grid_cap = 238 #MW
-P_PV_cap = 252 # Check again
-mu_pem = 0.755 #efficiency
-M_H2O = 18.01528 #g/mol
-dHf0_H2O = 286 #kJ/mol
-k_CR = mu_pem*(M_H2O/dHf0_H2O)*3600/1000 
-M_H2 = 2.016 #g/mol
-M_CO2 = 44.01 #g/mol
-M_CH3OH = 32.04
-r_in = 3*M_H2/M_CO2
-r_out = M_CH3OH/M_H2O
-D_y = 32000000 # kg methanol / year
-k_d = D_y/(365*24)
-r_overhead = 1/0.9
-S_pure_max = k_d*7*(r_overhead)
-raw_storage_days = 3
-S_raw_max = k_CR*P_pem_cap*raw_storage_days*24
-ramp_pem = 0.1*3600
-ramp_com = 0.1*60
+from Opt_Constants import *
 #____________________________________________
 
 
