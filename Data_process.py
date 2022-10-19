@@ -1,8 +1,23 @@
 import datetime
+from numpy import zeros
 import pandas as pd 
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
 from pyparsing import line
+
+##################### Methanol Demand #######################
+
+Tot_Demand = 32000 #ton methanol annually
+Weekly_demand = (32000/365)*7  #Seven days demand
+
+
+#Input for model
+Demand = list(0 for i in range(0,8760))
+
+for i in range(0,len(Demand),7):
+    Demand[i] = Weekly_demand
+
+
 
 ##################### Solar #######################
 
@@ -17,6 +32,16 @@ for i in range(0,len(df_solar_prod['time'])):
     df_solar_prod.iloc[i,0] = df_solar_prod.iloc[i,0].strftime('%Y-%m-%d - %H:%M')
     
 df_solar_prod['time'] = df_solar_prod['time'].apply(pd.to_datetime)
+
+
+#Input for model
+#Using year 2020
+TimeRange2020PV = (df_solar_prod['time'] > '2020-01-01') & (df_solar_prod['time']  <= '2020-12-31')
+df_solar_prod_2020 = df_solar_prod[TimeRange2020PV]
+
+PV = df_solar_prod_2020['P'].tolist() #Convert from pandas data series to list
+
+
 
 #Solar irradiance data set
 df_solar_irr= pd.read_csv('C:/Users/Rolvur Reinert/Desktop/Data/Python_data/Irradiance data 2020-2021.csv',sep=',')
@@ -52,7 +77,17 @@ df_DKDA_raw = pd.read_csv('C:/Users/Rolvur Reinert/Desktop/Data/Python_data/Elsp
 #Converting to datetime
 df_DKDA_raw[['HourUTC','HourDK']] = df_DKDA_raw[['HourUTC','HourDK']].apply(pd.to_datetime)
 
-df_DKDA_raw.dtypes
+
+#Input for model
+#Using year 2020
+TimeRange2020DA = (df_DKDA_raw['HourDK'] > '2020-01-01') & (df_DKDA_raw['HourDK']  <= '2020-12-31')
+df_DKDA_raw2020 = df_DKDA_raw[TimeRange2020DA]
+P_DA = df_DKDA_raw2020['SpotPriceEUR,,'].tolist()
+
+
+
+
+
 
 ##################### FCR #######################
 
