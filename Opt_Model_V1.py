@@ -4,27 +4,52 @@ import pyomo.opt as po
 from Opt_Constants import *
 #____________________________________________
 
+#P_PV_max = {1:      0, 
+#            2:      0, 
+#            3:      0, 
+#            4:      0, 
+#            5:      0, 
+#            6:     10, 
+#            7:     50, 
+#            8:    120, 
+#            9:    160, 
+#            10:   120, 
+#            11:    80, 
+#            12:   150, 
+#            13:   180, 
+#            14:   170, 
+#            15:   140, 
+#            16:   105, 
+#            17:    75, 
+#            18:    60, 
+#            19:    45, 
+#            20:    35, 
+#            21:     5, 
+#            22:     0, 
+#            23:     0, 
+#            24:     0 }
+
 P_PV_max = {1:      0, 
             2:      0, 
             3:      0, 
             4:      0, 
             5:      0, 
-            6:     10, 
-            7:     50, 
-            8:    120, 
-            9:    160, 
-            10:   120, 
-            11:    80, 
-            12:   150, 
-            13:   180, 
-            14:   170, 
-            15:   140, 
-            16:   105, 
-            17:    75, 
-            18:    60, 
-            19:    45, 
-            20:    35, 
-            21:     5, 
+            6:     0, 
+            7:     0, 
+            8:    0, 
+            9:    0, 
+            10:   0, 
+            11:    0, 
+            12:   0, 
+            13:   0, 
+            14:   0, 
+            15:   0, 
+            16:   0, 
+            17:    0, 
+            18:    0, 
+            19:    0, 
+            20:    0, 
+            21:     0, 
             22:     0, 
             23:     0, 
             24:     0 }
@@ -78,14 +103,11 @@ m_demand  ={1:      0,
             21:     0, 
             22:     0, 
             23:     0, 
-            24:     600000
+            24:     70000
     }
 
 
-solver = po.SolverFactory('gurobi')
-
-
-
+solver = po.SolverFactory('glpk')
 model = pe.ConcreteModel()
 
 #set t in T
@@ -174,33 +196,34 @@ for t in model.T:
     rhs = model.P_pem_cap
     model.c4_2.add(lhs <= rhs)
 
+
 model.c5 = pe.ConstraintList()
 for t in model.T:
     model.c5.add(model.m_H2[t] == model.k_CR*model.p_pem[t])
 
-#model.c6 = pe.ConstraintList()
-#for t in model.T:
-#    model.c6.add(model.m_CO2[t] == model.r_in*model.m_H2[t])
+model.c6 = pe.ConstraintList()
+for t in model.T:
+    model.c6.add(model.m_CO2[t] == model.r_in*model.m_H2[t])
 
-#model.c7 = pe.ConstraintList()
-#for t in model.T:
-#    model.c7.add(model.m_Ri[t] == model.m_H2[t] + model.m_CO2[t])
+model.c7 = pe.ConstraintList()
+for t in model.T:
+    model.c7.add(model.m_Ri[t] == model.m_H2[t] + model.m_CO2[t])
 
-#model.c8 = pe.ConstraintList()
-#for t in model.T:
-#    model.c8.add(model.m_Ro[t] == model.m_Pu[t] + model.m_H2O[t])
+model.c8 = pe.ConstraintList()
+for t in model.T:
+    model.c8.add(model.m_Ro[t] == model.m_Pu[t] + model.m_H2O[t])
 
-#model.c9 = pe.ConstraintList()
-#for t in model.T:
-#    model.c9.add(model.m_Pu[t] == model.r_out * model.m_H2O[t])
+model.c9 = pe.ConstraintList()
+for t in model.T:
+    model.c9.add(model.m_Pu[t] == model.r_out * model.m_H2O[t])
 
-#model.c10 = pe.ConstraintList()
-#for t in model.T:
-#    model.c10.add(model.m_Pu[t] == model.k_d)
+model.c10 = pe.ConstraintList()
+for t in model.T:
+    model.c10.add(model.m_Pu[t] == model.k_d)
 
-#model.c11_1 = pe.ConstraintList()
-#for t in model.T:
-#    model.c11_1.add(0 <= model.s_raw[t])
+model.c11_1 = pe.ConstraintList()
+for t in model.T:
+    model.c11_1.add(0 <= model.s_raw[t])
 
 model.c11_2 = pe.ConstraintList()
 for t in model.T:
@@ -211,7 +234,10 @@ for t in model.T:
     if t >= 2:
         model.c12.add(model.s_raw[t] == model.s_raw[t-1] + model.m_Ri[t] - model.m_Ro[t])
 
-model.c13 = pe.Constraint(expr=0.5*model.S_raw_max == model.s_raw[24])
+model.c13_1 = pe.Constraint(expr=model.s_raw[1] == 0.5*model.S_raw_max)
+
+model.c13_2 = pe.Constraint(expr=0.5*model.S_raw_max == model.s_raw[24])
+#model.ctest = pe.Constraint(expr = model.p_pem[1] == 50)
 
 model.c14_1 = pe.ConstraintList()
 for t in model.T:
@@ -221,9 +247,7 @@ model.c14_2 = pe.ConstraintList()
 for t in model.T:
     model.c14_2.add(model.s_Pu[t] <= model.S_Pu_max)
 
-model.c15 = pe.ConstraintList()
-for t in model.T:
-    model.c15.add(model.s_Pu[1] == 0)
+model.c15 = pe.Constraint(expr = model.s_Pu[1] == 0)
 
 model.c16 = pe.ConstraintList()
 for t in model.T:
@@ -240,15 +264,17 @@ for t in model.T:
     if t >= 2:
         model.c17_2.add(model.p_pem[t] - model.p_pem[t-1] <= model.ramp_pem * model.P_pem_cap)
 
-model.c18_1 = pe.ConstraintList()
-for t in model.T:
-    if t >= 2:
-        model.c18_1.add(-model.ramp_com * model.m_H2_max <= model.m_H2[t] - model.m_H2[t-1])
+#model.c18_1 = pe.ConstraintList()
+#for t in model.T:
+#    if t >= 2:
+#        model.c18_1.add(-model.ramp_com * model.m_H2_max <= model.m_H2[t] - model.m_H2[t-1])
 
-model.c18_2 = pe.ConstraintList()
-for t in model.T:
-    if t >= 2:
-        model.c18_2.add(model.m_H2[t] - model.m_H2[t-1] <= model.ramp_com * model.m_H2_max)
+#model.c18_2 = pe.ConstraintList()
+#for t in model.T:
+#    if t >= 2:
+#        model.c18_2.add(model.m_H2[t] - model.m_H2[t-1] <= model.ramp_com * model.m_H2_max)
+
+
 
 solver = po.SolverFactory('gurobi')
 results = solver.solve(model)
@@ -266,6 +292,22 @@ for i in model.p_pem:
   print(str(model.p_pem[i]), model.p_pem[i].value)
 for i in model.m_H2:
   print(str(model.m_H2[i]), model.m_H2[i].value)
+for i in model.m_CO2:
+  print(str(model.m_CO2[i]), model.m_CO2[i].value)
+for i in model.m_Ri:
+  print(str(model.m_Ri[i]), model.m_Ri[i].value)
+for i in model.m_Ro:
+  print(str(model.m_Ro[i]), model.m_Ro[i].value)
+for i in model.m_H2O:
+  print(str(model.m_H2O[i]), model.m_H2O[i].value)
+for i in model.m_Pu:
+  print(str(model.m_Pu[i]), model.m_Pu[i].value)
+for i in model.m_demand:
+  print(str(model.m_demand[i]), model.m_demand[i].value)
+for i in model.s_raw:
+  print(str(model.s_raw[i]), model.s_raw[i].value)
+for i in model.s_Pu:
+  print(str(model.s_Pu[i]), model.s_Pu[i].value)
 
 
 #for i in model.p_pem:
