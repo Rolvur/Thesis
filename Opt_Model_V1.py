@@ -147,11 +147,36 @@ for t in model.T:
     lhs = model.p_grid[t]
     model.c2_2.add(lhs <= rhs)
 
+#Constraint 3
+model.c3_1 = pe.ConstraintList()
+for t in model.T:
+    lhs = 0
+    rhs = model.p_PV[t]
+    model.c3_1.add(lhs <= rhs)
+#Constraint 3
+model.c3_2 = pe.ConstraintList()
+for t in model.T:
+    rhs = model.P_PV_max[t]
+    lhs = model.p_PV[t]
+    model.c3_2.add(lhs <= rhs)
 
 
+solver = po.SolverFactory('gurobi')
+results = solver.solve(model)
+print(results)
 
-model.tasks_done = pe.ConstraintList()
-for t in model.tasks:
-    lhs = sum(model.x[w,t] for w in model.workers)
-    rhs = 1
-    model.tasks_done.add(lhs == rhs)
+print(model.p_grid.values)
+print(model.P_grid_cap)
+
+print("Print values for each variable explicitly")
+for i in model.p_grid:
+  print(str(model.p_grid[i]), model.p_grid[i].value)
+for i in model.p_PV:
+  print(str(model.p_PV[i]), model.p_PV[i].value)
+for i in model.p_pem:
+  print(str(model.p_pem[i]), model.p_pem[i].value)
+for i in model.p_pem:
+  print(str('P_com'), model.P_com)
+for i in model.p_pem:
+  print(str('P_H2O'), model.P_H2O)
+
