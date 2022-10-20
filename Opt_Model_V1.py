@@ -4,62 +4,63 @@ import pyomo.opt as po
 from Opt_Constants import *
 #____________________________________________
 
-#P_PV_max = {1:      0, 
-#            2:      0, 
-#            3:      0, 
-#            4:      0, 
-#            5:      0, 
-#            6:     10, 
-#            7:     50, 
-#            8:    120, 
-#            9:    160, 
-#            10:   120, 
-#            11:    80, 
-#            12:   150, 
-#            13:   180, 
-#            14:   170, 
-#            15:   140, 
-#            16:   105, 
-#            17:    75, 
-#            18:    60, 
-#            19:    45, 
-#            20:    35, 
-#            21:     5, 
-#            22:     0, 
-#            23:     0, 
-#            24:     0 }
-
 P_PV_max = {1:      0, 
             2:      0, 
             3:      0, 
             4:      0, 
             5:      0, 
-            6:     0, 
-            7:     0, 
-            8:    0, 
-            9:    0, 
-            10:   0, 
-            11:    0, 
-            12:   0, 
-            13:   0, 
-            14:   0, 
-            15:   0, 
-            16:   0, 
-            17:    0, 
-            18:    0, 
-            19:    0, 
-            20:    0, 
-            21:     0, 
+            6:     10, 
+            7:     50, 
+            8:    120, 
+            9:    160, 
+            10:   120, 
+            11:    80, 
+            12:   150, 
+            13:   180, 
+            14:   170, 
+            15:   140, 
+            16:   105, 
+            17:    75, 
+            18:    60, 
+            19:    45, 
+            20:    35, 
+            21:     5, 
             22:     0, 
             23:     0, 
             24:     0 }
 
+
+#DA =       {1:      -20, 
+#            2:      -19, 
+#            3:      -18, 
+#            4:      -17, 
+#            5:      -16, 
+#            6:     -15, 
+#            7:     -14, 
+#            8:    -13, 
+#            9:    -12, 
+#            10:   -11, 
+#            11:    -10, 
+#            12:   -9, 
+#            13:   -8, 
+#            14:   -7, 
+#            15:   -6, 
+#            16:   0, 
+#            17:    0, 
+#            18:    0, 
+#            19:    0, 
+#            20:    0, 
+#            21:     0, 
+#            22:     0, 
+#            23:     0, 
+#            24:     0 }
+
 DA  ={  1:      141.09, 
         2:      135.29, 
         3:      139.29, 
-        4:      139.92, 
-        5:      139.50, 
-        6:      143.12, 
+        4:      139.92,
+        5:      139.29, 
+        6:      139.92, 
         7:      150.10, 
         8:      180.74, 
         9:      232.10, 
@@ -103,7 +104,7 @@ m_demand  ={1:      0,
             21:     0, 
             22:     0, 
             23:     0, 
-            24:     70000
+            24:     80000+7671.232876712325
     }
 
 
@@ -234,7 +235,7 @@ for t in model.T:
     if t >= 2:
         model.c12.add(model.s_raw[t] == model.s_raw[t-1] + model.m_Ri[t] - model.m_Ro[t])
 
-model.c13_1 = pe.Constraint(expr=model.s_raw[1] == 0.5*model.S_raw_max)
+model.c13_1 = pe.Constraint(expr=model.s_raw[1] == 0.5*model.S_raw_max + model.m_Ri[1] - model.m_Ro[1])
 
 model.c13_2 = pe.Constraint(expr=0.5*model.S_raw_max == model.s_raw[24])
 #model.ctest = pe.Constraint(expr = model.p_pem[1] == 50)
@@ -247,7 +248,7 @@ model.c14_2 = pe.ConstraintList()
 for t in model.T:
     model.c14_2.add(model.s_Pu[t] <= model.S_Pu_max)
 
-model.c15 = pe.Constraint(expr = model.s_Pu[1] == 0)
+model.c15 = pe.Constraint(expr = model.s_Pu[1] == model.m_Pu[1])
 
 model.c16 = pe.ConstraintList()
 for t in model.T:
@@ -277,6 +278,7 @@ for t in model.T:
 
 
 solver = po.SolverFactory('gurobi')
+model.dual = pe.Suffix(direction=pe.Suffix.IMPORT)
 results = solver.solve(model)
 print(results)
 
@@ -318,12 +320,7 @@ for i in model.s_Pu:
 
 
 
-test=iter(model.T)
-next(test)
-for t in test:
-    print(t)
 
-
-    type(model.s_raw)
-    type(model.T)
-    S_Pu_max
+    
+model.dual.display()
+print(model.c12[1].expr)
