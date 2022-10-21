@@ -9,6 +9,10 @@ import matplotlib.dates as md
 import seaborn as sns
 from IPython.display import display
 
+
+
+#HAHSHDASDOJASD
+
 ####################### Plot ####################### 
 #Selecting time range for DataFrame
 TimeRange2019 = (df_solar_prod['time'] > '2019-01-01') & (df_solar_prod['time'] <= '2019-12-31')
