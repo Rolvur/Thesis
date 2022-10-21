@@ -1,124 +1,24 @@
 import pyomo.environ as pe
 import pyomo.opt as po
 
+
 from Opt_Constants import *
+from Data_process import P_PV_max, DA, Demand 
 #____________________________________________
-
-P_PV_max = {1:      0, 
-            2:      0, 
-            3:      0, 
-            4:      0, 
-            5:      0, 
-            6:     10, 
-            7:     50, 
-            8:    120, 
-            9:    160, 
-            10:   120, 
-            11:    80, 
-            12:   150, 
-            13:   180, 
-            14:   170, 
-            15:   140, 
-            16:   105, 
-            17:    75, 
-            18:    60, 
-            19:    45, 
-            20:    35, 
-            21:     5, 
-            22:     0, 
-            23:     0, 
-            24:     0 }
-
-
-#DA =       {1:      -20, 
-#            2:      -19, 
-#            3:      -18, 
-#            4:      -17, 
-#            5:      -16, 
-#            6:     -15, 
-#            7:     -14, 
-#            8:    -13, 
-#            9:    -12, 
-#            10:   -11, 
-#            11:    -10, 
-#            12:   -9, 
-#            13:   -8, 
-#            14:   -7, 
-#            15:   -6, 
-#            16:   0, 
-#            17:    0, 
-#            18:    0, 
-#            19:    0, 
-#            20:    0, 
-#            21:     0, 
-#            22:     0, 
-#            23:     0, 
-#            24:     0 }
-
-DA  ={  1:      141.09, 
-        2:      135.29, 
-        3:      139.29, 
-        4:      139.92,
-        5:      139.29, 
-        6:      139.92, 
-        7:      150.10, 
-        8:      180.74, 
-        9:      232.10, 
-        10:     203.35, 
-        11:     193.51, 
-        12:     179.28, 
-        13:     125.88, 
-        14:     138.55, 
-        15:     122.01, 
-        16:     135.23, 
-        17:     152.35, 
-        18:     198.51, 
-        19:     230.10, 
-        20:     247.85, 
-        21:     198.58, 
-        22:     165.68, 
-        23:     162.95, 
-        24:     153.60
-    }
-
-m_demand  ={1:      0, 
-            2:      0, 
-            3:      0, 
-            4:      0, 
-            5:      0, 
-            6:      0, 
-            7:      0, 
-            8:      0, 
-            9:      0, 
-            10:     0, 
-            11:     0, 
-            12:     0, 
-            13:     0, 
-            14:     0, 
-            15:     0, 
-            16:     0, 
-            17:     0, 
-            18:     0, 
-            19:     0, 
-            20:     0, 
-            21:     0, 
-            22:     0, 
-            23:     0, 
-            24:     80000+7671.232876712325
-    }
 
 
 solver = po.SolverFactory('glpk')
 model = pe.ConcreteModel()
 
 #set t in T
-model.T = pe.RangeSet(1,24)
+T = len(P_PV_max)
+model.T = pe.RangeSet(1,T)
 
 
 #initializing parameters
 model.P_PV_max = pe.Param(model.T, initialize=P_PV_max)
 model.DA = pe.Param(model.T, initialize=DA)
-model.m_demand = pe.Param(model.T, initialize = m_demand)
+model.m_demand = pe.Param(model.T, initialize = Demand)
 
 model.P_pem_cap = P_pem_cap 
 model.P_pem_min = P_pem_min
@@ -237,16 +137,16 @@ for t in model.T:
 
 model.c13_1 = pe.Constraint(expr=model.s_raw[1] == 0.5*model.S_raw_max + model.m_Ri[1] - model.m_Ro[1])
 
-model.c13_2 = pe.Constraint(expr=0.5*model.S_raw_max == model.s_raw[24])
+model.c13_2 = pe.Constraint(expr=0.5*model.S_raw_max == model.s_raw[T])
 #model.ctest = pe.Constraint(expr = model.p_pem[1] == 50)
 
 model.c14_1 = pe.ConstraintList()
 for t in model.T:
     model.c14_1.add(0 <= model.s_Pu[t])
 
-model.c14_2 = pe.ConstraintList()
-for t in model.T:
-    model.c14_2.add(model.s_Pu[t] <= model.S_Pu_max)
+#model.c14_2 = pe.ConstraintList()
+#for t in model.T:
+#   model.c14_2.add(model.s_Pu[t] <= model.S_Pu_max)
 
 model.c15 = pe.Constraint(expr = model.s_Pu[1] == model.m_Pu[1])
 
@@ -277,13 +177,11 @@ for t in model.T:
 
 
 
-solver = po.SolverFactory('gurobi')
+
 model.dual = pe.Suffix(direction=pe.Suffix.IMPORT)
 results = solver.solve(model)
 print(results)
 
-print(model.p_grid.values)
-print(model.P_grid_cap)
 
 print("Print values for each variable explicitly")
 for i in model.p_grid:

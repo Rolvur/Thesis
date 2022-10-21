@@ -1,21 +1,9 @@
 import datetime
-from numpy import zeros
+import numpy as np
 import pandas as pd 
-#import matplotlib.pyplot as plt
-#import matplotlib.dates as md
+from Settings import Start_date, End_date, Demand_pattern
+from Opt_Constants import k_d
 #from pyparsing import line
-
-##################### Methanol Demand #######################
-
-Tot_Demand = 32000 #ton methanol annually
-Weekly_demand = (32000/365)*7  #Seven days demand
-
-
-#Input for model
-Demand = list(0 for i in range(0,8760))
-
-for i in range(0,len(Demand),7):
-    Demand[i] = Weekly_demand
 
 
 
@@ -36,12 +24,14 @@ df_solar_prod['time'] = df_solar_prod['time'].apply(pd.to_datetime)
 
 #Input for model
 #Using year 2020
-TimeRange2020PV = (df_solar_prod['time'] > '2020-01-01') & (df_solar_prod['time']  <= '2020-12-31')
+TimeRange2020PV = (df_solar_prod['time'] >= Start_date) & (df_solar_prod['time']  <= End_date)
 df_solar_prod_2020 = df_solar_prod[TimeRange2020PV]
 
-PV = df_solar_prod_2020['P'].tolist() #Convert from pandas data series to list
+PV_Watt = df_solar_prod_2020['P'].tolist() #Convert from pandas data series to list
+PV = [x/1000000 for x in PV_Watt]
+P_PV_max = dict(zip(np.arange(1,len(PV)+1),PV))
 
-
+#print(PV,Start_date,End_date)
 
 #Solar irradiance data set
 df_solar_irr= pd.read_csv('Irradiance data 2020-2021.csv',sep=',')
@@ -80,11 +70,11 @@ df_DKDA_raw[['HourUTC','HourDK']] = df_DKDA_raw[['HourUTC','HourDK']].apply(pd.t
 
 #Input for model
 #Using year 2020
-TimeRange2020DA = (df_DKDA_raw['HourDK'] > '2020-01-01') & (df_DKDA_raw['HourDK']  <= '2020-12-31')
+TimeRange2020DA = (df_DKDA_raw['HourDK'] >= Start_date) & (df_DKDA_raw['HourDK']  <= End_date)
 df_DKDA_raw2020 = df_DKDA_raw[TimeRange2020DA]
-P_DA = df_DKDA_raw2020['SpotPriceEUR,,'].tolist()
-
-
+DA = df_DKDA_raw2020['SpotPriceEUR,,'].tolist()
+DA = dict(zip(np.arange(1,len(DA)+1),DA))
+#print(DA,Start_date,End_date)
 
 
 
@@ -130,7 +120,36 @@ df_SEafrr2020_raw['Publiceringstidpunkt'] =  df_SEafrr2020_raw['Publiceringstidp
 df_SEafrr2021_raw['Period'] =  df_SEafrr2020_raw['Period'].apply(pd.to_datetime)
 df_SEafrr2021_raw['Publiceringstidpunkt'] =  df_SEafrr2020_raw['Publiceringstidpunkt'].apply(pd.to_datetime)
 
+##################### Methanol Demand #######################
 
+
+#Input for model
+
+
+
+Demand = list(0 for i in range(0,len(PV)))
+
+
+
+if Demand_pattern == 'Hourly':
+    for i in range(0,len(Demand),1):
+        Demand[i] = k_d
+
+if Demand_pattern == 'Daily':
+    for i in range(0,len(Demand),24):
+        Demand[i+23] = k_d*24
+        
+if Demand_pattern == 'Weekly':
+    for i in range(0,int(len(PV)/(24*7))):
+        Demand[i*24*7-1] = k_d*24*7
+
+    dw = len(PV)/(24*7) - int(len(PV)/(24*7))
+    if dw > 0:
+        Demand[len(PV)-1] = dw*7*24*k_d
+
+
+            
+Demand = dict(zip(np.arange(1,len(Demand)+1),Demand))
 
 
 
