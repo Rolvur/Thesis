@@ -3,7 +3,7 @@ import pyomo.opt as po
 
 
 from Opt_Constants import *
-from Data_process import P_PV_max, DA, Demand 
+from Data_process import P_PV_max, DA, Demand, c_FCR, c_aFRR_up
 #____________________________________________
 
 
