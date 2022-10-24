@@ -77,6 +77,9 @@ DA = df_DKDA_raw2020['SpotPriceEUR,,'].tolist()
 DA = dict(zip(np.arange(1,len(DA)+1),DA))
 #print(DA,Start_date,End_date)
 
+#Getting time range
+DateRange = df_DKDA_raw2020['HourDK']
+
 
 
 

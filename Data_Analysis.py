@@ -1,13 +1,201 @@
 from cProfile import label
 import sys, os
+from tkinter import Y
+from turtle import width
+from Data_process import DA
 sys.path.append('C:/Users/Rolvur Reinert/Desktop/Data/Python_data')
-from Data_process import df_solar_prod, df_DKDA_raw, df_FIafrr2020_raw, df_SEafrr2020_raw
+#from Data_process import df_solar_prod, df_DKDA_raw, df_FIafrr2020_raw, df_SEafrr2020_raw
+from Opt_Model_V1 import df_results
+
 import pandas as pd 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
-import seaborn as sns
-from IPython.display import display
+#from matplotlib import pyplot as plt
+#import seaborn as sns
+#from IPython.display import display
+
+
+
+####################### Plot Model Results #######################
+
+
+#Plot style
+plt.style.use('seaborn') ## 'fivethirtyeight' 'seaborn' etc
+
+#Defingin x axes
+x = df_results.index
+
+
+## Subplot example
+fig, (ax1,ax2) = plt.subplots(nrows=2,ncols=1,sharex=True) 
+#nrows and ncols is how to show the plots in the frame. Sharex=True(both plots share xakis)
+
+#ax1 & ax2 two subplots in fig
+ax1.plot(x, df_results['DA'], color='b',linestyle = '--', label ='Day Ahead Price')
+ax2.plot(x, df_results['P_PEM'],color='red', label ='PEM Production')
+#ax2.plot(x, df_results['P_PV'], label ='PV Production')
+
+ax1.legend()
+ax1.set_title('MONS')
+ax1.set_xlabel('Time')
+ax1.set_ylabel('EUR/MWh')
+
+
+ax2.legend(loc='upper left')
+ax2.set_ylim([0, 70])
+ax2.set_title('TONS')
+ax2.set_xlabel('Time')
+ax2.set_ylabel('MW')
+ax2.tick_params(labelrotation=45)
+
+ax3 = ax2.twinx()
+ax3.plot(x, df_results['P_PV'],color='g', label ='PV Production')
+
+ax3.legend()
+ax3.set_ylim([0, 300])
+#ax3.set_title('TONS')
+#ax3.set_xlabel('Time')
+ax3.set_ylabel('MW')
+
+
+plt.tight_layout()
+plt.show()
+
+
+
+## Multiple bar and line plot together
+
+
+x_indexes = np.arange(len(df_results.index))
+width_x = 1
+
+x = df_results.index
+
+fig, ax = plt.subplots()
+ax.bar(x-width_x, df_results['P_PEM'],width = width_x, align = 'center')
+ax.bar(x, df_results['P_PV'], width = width_x , align = 'center')
+#ax.bar(df.index, df['C'],width = 5, align = 'center')
+#ax.bar(df.index, df['D'], width = 5 , align = 'center')
+ax.xaxis_date()
+ax.get_xaxis().set_major_locator(mdates.MonthLocator())
+ax.get_xaxis().set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
+fig.autofmt_xdate()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Plot style
+plt.style.use('fivethirtyeight') ## 'fivethirtyeight' 'seaborn' etc
+
+#Defingin x axes
+x = df_results.index
+
+plt.bar(x_indexes-width,df_results['P_PEM'],width=width, color='r', label = 'PEM') #-width  = shift bar to left
+plt.bar(x_indexes,df_results['P_PV'],width=width, color='b', label = 'PV')
+
+
+#plt.xticks(ticks=x_indexes, labels=x)
+plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=5))
+plt.gcf().autofmt_xdate()
+
+
+#plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
+#plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+plt.plot(x, df_results.DA, label = "line 1", linestyle="-")
+plt.plot(x, df_results.DA, label = "line 2", linestyle="--")
+plt.plot(x, df_results.P_sRaw, label = "curve 1")
+plt.xticks(rotation=20)
+plt.legend()
+plt.show()
+
+df_results[['P_sRaw','P_sPu']].plot(kind='bar', width = width)
+df_results['DA'].plot(secondary_y=True)
+
+ax = plt.gca()
+plt.xlim([-width, len(df_results['P_sRaw'])-width])
+ax.set_xticklabels(x)
+plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
+plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+labels = df_results.columns #Getting column names
+
+
+x = np.arange(len(labels))  # the label locations
+width = 0.35  # the width of the bars
+
+fig, ax = plt.subplots()
+
+rects1 = ax.bar(df_results.index - width/2, df_results['P_sRaw'], width, label='P_sRaw')
+#rects1 = ax.bar(x - width/2, df_results['P_sRaw'], width, label='P_sRaw')
+rects2 = ax.bar(x + width/2, df_results['P_sPu'], width, label='P_sPu')
+
+# Add some text for labels, title and custom x-axis tick labels, etc.
+ax.set_ylabel('MW')
+ax.set_title('Time')
+#ax.set_xticks(df_results.index)
+ax.legend()
+
+#Shows value on top of bars 
+ax.bar_label(rects1, padding=1)
+ax.bar_label(rects2, padding=3)
+
+fig.tight_layout()
+
+plt.show()
+
+
+
+
+
+
 
 ####################### Plot ####################### 
 #Selecting time range for DataFrame
