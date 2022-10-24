@@ -4,7 +4,7 @@ import pandas as pd
 from Opt_Constants import *
 
 
-from Data_process import P_PV_max, DA, Demand, c_aFRR_up, DateRange
+from Data_process import P_PV_max, DA, Demand, c_aFRR_up, c_aFRR_down, c_mFRR_up, DateRange
 
 #____________________________________________
 
@@ -228,7 +228,7 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'DA' : list(DA.values())}, index=DateRange,
 )
 
-CutPrice = (df_results['P_PEM'] >= Start_date) & (df_DKDA_raw['HourDK']  <= End_date)
+#CutPrice = (df_results['P_PEM'] >= Start_date) & (df_DKDA_raw['HourDK']  <= End_date)
 
 #for i in model.p_pem:
 #  print(str('P_com'), model.P_com)
