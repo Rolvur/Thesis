@@ -97,6 +97,9 @@ df_FCRR2021_raw = pd.read_csv('2021 - RESULT_CAPACITY_FCR.csv',sep=',')
 
 #Merging the two datasets
 df_FCRR_raw = pd.concat([df_FCRR2020_raw, df_FCRR2021_raw], ignore_index=True, sort=False)
+del df_FCRR_raw['Column1']
+del df_FCRR_raw['Unnamed: 31']
+del df_FCRR_raw['Unnamed: 32']
 
 #deleteting any row where column 'TENDER_NUMBER' is not '1'
 df_FCR = df_FCRR_raw[df_FCRR_raw.TENDER_NUMBER == 1]
@@ -106,7 +109,8 @@ df_FCR.reset_index(drop=True)
 dic_block = {'NEGPOS_00_24': 24, 'NEGPOS_00_04': 4, 'NEGPOS_04_08': 4, 'NEGPOS_08_12': 4, 'NEGPOS_12_16': 4, 'NEGPOS_16_20': 4, 'NEGPOS_20_24': 4}
 
 #writing new column in FCR data using dictionary
-df_FCR['BLOCK_LENGTH'] = df_FCR['PRODUCTNAME'].map(dic_block)
+df_FCR.insert(len(df_FCR.columns),'BLOCK_LENGTH',df_FCR.iloc[:,4].map(dic_block))
+#df_FCR.iloc[:,30] = df_FCR.iloc[:,4].map(dic_block)
 df_FCR = df_FCR.loc[df_FCR.index.repeat(df_FCR.BLOCK_LENGTH)].reset_index(drop=True)
 
 #check if any date is appearing more than once:
@@ -117,32 +121,34 @@ df_FCR = df_FCR.loc[df_FCR.index.repeat(df_FCR.BLOCK_LENGTH)].reset_index(drop=T
 #writing hour to all data
 for j in range(0,int(len(df_FCR['DATE_FROM'])/24)):
     i = j*24
-    df_FCR['DATE_FROM'][i] = df_FCR['DATE_FROM'][i] + " 00:00"
-    df_FCR['DATE_FROM'][i+1] = df_FCR['DATE_FROM'][i+1] + " 01:00" 
-    df_FCR['DATE_FROM'][i+2] = df_FCR['DATE_FROM'][i+2] + " 02:00"
-    df_FCR['DATE_FROM'][i+3] = df_FCR['DATE_FROM'][i+3] + " 03:00" 
-    df_FCR['DATE_FROM'][i+4] = df_FCR['DATE_FROM'][i+4] + " 04:00"
-    df_FCR['DATE_FROM'][i+5] = df_FCR['DATE_FROM'][i+5] + " 05:00" 
-    df_FCR['DATE_FROM'][i+6] = df_FCR['DATE_FROM'][i+6] + " 06:00"
-    df_FCR['DATE_FROM'][i+7] = df_FCR['DATE_FROM'][i+7] + " 07:00" 
-    df_FCR['DATE_FROM'][i+8] = df_FCR['DATE_FROM'][i+8] + " 08:00"
-    df_FCR['DATE_FROM'][i+9] = df_FCR['DATE_FROM'][i+9] + " 09:00" 
-    df_FCR['DATE_FROM'][i+10] = df_FCR['DATE_FROM'][i+10] + " 10:00"
-    df_FCR['DATE_FROM'][i+11] = df_FCR['DATE_FROM'][i+11] + " 11:00" 
-    df_FCR['DATE_FROM'][i+12] = df_FCR['DATE_FROM'][i+12] + " 12:00"
-    df_FCR['DATE_FROM'][i+13] = df_FCR['DATE_FROM'][i+13] + " 13:00" 
-    df_FCR['DATE_FROM'][i+14] = df_FCR['DATE_FROM'][i+14] + " 14:00"
-    df_FCR['DATE_FROM'][i+15] = df_FCR['DATE_FROM'][i+15] + " 15:00" 
-    df_FCR['DATE_FROM'][i+16] = df_FCR['DATE_FROM'][i+16] + " 16:00"
-    df_FCR['DATE_FROM'][i+17] = df_FCR['DATE_FROM'][i+17] + " 17:00" 
-    df_FCR['DATE_FROM'][i+18] = df_FCR['DATE_FROM'][i+18] + " 18:00"
-    df_FCR['DATE_FROM'][i+19] = df_FCR['DATE_FROM'][i+19] + " 19:00" 
-    df_FCR['DATE_FROM'][i+20] = df_FCR['DATE_FROM'][i+20] + " 20:00"
-    df_FCR['DATE_FROM'][i+21] = df_FCR['DATE_FROM'][i+21] + " 21:00" 
-    df_FCR['DATE_FROM'][i+22] = df_FCR['DATE_FROM'][i+22] + " 22:00"
-    df_FCR['DATE_FROM'][i+23] = df_FCR['DATE_FROM'][i+23] + " 23:00"  
+    df_FCR.iloc[i,0] = df_FCR.iloc[i,0] + " 00:00"
+    df_FCR.iloc[i+1,0] = df_FCR.iloc[i+1,0] + " 01:00" 
+    df_FCR.iloc[i+2,0] = df_FCR.iloc[i+2,0] + " 02:00"
+    df_FCR.iloc[i+3,0] = df_FCR.iloc[i+3,0] + " 03:00" 
+    df_FCR.iloc[i+4,0] = df_FCR.iloc[i+4,0] + " 04:00"
+    df_FCR.iloc[i+5,0] = df_FCR.iloc[i+5,0] + " 05:00" 
+    df_FCR.iloc[i+6,0] = df_FCR.iloc[i+6,0] + " 06:00"
+    df_FCR.iloc[i+7,0] = df_FCR.iloc[i+7,0] + " 07:00" 
+    df_FCR.iloc[i+8,0] = df_FCR.iloc[i+8,0] + " 08:00"
+    df_FCR.iloc[i+9,0] = df_FCR.iloc[i+9,0] + " 09:00" 
+    df_FCR.iloc[i+10,0] = df_FCR.iloc[i+10,0] + " 10:00"
+    df_FCR.iloc[i+11,0] = df_FCR.iloc[i+11,0] + " 11:00" 
+    df_FCR.iloc[i+12,0] = df_FCR.iloc[i+12,0] + " 12:00"
+    df_FCR.iloc[i+13,0] = df_FCR.iloc[i+13,0] + " 13:00" 
+    df_FCR.iloc[i+14,0] = df_FCR.iloc[i+14,0] + " 14:00"
+    df_FCR.iloc[i+15,0] = df_FCR.iloc[i+15,0] + " 15:00" 
+    df_FCR.iloc[i+16,0] = df_FCR.iloc[i+16,0] + " 16:00"
+    df_FCR.iloc[i+17,0] = df_FCR.iloc[i+17,0] + " 17:00" 
+    df_FCR.iloc[i+18,0] = df_FCR.iloc[i+18,0] + " 18:00"
+    df_FCR.iloc[i+19,0] = df_FCR.iloc[i+19,0] + " 19:00" 
+    df_FCR.iloc[i+20,0] = df_FCR.iloc[i+20,0] + " 20:00"
+    df_FCR.iloc[i+21,0] = df_FCR.iloc[i+21,0] + " 21:00" 
+    df_FCR.iloc[i+22,0] = df_FCR.iloc[i+22,0] + " 22:00"
+    df_FCR.iloc[i+23,0] = df_FCR.iloc[i+23,0] + " 23:00"
+    
+  
 
-df_FCR['DATE_FROM'] = df_FCR['DATE_FROM'].astype(str) #probably not necessary, at the field is already a string
+#df_FCR['DATE_FROM'] = df_FCR['DATE_FROM'].astype(str) #probably not necessary, at the field is already a string
 #Converting time to datetime
 for i in range(0,len(df_FCR['DATE_FROM'])):
     df_FCR.iloc[i,0] = datetime.datetime.strptime(df_FCR.iloc[i,0], '%d/%m/%Y %H:%M')
