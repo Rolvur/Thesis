@@ -158,7 +158,7 @@ for i in range(0,len(df_FCR['DATE_FROM'])):
 TimeRange_FCR = (df_FCR['DATE_FROM'] >= Start_date) & (df_FCR['DATE_FROM']  <= End_date)
 df_FCR = df_FCR[TimeRange_FCR]
 
-list_FCR = df_FCR['DK_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() #Convert from pandas data series to list
+list_FCR = df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() #Convert from pandas data series to list
 c_FCR = dict(zip(np.arange(1,len(list_FCR)+1),list_FCR))
 
 

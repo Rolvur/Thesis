@@ -24,3 +24,5 @@ ramp_pem = 0.1*3600
 ramp_com = 0.1*60
 n_H2_max = mu_pem*P_pem_cap*1000*3600/(dHf0_H2O)
 m_H2_max = n_H2_max * M_H2/1000
+
+R_FCR_max = 1
