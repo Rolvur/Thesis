@@ -100,39 +100,84 @@ def SubPlot1(Results):
 SubPlot1(df_results)
 
 
+def SubPlot2(Results):
 
-##Two line plot also subplots
-x = df_results.index
+    ##Two line(shaded under line) plot also subplots
+    x = df_results.index
+    d = scipy.zeros(len(x))
 
-fig, (ax1,ax3) = plt.subplots(nrows=2,ncols=1)
+    fig, (ax1,ax2) = plt.subplots(nrows=2,ncols=1,sharex=True)
 
-#1st Subplot 
-ax1 = ax2.twinx()
+    #1st Subplot 
+    ax4 = ax1.twinx()
+    ax1.fill_between(x, Results['P_sPu'], where=Results['P_sPu']>=d, interpolate=True, color='lightblue',label='Pure Storage')
+    ax1.bar(x, Results['Demand'], color='red',linestyle = 'solid', label ='Demand',width=0.05)
+
+    #ax1.tick_params(axis='x', rotation=45)
+    ax1.set_ylabel('kg')
+    ax1.set_ylim([0, 90000])
+    ax1.legend(loc='upper left')
+
+    ax4.plot(x, Results['Pure_In'], color='midnightblue',linestyle = '--', label ='Pure In')
+    ax4.set_ylabel('kg/s')
+    ax4.set_ylim([0, 5000])
+    ax4.legend(loc='upper right')
+
+    #2nd Subplot
+    ax3 = ax2.twinx()
+
+    ax2.fill_between(x, Results['P_sRaw'], where=Results['P_sRaw']>=d, interpolate=True, color='lightgrey',label='Raw Storage')
+    ax2.tick_params(axis='x', rotation=45)
+    ax2.set_ylabel('kg')
+    ax2.set_ylim([0, 85000])
+    ax2.legend(loc='upper left')
+
+
+    ax3.plot(x, Results['Raw_In'], color='forestgreen',linestyle = 'solid', label ='Raw In')
+    ax3.set_ylabel('kg/s')
+    ax3.set_ylim([0, 11000])
+    ax3.legend(loc='upper right')
+
+    plt.tight_layout()
+    plt.show()
+
+SubPlot2(df_results)
 
 
 
-
-#2nd Subplot
-ax4 = ax3.twinx()
+## Pie Chart
 
 
-d = scipy.zeros(len(x))
-ax3.fill_between(x, df_results['P_sRaw'], where=df_results['P_sRaw']>=d, interpolate=True, color='lightgrey',label='Raw Storage')
-ax3.legend()
-ax3.tick_params(axis='x', rotation=45)
-ax3.set_ylabel('kg')
+fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
 
-ax4.plot(x, df_results['Raw_In'], color='red',linestyle = 'solid', label ='Raw_In')
-ax4.set_ylabel('kg/s')
+recipe = ["225 g flour",
+          "90 g sugar",
+          "1 egg",
+          "60 g butter",
+          "100 ml milk",
+          "1/2 package of yeast"]
 
-ax4.legend()
+data = [225, 90, 50, 60, 100, 5]
 
+wedges, texts = ax.pie(data, wedgeprops=dict(width=0.5), startangle=-40)
 
-plt.tight_layout()
+bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
+kw = dict(arrowprops=dict(arrowstyle="-"),
+          bbox=bbox_props, zorder=0, va="center")
+
+for i, p in enumerate(wedges):
+    ang = (p.theta2 - p.theta1)/2. + p.theta1
+    y = np.sin(np.deg2rad(ang))
+    x = np.cos(np.deg2rad(ang))
+    horizontalalignment = {-1: "right", 1: "left"}[int(np.sign(x))]
+    connectionstyle = "angle,angleA=0,angleB={}".format(ang)
+    kw["arrowprops"].update({"connectionstyle": connectionstyle})
+    ax.annotate(recipe[i], xy=(x, y), xytext=(1.35*np.sign(x), 1.4*y),
+                horizontalalignment=horizontalalignment, **kw)
+
+ax.set_title("Matplotlib bakery: A donut")
 
 plt.show()
-
-
 
 
 
