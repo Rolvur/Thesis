@@ -2,7 +2,10 @@ import pyomo.environ as pe
 import pyomo.opt as po
 import pandas as pd 
 from Opt_Constants import *
-from Data_process import P_PV_max, DA, Demand ,DateRange
+
+
+from Data_process import P_PV_max, DA, Demand, c_aFRR_up, DateRange
+
 #____________________________________________
 
 
