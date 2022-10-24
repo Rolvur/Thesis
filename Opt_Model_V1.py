@@ -228,7 +228,7 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'DA' : list(DA.values())}, index=DateRange,
 )
 
-
+CutPrice = (df_results['P_PEM'] >= Start_date) & (df_DKDA_raw['HourDK']  <= End_date)
 
 #for i in model.p_pem:
 #  print(str('P_com'), model.P_com)

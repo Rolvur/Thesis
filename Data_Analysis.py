@@ -3,7 +3,7 @@ import sys, os
 from tkinter import Y
 from turtle import width
 from Data_process import DA
-sys.path.append('C:/Users/Rolvur Reinert/Desktop/Data/Python_data')
+#sys.path.append('C:/Users/Rolvur Reinert/Desktop/Data/Python_data')
 #from Data_process import df_solar_prod, df_DKDA_raw, df_FIafrr2020_raw, df_SEafrr2020_raw
 from Opt_Model_V1 import df_results
 
@@ -21,46 +21,68 @@ import matplotlib.dates as md
 
 
 #Plot style
-plt.style.use('seaborn') ## 'fivethirtyeight' 'seaborn' etc
+plt.style.use() ## 'fivethirtyeight' 'seaborn' etc
 
-#Defingin x axes
-x = df_results.index
 
 
 ## Subplot example
-fig, (ax1,ax2) = plt.subplots(nrows=2,ncols=1,sharex=True) 
-#nrows and ncols is how to show the plots in the frame. Sharex=True(both plots share xakis)
-
-#ax1 & ax2 two subplots in fig
-ax1.plot(x, df_results['DA'], color='b',linestyle = '--', label ='Day Ahead Price')
-ax2.plot(x, df_results['P_PEM'],color='red', label ='PEM Production')
-#ax2.plot(x, df_results['P_PV'], label ='PV Production')
-
-ax1.legend()
-ax1.set_title('MONS')
-ax1.set_xlabel('Time')
-ax1.set_ylabel('EUR/MWh')
+def SubPlot1(Results):
 
 
-ax2.legend(loc='upper left')
-ax2.set_ylim([0, 70])
-ax2.set_title('TONS')
-ax2.set_xlabel('Time')
-ax2.set_ylabel('MW')
-ax2.tick_params(labelrotation=45)
-
-ax3 = ax2.twinx()
-ax3.plot(x, df_results['P_PV'],color='g', label ='PV Production')
-
-ax3.legend()
-ax3.set_ylim([0, 300])
-#ax3.set_title('TONS')
-#ax3.set_xlabel('Time')
-ax3.set_ylabel('MW')
+    #Defingin x axes
+    x = Results.index
 
 
-plt.tight_layout()
-plt.show()
+    ## Subplot example
+    fig, (ax1,ax2) = plt.subplots(nrows=2,ncols=1,sharex=True) 
+    #nrows and ncols is how to show the plots in the frame. Sharex=True(both plots share xakis)
+
+    #ax1 & ax2 two subplots in fig
+    ax1.plot(x, Results['DA'], color='b',linestyle = '--', label ='Day Ahead Price')
+    ax2.plot(x, Results['P_PEM'],color='red', label ='PEM Production')
+    #ax2.plot(x, df_results['P_PV'], label ='PV Production')
+
+    ax1.legend()
+    ax1.set_title('MONS')
+    ax1.set_xlabel('Time')
+    ax1.set_ylabel('EUR/MWh')
+
+
+    ax2.legend(loc='upper left')
+    ax2.set_ylim([0, 70])
+    #ax2.set_title('TONS')
+    ax2.set_xlabel('Time')
+    ax2.set_ylabel('MW')
+    ax2.tick_params(labelrotation=45)
+
+    ax3 = ax2.twinx()
+    ax3.plot(x, Results['P_PV'],color='g', label ='PV Production')
+
+    ax3.legend()
+    ax3.set_ylim([0, 300])
+    #ax3.set_title('TONS')
+    #ax3.set_xlabel('Time')
+    ax3.set_ylabel('MW')
+
+
+    plt.tight_layout()
+    ax1.grid()
+    plt.show()
+
+SubPlot1(df_results)
+
+##Two line plot
+x = df_results.index
+
+fig, ax = plt.subplots()
+
+ax.plot(x, df_results['P_PEM'], color='b',linestyle = '--', label ='PEM')
+
+ax.plot(x, df_results['P_sRaw'], color='b',linestyle = '--', label ='Raw Storage')
+
+
+
+
 
 
 
