@@ -76,6 +76,9 @@ DA = df_DKDA_raw2020['SpotPriceEUR,,'].tolist()
 DA = dict(zip(np.arange(1,len(DA)+1),DA))
 #print(DA,Start_date,End_date)
 
+#Getting time range
+DateRange = df_DKDA_raw2020['HourDK']
+
 
 
 
@@ -85,7 +88,7 @@ df_FCRA2020_raw = pd.read_csv('2020 - ANONYM_CAPACITY_BIDS_FCR.csv',sep=',')
 df_FCRD2020_raw = pd.read_csv('2020 - DEMAND_CAPACITY_FCR.csv',sep=',')
 df_FCRR2020_raw = pd.read_csv('2020 - RESULT_CAPACITY_FCR.csv',sep=',')
 
-df_FCRA2021_raw = pd.read_csv('C:2021 - ANONYM_CAPACITY_BIDS_FCR.csv',sep=',')
+df_FCRA2021_raw = pd.read_csv('2021 - ANONYM_CAPACITY_BIDS_FCR.csv',sep=',')
 df_FCRD2021_raw = pd.read_csv('2021 - DEMAND_CAPACITY_FCR.csv',sep=',')
 df_FCRR2021_raw = pd.read_csv('2021 - RESULT_CAPACITY_FCR.csv',sep=',')
 
