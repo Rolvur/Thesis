@@ -1,3 +1,4 @@
+from mmap import MAP_POPULATE
 import pyomo.environ as pe
 import pyomo.opt as po
 import pandas as pd 
@@ -9,7 +10,7 @@ from Data_process import P_PV_max, DA, Demand, c_aFRR_up, c_aFRR_down, c_mFRR_up
 #____________________________________________
 
 
-solver = po.SolverFactory('gurobi')
+solver = po.SolverFactory('glpk')
 model = pe.ConcreteModel()
 
 #set t in T
@@ -219,6 +220,7 @@ P_sRaw = [model.s_raw[i].value for i in model.s_raw]
 P_sPu = [model.s_Pu[i].value for i in model.s_Pu]  
 P_PV = [model.p_PV[i].value for i in model.p_PV]  
 m_ri = [model.m_Ri[i].value for i in model.m_Ri]  
+m_pu = [model.m_Pu[i].value for i in model.m_Pu]  
 
 
 #Creating result DataFrame
@@ -228,11 +230,11 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'P_sPu' : P_sPu,
                           'P_PV' : P_PV,
                           'Raw_In' : m_ri,
+                          'Pure_In': m_pu,
                           'DA' : list(DA.values()),
-                          'Demand' : list(Demand)}, index=DateRange,
+                          'Demand' : list(Demand.values())}, index=DateRange,
 
-                          
-)
+                          )
 
 
 #for i in model.p_pem:
