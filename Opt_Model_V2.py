@@ -1,10 +1,9 @@
+#V1 -> V2: Include reserve products in optimization
 import pyomo.environ as pe
 import pyomo.opt as po
 import pandas as pd 
 from Opt_Constants import *
-
-
-from Data_process import P_PV_max, DA, Demand, c_aFRR_up, c_aFRR_down, c_mFRR_up, DateRange
+from Data_process import P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, DateRange
 
 #____________________________________________
 
@@ -21,6 +20,7 @@ model.T = pe.RangeSet(1,T)
 model.P_PV_max = pe.Param(model.T, initialize=P_PV_max)
 model.DA = pe.Param(model.T, initialize=DA)
 model.m_demand = pe.Param(model.T, initialize = Demand)
+model.c_FCR = pe.Param(model.T, initialize = c_FCR)
 
 model.P_pem_cap = P_pem_cap 
 model.P_pem_min = P_pem_min
@@ -38,6 +38,7 @@ model.ramp_pem = ramp_pem
 model.ramp_com = ramp_com
 model.P_PV_cap = P_PV_cap
 
+
 #defining variables
 model.p_grid = pe.Var(model.T, domain=pe.Reals)
 model.p_PV = pe.Var(model.T, domain=pe.Reals)
@@ -50,8 +51,10 @@ model.m_Ro = pe.Var(model.T, domain=pe.Reals)
 model.m_Pu = pe.Var(model.T, domain=pe.Reals)
 model.s_raw = pe.Var(model.T, domain=pe.Reals)
 model.s_Pu = pe.Var(model.T, domain=pe.Reals)
-
-expr = sum(model.DA[t]*model.p_grid[t] for t in model.T)
+model.zFCR = pe.Var(model.T, domain = pe.Binary) #Defining the first binary decision variable
+model.R_FCR =pe.Var(model.T, domain = pe.Reals) #Defining the variable of FCR reserve capacity
+ 
+expr = sum(model.DA[t]*model.p_grid[t] + model.c_FCR[t]*model.R_FCR[t] for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 
 #creating a set of constraints
@@ -177,9 +180,32 @@ for t in model.T:
 #    if t >= 2:
 #        model.c18_2.add(model.m_H2[t] - model.m_H2[t-1] <= model.ramp_com * model.m_H2_max)
 
+model.c19_1 = pe.ConstraintList()
+for t in model.T:
+  model.c19_1.add(model.R_FCR[t] >= model.zFCR[t])
+
+model.c19_2 = pe.ConstraintList()
+bigM = 1000 
+for t in model.T:
+  model.c19_2.add(model.R_FCR[t] <= bigM*model.zFCR[t])
+
+model.c19_3 = pe.ConstraintList()
+for t in model.T:
+  model.c19_3.add(model.R_FCR[t] <= R_FCR_max)
+
+# grid constraints taking reserves into account
+model.c20_1 = pe.ConstraintList()
+for t in model.T:
+  model.c20_1.add(model.P_grid_cap + model.p_grid[t]  >= model.R_FCR[t])
+model.c20_2 = pe.ConstraintList()
+for t in model.T:
+  model.c20_2.add(model.P_grid_cap - model.p_grid[t]  >= model.R_FCR[t])
 
 
 
+
+
+###############SOLVE THE MODEL########################
 model.dual = pe.Suffix(direction=pe.Suffix.IMPORT)
 results = solver.solve(model)
 print(results)
@@ -211,6 +237,10 @@ for i in model.s_raw:
   print(str(model.s_raw[i]), model.s_raw[i].value)
 for i in model.s_Pu:
   print(str(model.s_Pu[i]), model.s_Pu[i].value)
+
+
+for i in model.R_FCR:
+  print(str(model.R_FCR[i]), model.R_FCR[i].value)
 
 
 #Converting Pyomo resulst to list
