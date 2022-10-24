@@ -212,11 +212,13 @@ for i in model.s_raw:
 for i in model.s_Pu:
   print(str(model.s_Pu[i]), model.s_Pu[i].value)
 
+
 #Converting Pyomo resulst to list
 P_PEM = [model.p_pem[i].value for i in model.p_pem]  
 P_sRaw = [model.s_raw[i].value for i in model.s_raw]  
 P_sPu = [model.s_Pu[i].value for i in model.s_Pu]  
 P_PV = [model.p_PV[i].value for i in model.p_PV]  
+m_ri = [model.m_Ri[i].value for i in model.m_Ri]  
 
 
 #Creating result DataFrame
@@ -225,10 +227,13 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'P_sRaw': P_sRaw,
                           'P_sPu' : P_sPu,
                           'P_PV' : P_PV,
-                          'DA' : list(DA.values())}, index=DateRange,
+                          'Raw_In' : m_ri,
+                          'DA' : list(DA.values()),
+                          'Demand' : list(Demand)}, index=DateRange,
+
+                          
 )
 
-#CutPrice = (df_results['P_PEM'] >= Start_date) & (df_DKDA_raw['HourDK']  <= End_date)
 
 #for i in model.p_pem:
 #  print(str('P_com'), model.P_com)

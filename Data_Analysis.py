@@ -6,7 +6,9 @@ from Data_process import DA
 #sys.path.append('C:/Users/Rolvur Reinert/Desktop/Data/Python_data')
 #from Data_process import df_solar_prod, df_DKDA_raw, df_FIafrr2020_raw, df_SEafrr2020_raw
 from Opt_Model_V1 import df_results
-
+from Opt_Constants import P_pem_min,P_pem_cap
+import datetime
+import scipy
 import pandas as pd 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -20,9 +22,35 @@ import matplotlib.dates as md
 ####################### Plot Model Results #######################
 
 
-#Plot style
+""" #Plot style
 plt.style.use() ## 'fivethirtyeight' 'seaborn' etc
 
+#Getting daily cutting price i.e. when P_PEM is not producing max or min 
+Cut_Price = df_results[(df_results['P_PEM'] > P_pem_min) & (df_results['P_PEM']  < P_pem_cap)]
+
+#Removing time from dates
+Cut_Price['New Dates'] = Cut_Price.index 
+Cut_Price['New Dates'].dt.date
+
+
+#a = str(Cut_Price['New Dates'].dt.date[0])
+
+Cut_Price.iloc[0,5] = datetime.datetime.strptime(str(Cut_Price.iloc[0,5]), '%Y-%m-%d %H:%M:%S')
+Cut_Price.iloc[0,5] = Cut_Price.iloc[0,5].strftime('%Y-%m-%d')
+
+#Converting time to datetime
+for i in range(0,len(Cut_Price['New Dates'])):
+    Cut_Price.iloc[0,5] = datetime.datetime.strptime(str(Cut_Price.iloc[0,5]), '%Y-%m-%d %H:%M:%S')
+    Cut_Price.iloc[0,5] = Cut_Price.iloc[0,5].strftime('%Y-%m-%d')
+    
+
+
+
+
+Cut_Price['time'] = df_solar_prod['time'].apply(pd.to_datetime)
+
+
+ """
 
 
 ## Subplot example
@@ -46,14 +74,14 @@ def SubPlot1(Results):
     ax1.set_title('MONS')
     ax1.set_xlabel('Time')
     ax1.set_ylabel('EUR/MWh')
-
+    
 
     ax2.legend(loc='upper left')
     ax2.set_ylim([0, 70])
     #ax2.set_title('TONS')
     ax2.set_xlabel('Time')
     ax2.set_ylabel('MW')
-    ax2.tick_params(labelrotation=45)
+    ax2.tick_params(axis='x', rotation=45)
 
     ax3 = ax2.twinx()
     ax3.plot(x, Results['P_PV'],color='g', label ='PV Production')
@@ -66,20 +94,43 @@ def SubPlot1(Results):
 
 
     plt.tight_layout()
-    ax1.grid()
+    #ax1.grid()
     plt.show()
 
 SubPlot1(df_results)
 
-##Two line plot
+
+
+##Two line plot also subplots
 x = df_results.index
 
-fig, ax = plt.subplots()
+fig, (ax1,ax3) = plt.subplots(nrows=2,ncols=1)
 
-ax.plot(x, df_results['P_PEM'], color='b',linestyle = '--', label ='PEM')
+#1st Subplot 
+ax1 = ax2.twinx()
 
-ax.plot(x, df_results['P_sRaw'], color='b',linestyle = '--', label ='Raw Storage')
 
+
+
+#2nd Subplot
+ax4 = ax3.twinx()
+
+
+d = scipy.zeros(len(x))
+ax3.fill_between(x, df_results['P_sRaw'], where=df_results['P_sRaw']>=d, interpolate=True, color='lightgrey',label='Raw Storage')
+ax3.legend()
+ax3.tick_params(axis='x', rotation=45)
+ax3.set_ylabel('kg')
+
+ax4.plot(x, df_results['Raw_In'], color='red',linestyle = 'solid', label ='Raw_In')
+ax4.set_ylabel('kg/s')
+
+ax4.legend()
+
+
+plt.tight_layout()
+
+plt.show()
 
 
 

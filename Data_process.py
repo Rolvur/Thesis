@@ -153,7 +153,7 @@ for j in range(0,int(len(df_FCR['DATE_FROM'])/24)):
 for i in range(0,len(df_FCR['DATE_FROM'])):
     df_FCR.iloc[i,0] = datetime.datetime.strptime(df_FCR.iloc[i,0], '%d/%m/%Y %H:%M')
     df_FCR.iloc[i,0] = df_FCR.iloc[i,0].strftime('%Y-%m-%d - %H:%M')
- 
+
 #Input for model
 TimeRange_FCR = (df_FCR['DATE_FROM'] >= Start_date) & (df_FCR['DATE_FROM']  <= End_date)
 df_FCR = df_FCR[TimeRange_FCR]
