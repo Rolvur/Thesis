@@ -265,8 +265,6 @@ c_aFRR_down = dict(zip(np.arange(1,len(list_aFRR_down)+1),list_aFRR_down))
 
 Demand = list(0 for i in range(0,len(PV)))
 
-
-
 if Demand_pattern == 'Hourly':
     for i in range(0,len(Demand),1):
         Demand[i] = k_d
@@ -276,7 +274,7 @@ if Demand_pattern == 'Daily':
         Demand[i+23] = k_d*24
         
 if Demand_pattern == 'Weekly':
-    for i in range(0,int(len(PV)/(24*7))):
+    for i in range(1,1+int(len(PV)/(24*7))):
         Demand[i*24*7-1] = k_d*24*7
 
     dw = len(PV)/(24*7) - int(len(PV)/(24*7))
