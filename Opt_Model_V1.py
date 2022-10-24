@@ -4,12 +4,12 @@ import pandas as pd
 from Opt_Constants import *
 
 
-from Data_process import P_PV_max, DA, Demand, c_aFRR_up, DateRange
+from Data_process import P_PV_max, DA, Demand, c_aFRR_up, c_aFRR_down, c_mFRR_up, DateRange
 
 #____________________________________________
 
 
-solver = po.SolverFactory('glpk')
+solver = po.SolverFactory('gurobi')
 model = pe.ConcreteModel()
 
 #set t in T
@@ -144,28 +144,28 @@ model.c13_2 = pe.Constraint(expr=0.5*model.S_raw_max == model.s_raw[T])
 
 model.c14_1 = pe.ConstraintList()
 for t in model.T:
-    model.c14_1.add(0 <= model.s_Pu[t])
+  model.c14_1.add(0 <= model.s_Pu[t])
 
-#model.c14_2 = pe.ConstraintList()
-#for t in model.T:
-#   model.c14_2.add(model.s_Pu[t] <= model.S_Pu_max)
+model.c14_2 = pe.ConstraintList()
+for t in model.T:
+  model.c14_2.add(model.s_Pu[t] <= model.S_Pu_max)
 
 model.c15 = pe.Constraint(expr = model.s_Pu[1] == model.m_Pu[1])
 
 model.c16 = pe.ConstraintList()
 for t in model.T:
-    if t >= 2:
-        model.c16.add(model.s_Pu[t] == model.s_Pu[t-1] + model.m_Pu[t] - model.m_demand[t])
+  if t >= 2:
+    model.c16.add(model.s_Pu[t] == model.s_Pu[t-1] + model.m_Pu[t] - model.m_demand[t])
 
-model.c17_1 = pe.ConstraintList()
-for t in model.T:
-    if t >= 2:
-        model.c17_1.add(-model.ramp_pem * model.P_pem_cap <= model.p_pem[t] - model.p_pem[t-1])
+#model.c17_1 = pe.ConstraintList()
+#for t in model.T:
+#  if t >= 2:
+#    model.c17_1.add(-model.ramp_pem * model.P_pem_cap <= model.p_pem[t] - model.p_pem[t-1])
 
-model.c17_2 = pe.ConstraintList()
-for t in model.T:
-    if t >= 2:
-        model.c17_2.add(model.p_pem[t] - model.p_pem[t-1] <= model.ramp_pem * model.P_pem_cap)
+#model.c17_2 = pe.ConstraintList()
+#for t in model.T:
+#  if t >= 2:
+#    model.c17_2.add(model.p_pem[t] - model.p_pem[t-1] <= model.ramp_pem * model.P_pem_cap)
 
 #model.c18_1 = pe.ConstraintList()
 #for t in model.T:
@@ -204,9 +204,9 @@ for i in model.m_H2O:
   print(str(model.m_H2O[i]), model.m_H2O[i].value)
 for i in model.m_Pu:
   print(str(model.m_Pu[i]), model.m_Pu[i].value)
+for i in model.m_Pu:
+  print(str(model.m_Pu[i]), model.m_Pu[i].value)
 
-#for i in model.m_demand:
- # print(str(model.m_demand[i]), model.m_demand[i].value)
 for i in model.s_raw:
   print(str(model.s_raw[i]), model.s_raw[i].value)
 for i in model.s_Pu:
@@ -233,8 +233,6 @@ df_results = pd.DataFrame({#Col name : Value(list)
 
                           
 )
-
-
 
 
 #for i in model.p_pem:

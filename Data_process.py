@@ -165,9 +165,43 @@ c_FCR = dict(zip(np.arange(1,len(list_FCR)+1),list_FCR))
 ##################### mFRR #######################
 
 df_DKmFRR_raw = pd.read_csv('MfrrReservesDK1.csv',sep=';', decimal=',')
+# HourUTC
+# HourDK
+# mFRR_DownExpected
+# mFRR_DownPurchased
+# mFRR_DownPriceDKK
+# mFRR_DownPriceEUR
+# mFRR_DownExpectedXtra
+# mFRR_DownPurchasedXtra
+# mFRR_DownPriceXtraDKK
+# mFRR_DownPriceXtraEUR
+# mFRR_UpExpected
+# mFRR_UpPurchased
+# mFRR_UpPriceDKK
+# mFRR_UpPriceEUR
+# mFRR_UpExpectedXtra
+# mFRR_UpPurchasedXtra
+# mFRR_UpPriceXtraDKK
+# mFRR_UpPriceXtraEUR
 
 #Converting to datetime
 df_DKmFRR_raw[['HourUTC','HourDK']] =  df_DKmFRR_raw[['HourUTC','HourDK']].apply(pd.to_datetime)
+df_mFRR = df_DKmFRR_raw.iloc[0:24095,:]
+df_mFRR = df_mFRR[::-1]
+sum(df_mFRR['mFRR_UpPriceEUR'])
+
+#df_mFRR['mFRR_UpPriceEUR'].isnull().sum()
+#df_mFRR[df_mFRR['mFRR_UpPriceEUR'].isnull()]
+
+TimeRange_mFRR = (df_mFRR['HourDK'] >= Start_date) & (df_mFRR['HourDK']  <= End_date)
+df_mFRR = df_mFRR[TimeRange_mFRR]
+#convert to list
+list_mFRR_up = df_mFRR['mFRR_UpPriceDKK'].tolist() #Convert from pandas data series to list
+
+#convert to dict
+c_mFRR_up = dict(zip(np.arange(1,len(list_mFRR_up)+1),list_mFRR_up))
+
+
 
 
 ##################### aFRR #######################
@@ -208,14 +242,17 @@ df_SEafrr2021_raw['Period'] =  df_SEafrr2021_raw['Period'].apply(pd.to_datetime)
 df_SEafrr2021_raw['Publiceringstidpunkt'] =  df_SEafrr2021_raw['Publiceringstidpunkt'].apply(pd.to_datetime)
 
 #combine the two
-df_aFRR_up = pd.concat([df_SEafrr2020_raw, df_SEafrr2021_raw], ignore_index=True, sort=False)
+df_aFRR = pd.concat([df_SEafrr2020_raw, df_SEafrr2021_raw], ignore_index=True, sort=False)
+#reduce data point to the chosen time period
+TimeRange_aFRR = (df_aFRR['Period'] >= Start_date) & (df_aFRR['Period']  <= End_date)
+df_aFRR = df_aFRR[TimeRange_aFRR]
+#convert to list
+list_aFRR_up = df_aFRR['aFRR Upp Pris (EUR/MW)'].tolist() #Convert from pandas data series to list
+list_aFRR_down = df_aFRR['aFRR Ned Pris (EUR/MW)'].tolist() #Convert from pandas data series to list
 
-
-TimeRange_aFRR_up = (df_aFRR_up['Period'] >= Start_date) & (df_aFRR_up['Period']  <= End_date)
-df_aFRR_up = df_aFRR_up[TimeRange_aFRR_up]
-
-list_aFRR_up = df_aFRR_up['aFRR Upp Pris (EUR/MW)'].tolist() #Convert from pandas data series to list
+#convert to dict
 c_aFRR_up = dict(zip(np.arange(1,len(list_aFRR_up)+1),list_aFRR_up))
+c_aFRR_down = dict(zip(np.arange(1,len(list_aFRR_down)+1),list_aFRR_down))
 
 
 
@@ -228,8 +265,6 @@ c_aFRR_up = dict(zip(np.arange(1,len(list_aFRR_up)+1),list_aFRR_up))
 
 Demand = list(0 for i in range(0,len(PV)))
 
-
-
 if Demand_pattern == 'Hourly':
     for i in range(0,len(Demand),1):
         Demand[i] = k_d
@@ -239,7 +274,7 @@ if Demand_pattern == 'Daily':
         Demand[i+23] = k_d*24
         
 if Demand_pattern == 'Weekly':
-    for i in range(0,int(len(PV)/(24*7))):
+    for i in range(1,1+int(len(PV)/(24*7))):
         Demand[i*24*7-1] = k_d*24*7
 
     dw = len(PV)/(24*7) - int(len(PV)/(24*7))
