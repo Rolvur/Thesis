@@ -117,7 +117,7 @@ df_FCR = df_FCR.loc[df_FCR.index.repeat(df_FCR.BLOCK_LENGTH)].reset_index(drop=T
 #for i in range (0,len(df_FCR['DATE_FROM'])-24):
 #    if df_FCR['DATE_FROM'][i] == df_FCR['DATE_FROM'][i+24]:
 #        print(i) 
-""" 
+
 #writing hour to all data
 for j in range(0,int(len(df_FCR['DATE_FROM'])/24)):
     i = j*24
@@ -153,14 +153,14 @@ for j in range(0,int(len(df_FCR['DATE_FROM'])/24)):
 for i in range(0,len(df_FCR['DATE_FROM'])):
     df_FCR.iloc[i,0] = datetime.datetime.strptime(df_FCR.iloc[i,0], '%d/%m/%Y %H:%M')
     df_FCR.iloc[i,0] = df_FCR.iloc[i,0].strftime('%Y-%m-%d - %H:%M')
- """
-""" #Input for model
+
+#Input for model
 TimeRange_FCR = (df_FCR['DATE_FROM'] >= Start_date) & (df_FCR['DATE_FROM']  <= End_date)
 df_FCR = df_FCR[TimeRange_FCR]
 
 list_FCR = df_FCR['DK_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() #Convert from pandas data series to list
 c_FCR = dict(zip(np.arange(1,len(list_FCR)+1),list_FCR))
- """
+
 
 ##################### mFRR #######################
 
