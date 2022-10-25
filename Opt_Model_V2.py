@@ -23,6 +23,8 @@ model.DA = pe.Param(model.T, initialize=DA)
 model.m_demand = pe.Param(model.T, initialize = Demand)
 model.c_FCR = pe.Param(model.T, initialize = c_FCR)
 model.c_aFRR_up = pe.Param(model.T, initialize = c_aFRR_up)
+model.c_aFRR_down = pe.Param(model.T, initialize = c_aFRR_down)
+
 
 model.P_pem_cap = P_pem_cap 
 model.P_pem_min = P_pem_min
@@ -61,10 +63,13 @@ model.r_FCR =pe.Var(model.T, domain = pe.Reals) #Defining the variable of FCR re
 model.rx_aFRR_up = pe.Var(model.T, domain = pe.Integers) #ancillary integer to realize the bid resolution
 model.r_aFRR_up = pe.Var(model.T, domain = pe.Reals)
 model.zaFRRup = pe.Var(model.T, domain = pe.Binary) #binary decision variable
+model.rx_aFRR_down = pe.Var(model.T, domain = pe.Integers) #ancillary integer to realize the bid resolution
+model.r_aFRR_down = pe.Var(model.T, domain = pe.Reals)
+model.zaFRRdown = pe.Var(model.T, domain = pe.Binary) #binary decision variable
 
 
 #expr = sum(model.DA[t]*model.p_grid[t] for t in model.T)
-expr = sum(model.DA[t]*model.p_grid[t] - (model.c_FCR[t]*model.r_FCR[t] + model.c_aFRR_up[t]*model.r_aFRR_up[t]) for t in model.T)
+expr = sum(model.DA[t]*model.p_grid[t] - (model.c_FCR[t]*model.r_FCR[t] + model.c_aFRR_up[t]*model.r_aFRR_up[t] + model.c_aFRR_down[t]*model.r_aFRR_down[t]) for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 
 #creating a set of constraints
@@ -209,15 +214,15 @@ for t in model.T:
   model.c20_1.add(model.P_grid_cap + model.p_grid[t]  >= model.r_FCR[t] + model.r_aFRR_up[t])
 model.c20_2 = pe.ConstraintList()
 for t in model.T:
-  model.c20_2.add(model.P_grid_cap - model.p_grid[t]  >= model.r_FCR[t])
+  model.c20_2.add(model.P_grid_cap - model.p_grid[t]  >= model.r_FCR[t] + model.r_aFRR_down[t])
 
 model.c21_1 = pe.ConstraintList()
 for t in model.T:
-  model.c21_1.add(model.P_pem_cap - model.p_pem[t]  >= model.r_FCR[t] + model.r_aFRR_up[t])
+  model.c21_1.add(model.P_pem_cap - model.p_pem[t]  >= model.r_FCR[t] + model.r_aFRR_down[t])
 
 model.c21_2 = pe.ConstraintList()
 for t in model.T:
-  model.c21_2.add(model.p_pem[t] - model.P_pem_min >= model.r_FCR[t])
+  model.c21_2.add(model.p_pem[t] - model.P_pem_min >= model.r_FCR[t] + model.r_aFRR_up[t])
 
 model.c22_1 = pe.ConstraintList()
 for t in model.T:
@@ -236,6 +241,22 @@ model.c22_4 = pe.ConstraintList()
 for t in model.T:
   model.c22_4.add(model.r_aFRR_up[t] <= model.R_aFRR_max)
 
+model.c23_1 = pe.ConstraintList()
+for t in model.T:
+  model.c23_1.add(model.rx_aFRR_down[t] >= (model.R_aFRR_min/model.bidres_aFRR)*model.zaFRRdown[t])
+
+model.c23_2 = pe.ConstraintList()
+bigM = 1000
+for t in model.T:
+  model.c23_2.add(model.rx_aFRR_down[t] <= bigM*model.zaFRRdown[t])
+
+model.c23_3 = pe.ConstraintList()
+for t in model.T:
+  model.c23_3.add(model.r_aFRR_down[t] == model.rx_aFRR_down[t]*(model.bidres_aFRR/model.R_aFRR_min))
+
+model.c23_4 = pe.ConstraintList()
+for t in model.T:
+  model.c23_4.add(model.r_aFRR_down[t] <= model.R_aFRR_max)
 
 
 
@@ -260,10 +281,14 @@ for i in model.r_aFRR_up:
   print(str(model.r_aFRR_up[i]), model.r_aFRR_up[i].value)
 for i in model.zaFRRup:
   print(str(model.zaFRRup[i]), model.zaFRRup[i].value)
+for i in model.r_aFRR_down:
+  print(str(model.r_aFRR_down[i]), model.r_aFRR_down[i].value)
+for i in model.zaFRRdown:
+  print(str(model.zaFRRdown[i]), model.zaFRRdown[i].value)
 
 
-for i in model.m_H2:
-  print(str(model.m_H2[i]), model.m_H2[i].value)
+#for i in model.m_H2:
+#  print(str(model.m_H2[i]), model.m_H2[i].value)
 #for i in model.m_CO2:
 #  print(str(model.m_CO2[i]), model.m_CO2[i].value)
 #for i in model.m_Ri:
