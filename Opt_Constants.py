@@ -1,7 +1,7 @@
 #______________________CONSTANTS
 P_pem_cap = 52.5 # MW capacity 
 P_pem_min = 0.05*P_pem_cap
-P_com = 3 #MW
+P_com = 4.5 #MW
 P_H2O = 0.5 #MW
 P_grid_cap = 238 #MW
 P_PV_cap = 252 # Check again
