@@ -279,76 +279,78 @@ for t in model.T:
 
 
 ###############SOLVE THE MODEL########################
-model.dual = pe.Suffix(direction=pe.Suffix.IMPORT)
-results = solver.solve(model)
-print(results)
 
+#model.dual = pe.Suffix(direction=pe.Suffix.IMPORT)
+instance = model.create_instance()
+results = solver.solve(instance)
+print(results)
+instance.display()
 
 print("Print values for each variable explicitly")
-for i in model.p_grid:
-  print(str(model.p_grid[i]), model.p_grid[i].value)
-#for i in model.p_PV:
-#  print(str(model.p_PV[i]), model.p_PV[i].value)
-for i in model.p_pem:
-  print(str(model.p_pem[i]), model.p_pem[i].value)
-for i in model.r_FCR:
-  print(str(model.r_FCR[i]), model.r_FCR[i].value)
-for i in model.rx_aFRR_up:
-  print(str(model.rx_aFRR_up[i]), model.rx_aFRR_up[i].value)
-for i in model.r_aFRR_up:
-  print(str(model.r_aFRR_up[i]), model.r_aFRR_up[i].value)
-for i in model.zaFRRup:
-  print(str(model.zaFRRup[i]), model.zaFRRup[i].value)
-for i in model.r_aFRR_down:
-  print(str(model.r_aFRR_down[i]), model.r_aFRR_down[i].value)
-for i in model.zaFRRdown:
-  print(str(model.zaFRRdown[i]), model.zaFRRdown[i].value)
-for i in model.r_mFRR_up:
-  print(str(model.r_mFRR_up[i]), model.r_mFRR_up[i].value)
-for i in model.zmFRRup:
-  print(str(model.zmFRRup[i]), model.zmFRRup[i].value)
+for i in instance.p_grid:
+  print(str(instance.p_grid[i]), instance.p_grid[i].value)
+#for i in instance.p_PV:
+#  print(str(instance.p_PV[i]), instance.p_PV[i].value)
+for i in instance.p_pem:
+  print(str(instance.p_pem[i]), instance.p_pem[i].value)
+for i in instance.r_FCR:
+  print(str(instance.r_FCR[i]), instance.r_FCR[i].value)
+for i in instance.rx_aFRR_up:
+  print(str(instance.rx_aFRR_up[i]), instance.rx_aFRR_up[i].value)
+for i in instance.r_aFRR_up:
+  print(str(instance.r_aFRR_up[i]), instance.r_aFRR_up[i].value)
+for i in instance.zaFRRup:
+  print(str(instance.zaFRRup[i]), instance.zaFRRup[i].value)
+for i in instance.r_aFRR_down:
+  print(str(instance.r_aFRR_down[i]), instance.r_aFRR_down[i].value)
+for i in instance.zaFRRdown:
+  print(str(instance.zaFRRdown[i]), instance.zaFRRdown[i].value)
+for i in instance.r_mFRR_up:
+  print(str(instance.r_mFRR_up[i]), instance.r_mFRR_up[i].value)
+for i in instance.zmFRRup:
+  print(str(instance.zmFRRup[i]), instance.zmFRRup[i].value)
 
 
-#for i in model.m_H2:
-#  print(str(model.m_H2[i]), model.m_H2[i].value)
-#for i in model.m_CO2:
-#  print(str(model.m_CO2[i]), model.m_CO2[i].value)
-#for i in model.m_Ri:
-#  print(str(model.m_Ri[i]), model.m_Ri[i].value)
-#for i in model.m_Ro:
-#  print(str(model.m_Ro[i]), model.m_Ro[i].value)
-#for i in model.m_H2O:
-#  print(str(model.m_H2O[i]), model.m_H2O[i].value)
-#for i in model.m_Pu:
-#  print(str(model.m_Pu[i]), model.m_Pu[i].value)
-#for i in model.m_Pu:
-#  print(str(model.m_Pu[i]), model.m_Pu[i].value)
+#for i in instance.m_H2:
+#  print(str(instance.m_H2[i]), instance.m_H2[i].value)
+#for i in instance.m_CO2:
+#  print(str(instance.m_CO2[i]), instance.m_CO2[i].value)
+#for i in instance.m_Ri:
+#  print(str(instance.m_Ri[i]), instance.m_Ri[i].value)
+#for i in instance.m_Ro:
+#  print(str(instance.m_Ro[i]), instance.m_Ro[i].value)
+#for i in instance.m_H2O:
+#  print(str(instance.m_H2O[i]), instance.m_H2O[i].value)
+#for i in instance.m_Pu:
+#  print(str(instance.m_Pu[i]), instance.m_Pu[i].value)
+#for i in instance.m_Pu:
+#  print(str(instance.m_Pu[i]), instance.m_Pu[i].value)
 
-#for i in model.s_raw:
-#  print(str(model.s_raw[i]), model.s_raw[i].value)
-#for i in model.s_Pu:
-#  print(str(model.s_Pu[i]), model.s_Pu[i].value)
+#for i in instance.s_raw:
+#  print(str(instance.s_raw[i]), instance.s_raw[i].value)
+#for i in instance.s_Pu:
+#  print(str(instance.s_Pu[i]), instance.s_Pu[i].value)
 
 
-#for i in model.r_FCR:
- # print(str(model.r_FCR[i]), model.r_FCR[i].value)
+#for i in instance.r_FCR:
+ # print(str(instance.r_FCR[i]), instance.r_FCR[i].value)
 
 
 #Converting Pyomo resulst to list
-P_sRaw = [model.s_raw[i].value for i in model.s_raw]  
-P_sPu = [model.s_Pu[i].value for i in model.s_Pu]  
-P_PV = [model.p_PV[i].value for i in model.p_PV]  
-m_ri = [model.m_Ri[i].value for i in model.m_Ri]
-m_pu = [model.m_Pu[i].value for i in model.m_Pu]  
-P_PEM = [model.p_pem[i].value for i in model.p_pem]  
-R_FCR = [model.r_FCR[i].value for i in model.r_FCR]
-R_mFRRup = [model.r_mFRR_up[i].value for i in model.r_mFRR_up]
-R_aFRRup = [model.r_aFRR_up[i].value for i in model.r_aFRR_up]
-R_aFRRdown = [model.r_aFRR_down[i].value for i in model.r_aFRR_down]
+P_sRaw = [instance.s_raw[i].value for i in instance.s_raw]  
+P_sPu = [instance.s_Pu[i].value for i in instance.s_Pu]  
+P_PV = [instance.p_PV[i].value for i in instance.p_PV]  
+m_ri = [instance.m_Ri[i].value for i in instance.m_Ri]
+m_pu = [instance.m_Pu[i].value for i in instance.m_Pu]  
+P_PEM = [instance.p_pem[i].value for i in instance.p_pem]  
+R_FCR = [instance.r_FCR[i].value for i in instance.r_FCR]
+R_mFRRup = [instance.r_mFRR_up[i].value for i in instance.r_mFRR_up]
+R_aFRRup = [instance.r_aFRR_up[i].value for i in instance.r_aFRR_up]
+R_aFRRdown = [instance.r_aFRR_down[i].value for i in instance.r_aFRR_down]
 
 #Creating result DataFrame
 df_results = pd.DataFrame({#Col name : Value(list)
-                          'P_PEM' : P_PEM,
+                          'PEM' : P_PEM,
                           'FCR "up"': R_FCR, 
                           'FCR "down"': R_FCR,
                           'mFRR_up': R_mFRRup,
@@ -363,18 +365,20 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'Demand' : list(Demand.values())}, index=DateRange,
                           )
 
-for i in model.p_grid:
-  print(df_results.iloc[i-1,range(0,5)])
+for i in instance.p_grid:
+  print(df_results.iloc[i-1,range(0,6)])
 
-#for i in model.p_pem:
-#  print(str('P_com'), model.P_com)
-#for i in model.p_pem:
-#  print(str('P_H2O'), model.P_H2O)
+print(df_results.iloc[range(0,168),range(0,6)])
+
+#for i in instance.p_pem:
+#  print(str('P_com'), instance.P_com)
+#for i in instance.p_pem:
+#  print(str('P_H2O'), instance.P_H2O)
 
 
 
 
 
     
-#model.dual.display()
-#print(model.c12[1].expr)
+#instance.dual.display()
+#print(instance.c12[1].expr)
