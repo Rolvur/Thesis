@@ -7,7 +7,8 @@ from Data_process import P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_
 
 #____________________________________________
 
-
+print(DA)
+print(c_FCR)
 solver = po.SolverFactory('gurobi')
 model = pe.ConcreteModel()
 
@@ -37,7 +38,7 @@ model.m_H2_max = m_H2_max
 model.ramp_pem = ramp_pem
 model.ramp_com = ramp_com
 model.P_PV_cap = P_PV_cap
-
+model.R_FCR_max = R_FCR_max
 
 #defining variables
 model.p_grid = pe.Var(model.T, domain=pe.Reals)
@@ -52,9 +53,10 @@ model.m_Pu = pe.Var(model.T, domain=pe.Reals)
 model.s_raw = pe.Var(model.T, domain=pe.Reals)
 model.s_Pu = pe.Var(model.T, domain=pe.Reals)
 model.zFCR = pe.Var(model.T, domain = pe.Binary) #Defining the first binary decision variable
-model.R_FCR =pe.Var(model.T, domain = pe.Reals) #Defining the variable of FCR reserve capacity
+model.r_FCR =pe.Var(model.T, domain = pe.Reals) #Defining the variable of FCR reserve capacity
  
-expr = sum(model.DA[t]*model.p_grid[t] + model.c_FCR[t]*model.R_FCR[t] for t in model.T)
+#expr = sum(model.DA[t]*model.p_grid[t] for t in model.T)
+expr = sum(model.DA[t]*model.p_grid[t] - model.c_FCR[t]*model.r_FCR[t] for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 
 #creating a set of constraints
@@ -182,26 +184,32 @@ for t in model.T:
 
 model.c19_1 = pe.ConstraintList()
 for t in model.T:
-  model.c19_1.add(model.R_FCR[t] >= model.zFCR[t])
+  model.c19_1.add(model.r_FCR[t] >= model.zFCR[t])
 
 model.c19_2 = pe.ConstraintList()
 bigM = 1000 
 for t in model.T:
-  model.c19_2.add(model.R_FCR[t] <= bigM*model.zFCR[t])
+  model.c19_2.add(model.r_FCR[t] <= bigM*model.zFCR[t])
 
 model.c19_3 = pe.ConstraintList()
 for t in model.T:
-  model.c19_3.add(model.R_FCR[t] <= R_FCR_max)
+  model.c19_3.add(model.r_FCR[t] <= R_FCR_max)
 
 # grid constraints taking reserves into account
 model.c20_1 = pe.ConstraintList()
 for t in model.T:
-  model.c20_1.add(model.P_grid_cap + model.p_grid[t]  >= model.R_FCR[t])
+  model.c20_1.add(model.P_grid_cap + model.p_grid[t]  >= model.r_FCR[t])
 model.c20_2 = pe.ConstraintList()
 for t in model.T:
-  model.c20_2.add(model.P_grid_cap - model.p_grid[t]  >= model.R_FCR[t])
+  model.c20_2.add(model.P_grid_cap - model.p_grid[t]  >= model.r_FCR[t])
 
+model.c21_1 = pe.ConstraintList()
+for t in model.T:
+  model.c21_1.add(model.P_pem_cap - model.p_pem[t]  >= model.r_FCR[t])
 
+model.c21_2 = pe.ConstraintList()
+for t in model.T:
+  model.c21_2.add(model.p_pem[t] - model.P_pem_min >= model.r_FCR[t])
 
 
 
@@ -214,33 +222,38 @@ print(results)
 print("Print values for each variable explicitly")
 for i in model.p_grid:
   print(str(model.p_grid[i]), model.p_grid[i].value)
-for i in model.p_PV:
-  print(str(model.p_PV[i]), model.p_PV[i].value)
+#for i in model.p_PV:
+#  print(str(model.p_PV[i]), model.p_PV[i].value)
 for i in model.p_pem:
   print(str(model.p_pem[i]), model.p_pem[i].value)
+for i in model.r_FCR:
+  print(str(model.r_FCR[i]), model.r_FCR[i].value)
+for i in model.zFCR:
+  print(str(model.zFCR[i]), model.zFCR[i].value)
+
 for i in model.m_H2:
   print(str(model.m_H2[i]), model.m_H2[i].value)
-for i in model.m_CO2:
-  print(str(model.m_CO2[i]), model.m_CO2[i].value)
-for i in model.m_Ri:
-  print(str(model.m_Ri[i]), model.m_Ri[i].value)
-for i in model.m_Ro:
-  print(str(model.m_Ro[i]), model.m_Ro[i].value)
-for i in model.m_H2O:
-  print(str(model.m_H2O[i]), model.m_H2O[i].value)
-for i in model.m_Pu:
-  print(str(model.m_Pu[i]), model.m_Pu[i].value)
-for i in model.m_Pu:
-  print(str(model.m_Pu[i]), model.m_Pu[i].value)
+#for i in model.m_CO2:
+#  print(str(model.m_CO2[i]), model.m_CO2[i].value)
+#for i in model.m_Ri:
+#  print(str(model.m_Ri[i]), model.m_Ri[i].value)
+#for i in model.m_Ro:
+#  print(str(model.m_Ro[i]), model.m_Ro[i].value)
+#for i in model.m_H2O:
+#  print(str(model.m_H2O[i]), model.m_H2O[i].value)
+#for i in model.m_Pu:
+#  print(str(model.m_Pu[i]), model.m_Pu[i].value)
+#for i in model.m_Pu:
+#  print(str(model.m_Pu[i]), model.m_Pu[i].value)
 
-for i in model.s_raw:
-  print(str(model.s_raw[i]), model.s_raw[i].value)
-for i in model.s_Pu:
-  print(str(model.s_Pu[i]), model.s_Pu[i].value)
+#for i in model.s_raw:
+#  print(str(model.s_raw[i]), model.s_raw[i].value)
+#for i in model.s_Pu:
+#  print(str(model.s_Pu[i]), model.s_Pu[i].value)
 
 
-for i in model.R_FCR:
-  print(str(model.R_FCR[i]), model.R_FCR[i].value)
+#for i in model.r_FCR:
+ # print(str(model.r_FCR[i]), model.r_FCR[i].value)
 
 
 #Converting Pyomo resulst to list
@@ -248,8 +261,9 @@ P_PEM = [model.p_pem[i].value for i in model.p_pem]
 P_sRaw = [model.s_raw[i].value for i in model.s_raw]  
 P_sPu = [model.s_Pu[i].value for i in model.s_Pu]  
 P_PV = [model.p_PV[i].value for i in model.p_PV]  
-m_ri = [model.m_Ri[i].value for i in model.m_Ri]  
-
+m_ri = [model.m_Ri[i].value for i in model.m_Ri]
+m_pu = [model.m_Pu[i].value for i in model.m_Pu]  
+R_FCR = [model.r_FCR[i].value for i in model.r_FCR]
 
 #Creating result DataFrame
 df_results = pd.DataFrame({#Col name : Value(list)
@@ -258,11 +272,13 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'P_sPu' : P_sPu,
                           'P_PV' : P_PV,
                           'Raw_In' : m_ri,
+                          'Pure_In': m_pu,
+                          'FCR': R_FCR,
                           'DA' : list(DA.values()),
-                          'Demand' : list(Demand)}, index=DateRange,
+                          'Demand' : list(Demand.values())}, index=DateRange,
 
-                          
-)
+
+                          )
 
 
 #for i in model.p_pem:
