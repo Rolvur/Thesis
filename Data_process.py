@@ -88,7 +88,6 @@ DateRange = df_DKDA_raw2020['HourDK']
 df_FCRA2020_raw = pd.read_csv('2020 - ANONYM_CAPACITY_BIDS_FCR.csv',sep=',')
 df_FCRD2020_raw = pd.read_csv('2020 - DEMAND_CAPACITY_FCR.csv',sep=',')
 df_FCRR2020_raw = pd.read_csv('2020 - RESULT_CAPACITY_FCR.csv',sep=',')
-
 df_FCRA2021_raw = pd.read_csv('2021 - ANONYM_CAPACITY_BIDS_FCR.csv',sep=',')
 df_FCRD2021_raw = pd.read_csv('2021 - DEMAND_CAPACITY_FCR.csv',sep=',')
 df_FCRR2021_raw = pd.read_csv('2021 - RESULT_CAPACITY_FCR.csv',sep=',')
@@ -152,13 +151,17 @@ for j in range(0,int(len(df_FCR['DATE_FROM'])/24)):
 #Converting time to datetime
 for i in range(0,len(df_FCR['DATE_FROM'])):
     df_FCR.iloc[i,0] = datetime.datetime.strptime(df_FCR.iloc[i,0], '%d/%m/%Y %H:%M')
-    df_FCR.iloc[i,0] = df_FCR.iloc[i,0].strftime('%Y-%m-%d - %H:%M')
+    df_FCR.iloc[i,0] = df_FCR.iloc[i,0].strftime('%Y-%m-%d %H:%M')
 
 #Input for model
 TimeRange_FCR = (df_FCR['DATE_FROM'] >= Start_date) & (df_FCR['DATE_FROM']  <= End_date)
 df_FCR = df_FCR[TimeRange_FCR]
 
-list_FCR = df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() #Convert from pandas data series to list
+#converting string values to float
+df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'] = df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].astype(float)
+
+#Convert from pandas data series to list
+list_FCR = df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
 c_FCR = dict(zip(np.arange(1,len(list_FCR)+1),list_FCR))
 
 

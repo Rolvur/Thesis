@@ -1,7 +1,7 @@
 #______________________CONSTANTS
 P_pem_cap = 52.5 # MW capacity 
 P_pem_min = 0.05*P_pem_cap
-P_com = 3 #MW
+P_com = 4.5 #MW
 P_H2O = 0.5 #MW
 P_grid_cap = 238 #MW
 P_PV_cap = 252 # Check again
@@ -26,3 +26,10 @@ n_H2_max = mu_pem*P_pem_cap*1000*3600/(dHf0_H2O)
 m_H2_max = n_H2_max * M_H2/1000
 
 R_FCR_max = 1
+R_aFRR_max = 50 #max bid size
+R_aFRR_min = 1 #min bid size 1 MW
+R_mFRR_min = 5
+R_mFRR_max = 50
+bidres_FCR = 1
+bidres_aFRR = 0.1 #100kW bid resolution
+bidres_mFRR = 0.1
