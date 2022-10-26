@@ -4,7 +4,7 @@ import pyomo.opt as po
 import pandas as pd 
 from Opt_Constants import *
 from Data_process import P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, DateRange
-
+from IPython.display import display
 #____________________________________________
 solver = po.SolverFactory('gurobi')
 model = pe.ConcreteModel()
@@ -323,13 +323,13 @@ for i in instance.zmFRRup:
 #  print(str(instance.m_H2O[i]), instance.m_H2O[i].value)
 #for i in instance.m_Pu:
 #  print(str(instance.m_Pu[i]), instance.m_Pu[i].value)
-#for i in instance.m_Pu:
-#  print(str(instance.m_Pu[i]), instance.m_Pu[i].value)
+for i in instance.m_Pu:
+  print(str(instance.m_Pu[i]), instance.m_Pu[i].value)
 
-#for i in instance.s_raw:
-#  print(str(instance.s_raw[i]), instance.s_raw[i].value)
-#for i in instance.s_Pu:
-#  print(str(instance.s_Pu[i]), instance.s_Pu[i].value)
+for i in instance.s_raw:
+  print(str(instance.s_raw[i]), instance.s_raw[i].value)
+for i in instance.s_Pu:
+  print(str(instance.s_Pu[i]), instance.s_Pu[i].value)
 
 
 #for i in instance.r_FCR:
@@ -337,8 +337,8 @@ for i in instance.zmFRRup:
 
 
 #Converting Pyomo resulst to list
-P_sRaw = [instance.s_raw[i].value for i in instance.s_raw]  
-P_sPu = [instance.s_Pu[i].value for i in instance.s_Pu]  
+sRaw = [instance.s_raw[i].value for i in instance.s_raw]  
+sPu = [instance.s_Pu[i].value for i in instance.s_Pu]  
 P_PV = [instance.p_PV[i].value for i in instance.p_PV]  
 m_ri = [instance.m_Ri[i].value for i in instance.m_Ri]
 m_pu = [instance.m_Pu[i].value for i in instance.m_Pu]  
@@ -347,6 +347,8 @@ R_FCR = [instance.r_FCR[i].value for i in instance.r_FCR]
 R_mFRRup = [instance.r_mFRR_up[i].value for i in instance.r_mFRR_up]
 R_aFRRup = [instance.r_aFRR_up[i].value for i in instance.r_aFRR_up]
 R_aFRRdown = [instance.r_aFRR_down[i].value for i in instance.r_aFRR_down]
+#s_raw = [instance.s_raw[i].value for i in instance.s_raw]
+#s_Pu =  [instance.s_Pu[i].value for i in instance.s_Pu]
 
 #Creating result DataFrame
 df_results = pd.DataFrame({#Col name : Value(list)
@@ -356,12 +358,16 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'mFRR_up': R_mFRRup,
                           'aFRR_up': R_aFRRup,
                           'aFRR_down': R_aFRRdown,
-                          'P_sRaw': P_sRaw,
-                          'P_sPu' : P_sPu,
+                          's_raw': sRaw,
+                          's_Pu' : sPu,
                           'P_PV' : P_PV,
                           'Raw_In' : m_ri,
                           'Pure_In': m_pu,
                           'DA' : list(DA.values()),
+                          'cFCR' : list(c_FCR.values()),
+                          'caFRRup' : list(c_aFRR_up.values()),
+                          'caFRRdown' : list(c_aFRR_down.values()),
+                          'cmFRRup' : list(c_mFRR_up.values()),
                           'Demand' : list(Demand.values())}, index=DateRange,
                           )
 

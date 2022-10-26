@@ -62,13 +62,27 @@ def SubPlot1(Results):
 
 
     ## Subplot example
-    fig, (ax1,ax2) = plt.subplots(nrows=2,ncols=1,sharex=True) 
+    fig, (ax1,ax2,ax3) = plt.subplots(nrows=3,ncols=1,sharex=True) 
     #nrows and ncols is how to show the plots in the frame. Sharex=True(both plots share xakis)
 
     #ax1 & ax2 two subplots in fig
-    ax1.plot(x, Results['DA'], color='b',linestyle = '--', label ='Day Ahead Price')
-    ax2.plot(x, Results['P_PEM'],color='red', label ='PEM Production')
-    #ax2.plot(x, df_results['P_PV'], label ='PV Production')
+    ax1.plot(x, Results['DA'], color='b',linestyle = '-', label ='Day Ahead Price')
+    ax1.plot(x, Results['cFCR'], color='g',linestyle = '-', label ='FCR Reserve Price')
+    ax1.plot(x, Results['caFRRup'], color='firebrick',linestyle = '-', label ='aFRR up-reserve Price')
+    ax1.plot(x, Results['caFRRdown'], color='maroon',linestyle = '-', label ='aFRR down-reserve Price')
+    ax1.plot(x, Results['cmFRRup'], color='goldenrod',linestyle = '-', label ='mFRR up-Reserve Price')
+    
+    ax2.plot(x, Results['PEM'],color='b', label ='PEM setpoint')
+    ax2.plot(x, Results['FCR "up"'],color='g', label ='FCR "up/down"')
+    ax2.plot(x, Results['aFRR_up'],color='firebrick', label ='aFRR up-reserve')
+    ax2.plot(x, Results['aFRR_down'],color='maroon', label ='aFRR down-reserve')
+    ax2.plot(x, Results['mFRR_up'],color='goldenrod', label ='mFRR up-reserve')
+    ax2.plot(x, df_results['P_PV'], color='orange',label ='PV Production')
+
+    ax3.plot(x, df_results['s_raw'], color='dodgerblue',label ='raw methanol storage')
+    ax3.plot(x, df_results['s_Pu'], color='blueviolet',label ='pure methanol storage')
+    
+
 
     ax1.legend()
     ax1.set_title('MONS')
@@ -83,14 +97,19 @@ def SubPlot1(Results):
     ax2.set_ylabel('MW')
     ax2.tick_params(axis='x', rotation=45)
 
-    ax3 = ax2.twinx()
-    ax3.plot(x, Results['P_PV'],color='g', label ='PV Production')
-
     ax3.legend()
-    ax3.set_ylim([0, 300])
+    ax3.set_title('Storage levels')
+    ax3.set_xlabel('Time')
+    ax3.set_ylabel('kg')
+
+#    ax3 = ax2.twinx()
+#    ax3.plot(x, Results['P_PV'],color='g', label ='PV Production')
+
+#    ax3.legend()
+#    ax3.set_ylim([0, 300])
     #ax3.set_title('TONS')
     #ax3.set_xlabel('Time')
-    ax3.set_ylabel('MW')
+#    ax3.set_ylabel('MW')
 
 
     plt.tight_layout()
