@@ -13,9 +13,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
+
 #from matplotlib import pyplot as plt
 #import seaborn as sns
-#from IPython.display import display
+from IPython.display import display
 
 
 
@@ -134,6 +135,7 @@ def SubPlot2(Results):
 
 
     ax3.plot(x, Results['Raw_In'], color='forestgreen',linestyle = 'solid', label ='Raw In')
+    ax3.plot(x, Results['Raw_Out'], color='midnightblue',linestyle = '--', label ='Pure In')
     ax3.set_ylabel('kg/s')
     ax3.set_ylim([0, 11000])
     ax3.legend(loc='upper right')
@@ -145,7 +147,64 @@ SubPlot2(df_results)
 
 
 
-## Pie Chart
+
+def StackBar()
+
+######### Stacked BAR Chart ########### 
+
+
+x = df_results.index
+d = scipy.zeros(len(x))
+
+fig, ax = plt.subplots(nrows=1,ncols=1,sharex=True)
+
+FCR_up = df_results['FCR "up"']
+aFRR_up = df_results['aFRR_up']
+mFRR_up = df_results['mFRR_up']
+aFRR_down = df_results['aFRR_down']
+FCR_down = df_results['FCR "down"']
+
+
+sum_cols = ['FCR "up"','aFRR_up','mFRR_up','aFRR_down','FCR "down"']
+sum_act = df_results[sum_cols].sum(axis=1)
+PEM_deviate = P_pem_cap - sum_act - P_pem_min
+
+
+
+
+ax.bar(x, P_pem_min, color='lightsteelblue',linestyle = 'solid', label ='PEM_min',width=0.02)
+ax.bar(x, FCR_up, bottom = P_pem_min,  color='darkorange',linestyle = 'solid', label ='FCR "up"',width=0.02)
+ax.bar(x, aFRR_up, bottom = P_pem_min+FCR_up,  color='firebrick',linestyle = 'solid', label ='aFRR up',width=0.02)
+ax.bar(x, mFRR_up, bottom = P_pem_min+FCR_up+aFRR_up,  color='goldenrod',linestyle = 'solid', label ='mFRR up',width=0.02)
+ax.bar(x, PEM_deviate, bottom = P_pem_min+FCR_up+aFRR_up+mFRR_up,  color='steelblue',linestyle = 'solid', label ='PEM_Free"',width=0.02)
+ax.bar(x, aFRR_down, bottom = P_pem_min+FCR_up+aFRR_up+mFRR_up+PEM_deviate,  color='maroon',linestyle = 'solid', label ='aFRR down',width=0.02)
+ax.bar(x, FCR_down, bottom = P_pem_min+FCR_up+aFRR_up+mFRR_up+PEM_deviate+aFRR_down,  color='darkorange',linestyle = 'solid', label ='FCR "down"',width=0.02)
+
+ax.plot(x, df_results['PEM'], color='fuchsia',linestyle = '-', label ='PEM_Setpoint')
+
+ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+#ax.bar(x, df_results['FCR "up"'], color='blue',linestyle = 'solid', label ='FCR "up"',width=0.02)
+
+
+
+
+
+ax.tick_params(axis='x', rotation=45)
+ax.set_ylim([0, 57])
+ax.title('')
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+## Pie Chart Example## 
 
 
 fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
