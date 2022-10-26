@@ -341,6 +341,7 @@ sRaw = [instance.s_raw[i].value for i in instance.s_raw]
 sPu = [instance.s_Pu[i].value for i in instance.s_Pu]  
 P_PV = [instance.p_PV[i].value for i in instance.p_PV]  
 m_ri = [instance.m_Ri[i].value for i in instance.m_Ri]
+m_ro = [instance.m_Pu[i].value for i in instance.m_Pu]  
 m_pu = [instance.m_Pu[i].value for i in instance.m_Pu]  
 P_PEM = [instance.p_pem[i].value for i in instance.p_pem]  
 R_FCR = [instance.r_FCR[i].value for i in instance.r_FCR]
@@ -362,6 +363,7 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           's_Pu' : sPu,
                           'P_PV' : P_PV,
                           'Raw_In' : m_ri,
+                          'Raw_Out' : m_ro,
                           'Pure_In': m_pu,
                           'DA' : list(DA.values()),
                           'cFCR' : list(c_FCR.values()),
