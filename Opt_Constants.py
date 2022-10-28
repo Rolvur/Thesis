@@ -1,4 +1,7 @@
 #______________________CONSTANTS
+#from time import pthread_getcpuclockid
+
+
 P_pem_cap = 52.5 # MW capacity 
 P_pem_min = 0.05*P_pem_cap
 P_com = 4.5 #MW
@@ -33,3 +36,6 @@ R_mFRR_max = 50
 bidres_FCR = 1
 bidres_aFRR = 0.1 #100kW bid resolution
 bidres_mFRR = 0.1
+
+PT = 1.425
+CT = 19.22
