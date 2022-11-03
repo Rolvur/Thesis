@@ -1,58 +1,17 @@
-from cProfile import label
-import sys, os
-from tkinter import Y
 from turtle import width
-from Data_process import DA
-#sys.path.append('C:/Users/Rolvur Reinert/Desktop/Data/Python_data')
-#from Data_process import df_solar_prod, df_DKDA_raw, df_FIafrr2020_raw, df_SEafrr2020_raw
-from Opt_Model_V1 import df_results
+from Data_process import DA,df_DKDA_raw
+from Opt_Model_V2 import df_results
 from Opt_Constants import P_pem_min,P_pem_cap
-import datetime
 import scipy
 import pandas as pd 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
-
-#from matplotlib import pyplot as plt
-#import seaborn as sns
 from IPython.display import display
 
 
 
-####################### Plot Model Results #######################
-
-
-""" #Plot style
-plt.style.use() ## 'fivethirtyeight' 'seaborn' etc
-
-#Getting daily cutting price i.e. when P_PEM is not producing max or min 
-Cut_Price = df_results[(df_results['P_PEM'] > P_pem_min) & (df_results['P_PEM']  < P_pem_cap)]
-
-#Removing time from dates
-Cut_Price['New Dates'] = Cut_Price.index 
-Cut_Price['New Dates'].dt.date
-
-
-#a = str(Cut_Price['New Dates'].dt.date[0])
-
-Cut_Price.iloc[0,5] = datetime.datetime.strptime(str(Cut_Price.iloc[0,5]), '%Y-%m-%d %H:%M:%S')
-Cut_Price.iloc[0,5] = Cut_Price.iloc[0,5].strftime('%Y-%m-%d')
-
-#Converting time to datetime
-for i in range(0,len(Cut_Price['New Dates'])):
-    Cut_Price.iloc[0,5] = datetime.datetime.strptime(str(Cut_Price.iloc[0,5]), '%Y-%m-%d %H:%M:%S')
-    Cut_Price.iloc[0,5] = Cut_Price.iloc[0,5].strftime('%Y-%m-%d')
-    
-
-
-
-
-Cut_Price['time'] = df_solar_prod['time'].apply(pd.to_datetime)
-
-
- """
-
+####################### Plot Model Results (Ready to use) #######################
 
 ## Subplot example
 def SubPlot1(Results):
@@ -119,7 +78,7 @@ def SubPlot1(Results):
 
 SubPlot1(df_results)
 
-
+#Subplot of Storage level(Shaded region), stack and line
 def SubPlot2(Results):
 
     ##Two line(shaded under line) plot also subplots
@@ -130,13 +89,14 @@ def SubPlot2(Results):
 
     #1st Subplot 
     ax4 = ax1.twinx()
-    ax1.fill_between(x, Results['P_sPu'], where=Results['P_sPu']>=d, interpolate=True, color='lightblue',label='Pure Storage')
+    ax1.fill_between(x, Results['s_Pu'], where=Results['s_Pu']>=d, interpolate=True, color='lightblue',label='Pure Storage')
     ax1.bar(x, Results['Demand'], color='red',linestyle = 'solid', label ='Demand',width=0.05)
 
     #ax1.tick_params(axis='x', rotation=45)
     ax1.set_ylabel('kg')
     ax1.set_ylim([0, 90000])
     ax1.legend(loc='upper left')
+    ax1.set_title('Pure Methanol')
 
     ax4.plot(x, Results['Pure_In'], color='midnightblue',linestyle = '--', label ='Pure In')
     ax4.set_ylabel('kg/s')
@@ -146,7 +106,7 @@ def SubPlot2(Results):
     #2nd Subplot
     ax3 = ax2.twinx()
 
-    ax2.fill_between(x, Results['P_sRaw'], where=Results['P_sRaw']>=d, interpolate=True, color='lightgrey',label='Raw Storage')
+    ax2.fill_between(x, Results['s_raw'], where=Results['s_raw']>=d, interpolate=True, color='lightgrey',label='Raw Storage')
     ax2.tick_params(axis='x', rotation=45)
     ax2.set_ylabel('kg')
     ax2.set_ylim([0, 85000])
@@ -154,65 +114,93 @@ def SubPlot2(Results):
 
 
     ax3.plot(x, Results['Raw_In'], color='forestgreen',linestyle = 'solid', label ='Raw In')
-    ax3.plot(x, Results['Raw_Out'], color='midnightblue',linestyle = '--', label ='Pure In')
+    ax3.plot(x, Results['Raw_Out'], color='midnightblue',linestyle = '--', label ='Raw Out')
+    ax3.set_title('Raw Methanol')
     ax3.set_ylabel('kg/s')
     ax3.set_ylim([0, 11000])
     ax3.legend(loc='upper right')
 
     plt.tight_layout()
     plt.show()
-
 SubPlot2(df_results)
 
 
+######### Stacked BAR Chart ########### Hourly reserved capacities 
+def StackBar(Results,P_pem_cap,P_pem_min):
+    x = Results.index
+    d = scipy.zeros(len(x))
+
+    fig, ax = plt.subplots(nrows=1,ncols=1,sharex=True)
+
+    FCR_up = Results['FCR "up"']
+    aFRR_up = Results['aFRR_up']
+    mFRR_up = Results['mFRR_up']
+    aFRR_down = Results['aFRR_down']
+    FCR_down = Results['FCR "down"']
 
 
-def StackBar()
-
-######### Stacked BAR Chart ########### 
-
-
-x = df_results.index
-d = scipy.zeros(len(x))
-
-fig, ax = plt.subplots(nrows=1,ncols=1,sharex=True)
-
-FCR_up = df_results['FCR "up"']
-aFRR_up = df_results['aFRR_up']
-mFRR_up = df_results['mFRR_up']
-aFRR_down = df_results['aFRR_down']
-FCR_down = df_results['FCR "down"']
-
-
-sum_cols = ['FCR "up"','aFRR_up','mFRR_up','aFRR_down','FCR "down"']
-sum_act = df_results[sum_cols].sum(axis=1)
-PEM_deviate = P_pem_cap - sum_act - P_pem_min
+    sum_cols = ['FCR "up"','aFRR_up','mFRR_up','aFRR_down','FCR "down"']
+    sum_act = Results[sum_cols].sum(axis=1)
+    PEM_deviate = P_pem_cap - sum_act - P_pem_min
 
 
 
 
-ax.bar(x, P_pem_min, color='lightsteelblue',linestyle = 'solid', label ='PEM_min',width=0.02)
-ax.bar(x, FCR_up, bottom = P_pem_min,  color='darkorange',linestyle = 'solid', label ='FCR "up"',width=0.02)
-ax.bar(x, aFRR_up, bottom = P_pem_min+FCR_up,  color='firebrick',linestyle = 'solid', label ='aFRR up',width=0.02)
-ax.bar(x, mFRR_up, bottom = P_pem_min+FCR_up+aFRR_up,  color='goldenrod',linestyle = 'solid', label ='mFRR up',width=0.02)
-ax.bar(x, PEM_deviate, bottom = P_pem_min+FCR_up+aFRR_up+mFRR_up,  color='steelblue',linestyle = 'solid', label ='PEM_Free"',width=0.02)
-ax.bar(x, aFRR_down, bottom = P_pem_min+FCR_up+aFRR_up+mFRR_up+PEM_deviate,  color='maroon',linestyle = 'solid', label ='aFRR down',width=0.02)
-ax.bar(x, FCR_down, bottom = P_pem_min+FCR_up+aFRR_up+mFRR_up+PEM_deviate+aFRR_down,  color='darkorange',linestyle = 'solid', label ='FCR "down"',width=0.02)
+    ax.bar(x, P_pem_min, color='lightsteelblue',linestyle = 'solid', label ='PEM_min',width=0.02)
+    ax.bar(x, FCR_up, bottom = P_pem_min,  color='darkorange',linestyle = 'solid', label ='FCR "up"',width=0.02)
+    ax.bar(x, aFRR_up, bottom = P_pem_min+FCR_up,  color='firebrick',linestyle = 'solid', label ='aFRR up',width=0.02)
+    ax.bar(x, mFRR_up, bottom = P_pem_min+FCR_up+aFRR_up,  color='goldenrod',linestyle = 'solid', label ='mFRR up',width=0.02)
+    ax.bar(x, PEM_deviate, bottom = P_pem_min+FCR_up+aFRR_up+mFRR_up,  color='steelblue',linestyle = 'solid', label ='PEM_Free"',width=0.02)
+    ax.bar(x, aFRR_down, bottom = P_pem_min+FCR_up+aFRR_up+mFRR_up+PEM_deviate,  color='maroon',linestyle = 'solid', label ='aFRR down',width=0.02)
+    ax.bar(x, FCR_down, bottom = P_pem_min+FCR_up+aFRR_up+mFRR_up+PEM_deviate+aFRR_down,  color='darkorange',linestyle = 'solid', label ='FCR "down"',width=0.02)
 
-ax.plot(x, df_results['PEM'], color='fuchsia',linestyle = '-', label ='PEM_Setpoint')
+    ax.plot(x, Results['PEM'], color='fuchsia',linestyle = '-', label ='PEM_Setpoint')
 
-ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-#ax.bar(x, df_results['FCR "up"'], color='blue',linestyle = 'solid', label ='FCR "up"',width=0.02)
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    #ax.bar(x, df_results['FCR "up"'], color='blue',linestyle = 'solid', label ='FCR "up"',width=0.02)
 
 
 
 
 
-ax.tick_params(axis='x', rotation=45)
-ax.set_ylim([0, 57])
-ax.title('')
-plt.tight_layout()
-plt.show()
+    ax.tick_params(axis='x', rotation=45)
+    ax.set_ylim([0, 57])
+    #ax.title('')
+    plt.tight_layout()
+    plt.show()
+StackBar(df_results,P_pem_cap,P_pem_min)
+
+
+
+
+
+####################### Plot Data #######################
+
+#Plotting Day ahead prices
+def DayAhead(df_DKDA_raw):
+    TimeRangePlot = (df_DKDA_raw['HourDK'] >= '2020-01-01 00:00') & (df_DKDA_raw['HourDK']  <= '2021-12-31 23:59')
+
+    df_Data_plot = df_DKDA_raw[TimeRangePlot] 
+
+
+    x = df_Data_plot['HourDK']
+
+
+    fig, ax = plt.subplots(nrows=1,ncols=1)
+
+    #ax.bar(x, df_Data_plot['SpotPriceEUR,,'], color='b',linestyle = 'solid', label ='Day-Ahead Price')
+    ax.plot(x, df_Data_plot['SpotPriceEUR,,'], color='teal',linestyle = '-', label ='Day-Ahead Price', linewidth=1)
+    ax.set_ylabel('[€/MWh]')
+    #ax.set_ylim([-60, 170])
+    ax.legend(loc='upper left')
+    #ax.set_title('Day-Ahead Price')
+    ax.tick_params(axis='x', rotation=45)
+    plt.tight_layout()
+    plt.show()
+DayAhead(df_DKDA_raw)
+
+
+## Plottting FCR
 
 
 
@@ -222,64 +210,52 @@ plt.show()
 
 
 
+
+
+
+
+
+####################### Plot  NOT DONE!!! #######################
 
 ## Pie Chart Example## 
+def PieChart():
 
 
-fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
+    fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
 
-recipe = ["225 g flour",
-          "90 g sugar",
-          "1 egg",
-          "60 g butter",
-          "100 ml milk",
-          "1/2 package of yeast"]
+    recipe = ["225 g flour",
+            "90 g sugar",
+            "1 egg",
+            "60 g butter",
+            "100 ml milk",
+            "1/2 package of yeast"]
 
-data = [225, 90, 50, 60, 100, 5]
+    data = [225, 90, 50, 60, 100, 5]
 
-wedges, texts = ax.pie(data, wedgeprops=dict(width=0.5), startangle=-40)
+    wedges, texts = ax.pie(data, wedgeprops=dict(width=0.5), startangle=-40)
 
-bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
-kw = dict(arrowprops=dict(arrowstyle="-"),
-          bbox=bbox_props, zorder=0, va="center")
+    bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
+    kw = dict(arrowprops=dict(arrowstyle="-"),
+            bbox=bbox_props, zorder=0, va="center")
 
-for i, p in enumerate(wedges):
-    ang = (p.theta2 - p.theta1)/2. + p.theta1
-    y = np.sin(np.deg2rad(ang))
-    x = np.cos(np.deg2rad(ang))
-    horizontalalignment = {-1: "right", 1: "left"}[int(np.sign(x))]
-    connectionstyle = "angle,angleA=0,angleB={}".format(ang)
-    kw["arrowprops"].update({"connectionstyle": connectionstyle})
-    ax.annotate(recipe[i], xy=(x, y), xytext=(1.35*np.sign(x), 1.4*y),
-                horizontalalignment=horizontalalignment, **kw)
+    for i, p in enumerate(wedges):
+        ang = (p.theta2 - p.theta1)/2. + p.theta1
+        y = np.sin(np.deg2rad(ang))
+        x = np.cos(np.deg2rad(ang))
+        horizontalalignment = {-1: "right", 1: "left"}[int(np.sign(x))]
+        connectionstyle = "angle,angleA=0,angleB={}".format(ang)
+        kw["arrowprops"].update({"connectionstyle": connectionstyle})
+        ax.annotate(recipe[i], xy=(x, y), xytext=(1.35*np.sign(x), 1.4*y),
+                    horizontalalignment=horizontalalignment, **kw)
 
-ax.set_title("Matplotlib bakery: A donut")
+    ax.set_title("Matplotlib bakery: A donut")
 
-plt.show()
+    plt.show()
 
 
 
 
 ## Multiple bar and line plot together
-
-
-x_indexes = np.arange(len(df_results.index))
-width_x = 1
-
-x = df_results.index
-
-fig, ax = plt.subplots()
-ax.bar(x-width_x, df_results['P_PEM'],width = width_x, align = 'center')
-ax.bar(x, df_results['P_PV'], width = width_x , align = 'center')
-#ax.bar(df.index, df['C'],width = 5, align = 'center')
-#ax.bar(df.index, df['D'], width = 5 , align = 'center')
-ax.xaxis_date()
-ax.get_xaxis().set_major_locator(mdates.MonthLocator())
-ax.get_xaxis().set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
-fig.autofmt_xdate()
-plt.show()
-
-
 
 
 
