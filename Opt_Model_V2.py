@@ -44,7 +44,8 @@ model.bidres_aFRR = bidres_aFRR #100kW bid resolution
 model.R_mFRR_max = R_mFRR_max #max bid size
 model.R_mFRR_min = R_mFRR_min #min bid size 1 MW
 model.bidres_mFRR = bidres_mFRR #100kW bid resolution
-
+model.PT = PT
+model.CT = CT
 #defining variables
 model.p_grid = pe.Var(model.T, domain=pe.Reals)
 model.p_PV = pe.Var(model.T, domain=pe.Reals)
@@ -68,10 +69,12 @@ model.zaFRRdown = pe.Var(model.T, domain = pe.Binary) #binary decision variable
 model.rx_mFRR_up = pe.Var(model.T, domain = pe.Integers) #ancillary integer to realize the bid resolution
 model.r_mFRR_up = pe.Var(model.T, domain = pe.Reals)
 model.zmFRRup = pe.Var(model.T, domain = pe.Binary) #binary decision variable
-
-
+#model.zC = pe.Var(model.T, domain = pe.Binary) #binary decision variable
+#model.zP = pe.Var(model.T, domain = pe.Binary) #binary decision variable
+model.zT = pe.Var(model.T, domain = pe.Binary) #binary decision variable
+model.cT = pe.Var(model.T, domain = pe.Reals)
 #expr = sum(model.DA[t]*model.p_grid[t] for t in model.T)
-expr = sum(model.DA[t]*model.p_grid[t] - (model.c_FCR[t]*model.r_FCR[t] + model.c_aFRR_up[t]*model.r_aFRR_up[t] + model.c_aFRR_down[t]*model.r_aFRR_down[t] + model.c_mFRR_up[t]*model.r_mFRR_up[t]) for t in model.T)
+expr = sum((model.DA[t]+model.cT[t])*model.p_grid[t] - (model.c_FCR[t]*model.r_FCR[t] + model.c_aFRR_up[t]*model.r_aFRR_up[t] + model.c_aFRR_down[t]*model.r_aFRR_down[t] + model.c_mFRR_up[t]*model.r_mFRR_up[t]) for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 
 #creating a set of constraints
@@ -277,6 +280,19 @@ model.c24_4 = pe.ConstraintList()
 for t in model.T:
   model.c24_4.add(model.r_mFRR_up[t] <= model.R_mFRR_max)
 
+model.c25_1 = pe.ConstraintList()
+bigM = model.P_grid_cap
+for t in model.T:
+  model.c25_1.add(model.zT[t] >= -model.p_grid[t]/bigM)
+
+model.c25_2 = pe.ConstraintList()
+bigM = model.P_grid_cap
+for t in model.T:
+  model.c25_2.add(model.zT[t] <= 1-model.p_grid[t]/bigM)
+
+model.c25_3 = pe.ConstraintList()
+for t in model.T:
+  model.c25_3.add(model.cT[t] == (1-model.zT[t])*model.CT - model.zT[t]*model.PT)
 
 ###############SOLVE THE MODEL########################
 
@@ -289,6 +305,9 @@ instance.display()
 print("Print values for each variable explicitly")
 for i in instance.p_grid:
   print(str(instance.p_grid[i]), instance.p_grid[i].value)
+  print(str(instance.zT[i]), instance.zT[i].value)
+  print(str(instance.cT[i]), instance.cT[i].value)
+
 #for i in instance.p_PV:
 #  print(str(instance.p_PV[i]), instance.p_PV[i].value)
 for i in instance.p_pem:
@@ -313,8 +332,10 @@ for i in instance.zmFRRup:
 
 #for i in instance.m_H2:
 #  print(str(instance.m_H2[i]), instance.m_H2[i].value)
-#for i in instance.m_CO2:
-#  print(str(instance.m_CO2[i]), instance.m_CO2[i].value)
+for i in instance.m_CO2:
+  print(str(instance.m_CO2[i]), instance.m_CO2[i].value)
+CO2Mass = sum(instance.m_CO2)
+print(CO2Mass)
 #for i in instance.m_Ri:
 #  print(str(instance.m_Ri[i]), instance.m_Ri[i].value)
 #for i in instance.m_Ro:
@@ -373,10 +394,10 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'Demand' : list(Demand.values())}, index=DateRange,
                           )
 
-for i in instance.p_grid:
-  print(df_results.iloc[i-1,range(0,6)])
+#for i in instance.p_grid:
+#  print(df_results.iloc[i-1,range(0,6)])
 
-print(df_results.iloc[range(0,168),range(0,6)])
+#print(df_results.iloc[range(0,168),range(0,6)])
 
 #for i in instance.p_pem:
 #  print(str('P_com'), instance.P_com)
