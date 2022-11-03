@@ -332,8 +332,10 @@ for i in instance.zmFRRup:
 
 #for i in instance.m_H2:
 #  print(str(instance.m_H2[i]), instance.m_H2[i].value)
-#for i in instance.m_CO2:
-#  print(str(instance.m_CO2[i]), instance.m_CO2[i].value)
+for i in instance.m_CO2:
+  print(str(instance.m_CO2[i]), instance.m_CO2[i].value)
+CO2Mass = sum(instance.m_CO2)
+print(CO2Mass)
 #for i in instance.m_Ri:
 #  print(str(instance.m_Ri[i]), instance.m_Ri[i].value)
 #for i in instance.m_Ro:
