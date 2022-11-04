@@ -1,5 +1,5 @@
 from turtle import width
-from Data_process import DA,df_DKDA_raw
+from Data_process import DA,df_DKDA_raw,df_FCR
 from Opt_Model_V2 import df_results
 from Opt_Constants import P_pem_min,P_pem_cap
 import scipy
@@ -7,7 +7,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
-from IPython.display import display
 
 
 
@@ -202,14 +201,27 @@ DayAhead(df_DKDA_raw)
 
 ## Plottting FCR
 
+#Input for model
+TimeRangePlot = (df_FCR['DATE_FROM'] >= '2020-01-01 00:00') & (df_FCR['DATE_FROM']  <= '2021-12-31 23:59')
+df_FCR = df_FCR[TimeRangePlot]
+
+#converting string values to float
+df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'] = df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].astype(float)
 
 
+x = df_FCR['DATE_FROM']
 
+fig, ax = plt.subplots(nrows=1,ncols=1)
 
-
-
-
-
+#ax.bar(x, df_Data_plot['SpotPriceEUR,,'], color='b',linestyle = 'solid', label ='Day-Ahead Price')
+ax.plot(x, df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'], color='teal',linestyle = '-', label ='Day-Ahead Price', linewidth=1)
+ax.set_ylabel('[€/MWh]')
+#ax.set_ylim([-60, 170])
+ax.legend(loc='upper left')
+#ax.set_title('Day-Ahead Price')
+ax.tick_params(axis='x', rotation=45)
+plt.tight_layout()
+plt.show()
 
 
 
@@ -431,6 +443,19 @@ plt.xticks(x_axis,x_label)
 plt.xticks(rotation=25)
 plt.legend()
 plt.show()
+
+
+
+
+################# DISPLAY FULL DATA FRAME ################
+
+#Displaying the full DAtaFrame 
+def print_full(x):
+    pd.set_option('display.max_rows', len(x))
+    print(x)
+    pd.reset_option('display.max_rows')
+
+print_full(df_FCR)
 
 
 
