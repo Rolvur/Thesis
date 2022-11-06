@@ -85,12 +85,14 @@ DateRange = df_DKDA_raw2020['HourDK']
 
 ##################### FCR #######################
 
+df_FCRR2019_raw = pd.read_csv('2019 - RESULT_CAPACITY_FCR.csv',sep=',')
 df_FCRA2020_raw = pd.read_csv('2020 - ANONYM_CAPACITY_BIDS_FCR.csv',sep=',')
 df_FCRD2020_raw = pd.read_csv('2020 - DEMAND_CAPACITY_FCR.csv',sep=',')
 df_FCRR2020_raw = pd.read_csv('2020 - RESULT_CAPACITY_FCR.csv',sep=',')
 df_FCRA2021_raw = pd.read_csv('2021 - ANONYM_CAPACITY_BIDS_FCR.csv',sep=',')
 df_FCRD2021_raw = pd.read_csv('2021 - DEMAND_CAPACITY_FCR.csv',sep=',')
 df_FCRR2021_raw = pd.read_csv('2021 - RESULT_CAPACITY_FCR.csv',sep=',')
+df_FCRR2022_raw = pd.read_csv('2022 - RESULT_CAPACITY_FCR.csv',sep=',')
 
 #### Cleaning up FCR data
 
@@ -153,6 +155,8 @@ for i in range(0,len(df_FCR['DATE_FROM'])):
     df_FCR.iloc[i,0] = datetime.datetime.strptime(df_FCR.iloc[i,0], '%d/%m/%Y %H:%M')
     df_FCR.iloc[i,0] = df_FCR.iloc[i,0].strftime('%Y-%m-%d %H:%M')
 
+df_FCR20_21 = df_FCR
+
 #Input for model
 TimeRange_FCR = (df_FCR['DATE_FROM'] >= Start_date) & (df_FCR['DATE_FROM']  <= End_date)
 df_FCR = df_FCR[TimeRange_FCR]
@@ -210,8 +214,12 @@ c_mFRR_up = dict(zip(np.arange(1,len(list_mFRR_up)+1),list_mFRR_up))
 ##################### aFRR #######################
 #Reading data from csv
 # Finland
-df_FIafrr2020_raw = pd.read_excel('FI_AFFR_2020.xlsx', index_col=0)
-df_FIafrr2021_raw = pd.read_excel('FI_AFFR_2021.xlsx', index_col=0)
+df_FIafrr2020_raw = pd.read_excel('FI_AFFR_2020.xlsx', index_col=2)
+df_FIafrr2021_raw = pd.read_excel('FI_AFFR_2021.xlsx', index_col=2)
+df_FIafrr2022_raw = pd.read_excel('FI_AFFR_2022.xlsx', index_col=2)
+
+df_FIafrr_raw = pd.concat([df_FIafrr2020_raw,df_FIafrr2021_raw,df_FIafrr2022_raw])
+
 #'End time UTC' 
 #'Start time UTC+02:00' 
 #'End time UTC+02:00'
@@ -224,6 +232,10 @@ df_FIafrr2021_raw = pd.read_excel('FI_AFFR_2021.xlsx', index_col=0)
 #Sweden
 df_SEafrr2020_raw = pd.read_csv('SE_AFRR_2020.csv',sep=';',decimal=',') # decimal is used as in the csv the decimal is , and should be converted to .
 df_SEafrr2021_raw = pd.read_csv('SE_AFRR_2021.csv',sep=';',decimal=',') # decimal is used as in the csv the decimal is , and should be converted to .
+df_SEafrr2022_1_raw = pd.read_csv('SE_AFRR_2022_1.csv',sep=';',decimal=',')
+df_SEafrr2022_2_raw = pd.read_csv('SE_AFRR_2022_2.csv',sep=';',decimal=',')
+
+
 #'Period'
 # #'Elområde'
 #'aFRR Upp Pris (EUR/MW)'

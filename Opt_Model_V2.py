@@ -4,7 +4,7 @@ import pyomo.opt as po
 import pandas as pd 
 from Opt_Constants import *
 from Data_process import P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, DateRange
-from IPython.display import display
+
 #____________________________________________
 solver = po.SolverFactory('gurobi')
 model = pe.ConcreteModel()
@@ -281,14 +281,12 @@ for t in model.T:
   model.c24_4.add(model.r_mFRR_up[t] <= model.R_mFRR_max)
 
 model.c25_1 = pe.ConstraintList()
-bigM = model.P_grid_cap
 for t in model.T:
-  model.c25_1.add(model.zT[t] >= -model.p_grid[t]/bigM)
+  model.c25_1.add(model.zT[t] >= -model.p_grid[t]/model.P_grid_cap)
 
 model.c25_2 = pe.ConstraintList()
-bigM = model.P_grid_cap
 for t in model.T:
-  model.c25_2.add(model.zT[t] <= 1-model.p_grid[t]/bigM)
+  model.c25_2.add(model.zT[t] <= 1-model.p_grid[t]/model.P_grid_cap)
 
 model.c25_3 = pe.ConstraintList()
 for t in model.T:

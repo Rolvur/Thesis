@@ -1,14 +1,14 @@
 from turtle import width
-from Data_process import DA,df_DKDA_raw
+from Data_process import DA,df_DKDA_raw,df_FCR,df_aFRR,df_FCRR2019_raw,df_FCR20_21,df_FCRR2022_raw,df_DKmFRR_raw,df_FIafrr_raw
 from Opt_Model_V2 import df_results
 from Opt_Constants import P_pem_min,P_pem_cap
 import scipy
 import pandas as pd 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.ticker as plticker
 import matplotlib.dates as md
-from IPython.display import display
-
+from statistics import mean
 
 
 ####################### Plot Model Results (Ready to use) #######################
@@ -174,7 +174,7 @@ StackBar(df_results,P_pem_cap,P_pem_min)
 
 
 
-####################### Plot Data #######################
+####################### Plot Input Data #######################
 
 #Plotting Day ahead prices
 def DayAhead(df_DKDA_raw):
@@ -200,17 +200,59 @@ def DayAhead(df_DKDA_raw):
 DayAhead(df_DKDA_raw)
 
 
-## Plottting FCR
+## Plottting FCR(Germany) Capacity prices 
+def FCR(df_FCR):
+    
+    TimeRangePlot = (df_FCR['DATE_FROM'] >= '2020-01-01 00:00') & (df_FCR['DATE_FROM']  <= '2021-12-31 23:59')#This should be changed in settings.py
+    df_FCR = df_FCR[TimeRangePlot]
+
+    #converting string values to float
+    df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'] = df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].astype(float)
+
+    #Converting date from string to datetime 
+    x = df_FCR['DATE_FROM'].apply(pd.to_datetime)
 
 
+    #Begining figure
+    fig, ax = plt.subplots(nrows=1,ncols=1)
+
+    #ax.bar(x, df_Data_plot['SpotPriceEUR,,'], color='b',linestyle = 'solid', label ='Day-Ahead Price')
+    ax.plot(x, df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'], color='teal',linestyle = '-', label ='FCR Capacity', linewidth=1)
+    ax.set_ylabel('[€/MW]')
+    #ax.set_ylim([-60, 170])
+    ax.legend(loc='upper left')
+    #ax.set_title('Day-Ahead Price')
+    ax.tick_params(axis='x', rotation=45)
+    plt.tight_layout()
+    plt.show()
+FCR(df_FCR)
 
 
+#Plotting aFRR (Sweden) 
+def aFRR(df_aFRR):
 
+    TimeRangePlot = (df_aFRR['Period'] >= '2020-01-01 00:00') & (df_aFRR['Period']  <= '2021-12-31 23:59')  #This should be changed in settings.py
+    df_aFRR = df_aFRR[TimeRangePlot]
 
+    x = df_aFRR['Period'].apply(pd.to_datetime)
 
+    fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2,sharey=True)
 
+    #ax.bar(x, df_Data_plot['SpotPriceEUR,,'], color='b',linestyle = 'solid', label ='Day-Ahead Price')
+    ax1.plot(x, df_aFRR['aFRR Upp Pris (EUR/MW)'], color='navy',linestyle = '-', label ='aFRR Up Price', linewidth=1)
+    ax2.plot(x, df_aFRR['aFRR Ned Pris (EUR/MW)'], color='firebrick',linestyle = '-', label ='aFRR Down Price', linewidth=1)
+    ax1.set_ylabel('[€/MW]')
+    #ax.set_ylim([-60, 170])
+    ax1.legend(loc='upper left')
+    ax2.legend(loc='upper left')
+    #ax.set_title('Day-Ahead Price')
+    ax1.tick_params(axis='x', rotation=45)
+    ax2.tick_params(axis='x', rotation=45)
+    plt.tight_layout()
+    plt.show()   
+aFRR(df_aFRR)
 
-
+#Plotting PV
 
 
 
@@ -370,9 +412,312 @@ plt.show()
 
 
 ####################### Plot ####################### 
-#Selecting time range for DataFrame
-TimeRange2019 = (df_solar_prod['time'] > '2019-01-01') & (df_solar_prod['time'] <= '2019-12-31')
-TimeRange2020 = (df_solar_prod['time'] > '2020-01-01') & (df_solar_prod['time'] <= '2020-12-31')
+
+#Average grouped bar chart FCR
+df_FCRR2019_raw
+df_FCR20_21
+TimeRangePlot2020 = (df_FCR20_21['DATE_FROM'] >= '2020-01-01 00:00') & (df_FCR20_21['DATE_FROM']  <= '2020-12-31 23:59')  
+TimeRangePlot2021 = (df_FCR20_21['DATE_FROM'] >= '2021-01-01 00:00') & (df_FCR20_21['DATE_FROM']  <= '2021-12-31 23:59') 
+df_FCR20 = df_FCR20_21[TimeRangePlot2020]
+df_FCR21 = df_FCR20_21[TimeRangePlot2021]
+df_FCRR2022_raw
+
+
+### FCR ###
+
+def FCR2019(df_FCRR2019_raw):
+    #Average yearly and converting resolution to hourly price 
+    Avg2019 = df_FCRR2019_raw.groupby(pd.PeriodIndex(df_FCRR2019_raw['DATE_FROM'],freq="Y"))['AT_SETTLEMENTCAPACITY_PRICE_[EUR/MW]','BE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]','CH_SETTLEMENTCAPACITY_PRICE_[EUR/MW]',
+                                                                                                'DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]', 'FR_SETTLEMENTCAPACITY_PRICE_[EUR/MW]','NL_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].mean().reset_index()
+    #Hourly values
+    Avg2019 = Avg2019.iloc[0,1:7]/24
+    Avg2019 = Avg2019.values.tolist()
+
+
+    return Avg2019
+Avg2019 = FCR2019(df_FCRR2019_raw) + [0,0] #missing data for last two countries 
+
+def FCR2020(df_FCR20):
+
+    #AUSTRIA 
+    list_FCR_AT = df_FCR20['AT_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+    del list_FCR_AT[4944:4968]
+    del list_FCR_AT[7632:7656]
+
+    list_FCR_AT = [float(i) for i in list_FCR_AT]
+
+    AVG_AT = mean(list_FCR_AT)/24
+
+    #Belgium 
+
+    list_FCR_BE = df_FCR20['BE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+    list_FCR_BE = [float(i) for i in list_FCR_BE]
+    AVG_BE = mean(list_FCR_BE)/24
+
+    #Chech
+    list_FCR_CH = df_FCR20['CH_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist()
+    del list_FCR_CH[4944:4968]
+    list_FCR_CH = [float(i) for i in list_FCR_CH] 
+    AVG_CH = mean(list_FCR_CH)/24
+
+    #Germany 
+    list_FCR_DE = df_FCR20['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist()
+    list_FCR_DE = [float(i) for i in list_FCR_DE] 
+    AVG_DE = mean(list_FCR_DE)/24
+
+    #France
+    list_FCR_FR = df_FCR20['FR_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist()
+    del list_FCR_FR[4488:4512]
+    list_FCR_FR = [float(i) for i in list_FCR_FR] 
+    AVG_FR = mean(list_FCR_FR)/24
+
+    #Netherlands
+
+    list_FCR_NL = df_FCR20['NL_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+    list_FCR_NL = [float(i) for i in list_FCR_NL] 
+    AVG_NL = mean(list_FCR_NL)/24
+
+    Avg2020 = [AVG_AT,AVG_BE,AVG_CH,AVG_DE,AVG_FR,AVG_NL,0,0]
+
+    return Avg2020
+Avg2020 = FCR2020(df_FCR20)
+
+
+def FCR2021(df_FCR21):
+
+    #AUSTRIA 
+    list_FCR_AT = df_FCR21['AT_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+    del list_FCR_AT[6960:6984]
+    del list_FCR_AT[2856:2880] 
+    list_FCR_AT = [float(i) for i in list_FCR_AT]
+
+    AVG_AT = mean(list_FCR_AT)/24
+
+    #Belgium 
+
+    list_FCR_BE = df_FCR21['BE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+    list_FCR_BE = [float(i) for i in list_FCR_BE]
+    AVG_BE = mean(list_FCR_BE)/24
+
+    #Chech
+    list_FCR_CH = df_FCR21['CH_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist()
+    del list_FCR_CH[6408:6432]
+    del list_FCR_CH[2856:2880]
+    del list_FCR_CH[1176:1200]
+    list_FCR_CH = [float(i) for i in list_FCR_CH] 
+    AVG_CH = mean(list_FCR_CH)/24
+
+    #Germany 
+    list_FCR_DE = df_FCR21['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist()
+    list_FCR_DE = [float(i) for i in list_FCR_DE] 
+    AVG_DE = mean(list_FCR_DE)/24
+
+    #France
+    list_FCR_FR = df_FCR21['FR_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist()
+    list_FCR_FR = [float(i) for i in list_FCR_FR] 
+    AVG_FR = mean(list_FCR_FR)/24
+
+    #Netherlands
+
+    list_FCR_NL = df_FCR21['NL_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+    list_FCR_NL = [float(i) for i in list_FCR_NL] 
+    AVG_NL = mean(list_FCR_NL)/24
+
+    #Switzerland 
+    list_FCR_SI = df_FCR21['SI_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+    del list_FCR_SI[2856:2880]
+    del list_FCR_SI[0:432]
+    list_FCR_SI = [float(i) for i in list_FCR_SI] 
+    AVG_SI = mean(list_FCR_SI)/24
+
+    #Denmark 
+    list_FCR_DK = df_FCR21['DK_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+    del list_FCR_DK[0:432]
+    list_FCR_DK = [float(i) for i in list_FCR_DK] 
+    AVG_DK = mean(list_FCR_DK)/24
+
+    Avg2021 = [AVG_AT,AVG_BE,AVG_CH,AVG_DE,AVG_FR,AVG_NL,AVG_SI, AVG_DK]
+
+
+    return Avg2021
+Avg2021 = FCR2021(df_FCR21)
+
+def FCR2022(df_FCRR2022_raw):
+    #AUSTRIA 
+    list_FCR_AT = df_FCRR2022_raw['AT_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+    del list_FCR_AT[1452:1458]
+    del list_FCR_AT[1224:1230] 
+    del list_FCR_AT[1038:1050]
+    del list_FCR_AT[390:396] 
+    
+    list_FCR_AT = [float(i) for i in list_FCR_AT]
+    AVG_AT = mean(list_FCR_AT)/6
+
+    #Belgium 
+
+    list_FCR_BE = df_FCRR2022_raw['BE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+    list_FCR_BE = [float(i) for i in list_FCR_BE]
+    AVG_BE = mean(list_FCR_BE)/6
+
+    #Chech
+    list_FCR_CH = df_FCRR2022_raw['CH_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist()
+    del list_FCR_CH[390:396]
+    list_FCR_CH = [float(i) for i in list_FCR_CH] 
+    AVG_CH = mean(list_FCR_CH)/6
+
+
+    #Germany 
+    list_FCR_DE = df_FCRR2022_raw['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist()
+    list_FCR_DE = [float(i) for i in list_FCR_DE] 
+    AVG_DE = mean(list_FCR_DE)/6
+
+    #France
+    list_FCR_FR = df_FCRR2022_raw['FR_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist()
+    list_FCR_FR = [float(i) for i in list_FCR_FR] 
+    AVG_FR = mean(list_FCR_FR)/6
+
+    #Netherlands
+    list_FCR_NL = df_FCRR2022_raw['NL_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+    list_FCR_NL = [float(i) for i in list_FCR_NL] 
+    AVG_NL = mean(list_FCR_NL)/6
+
+    #Switzerland 
+    list_FCR_SI = df_FCRR2022_raw['SI_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+    del list_FCR_SI[390:396]
+    list_FCR_SI = [float(i) for i in list_FCR_SI] 
+    AVG_SI = mean(list_FCR_SI)/6
+
+    #Denmark 
+    list_FCR_DK = df_FCRR2022_raw['DK_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+    list_FCR_DK = [float(i) for i in list_FCR_DK] 
+    AVG_DK = mean(list_FCR_DK)/6
+
+    Avg2022 = [AVG_AT,AVG_BE,AVG_CH,AVG_DE,AVG_FR,AVG_NL,AVG_SI, AVG_DK]
+
+
+
+    return Avg2022
+Avg2022 = FCR2022(df_FCRR2022_raw)
+
+
+#Plot FCR average Price (Gruped bar) 
+def FCR_Avg_price_plot(Avg2019,Avg2020,Avg2021,Avg2022):
+
+
+    #Creating DataFrame 
+    x_label = ['2019', '2020','2021']
+    #df_FCR_AVG = pd.DataFrame([Avg2019,Avg2020,Avg2021,Avg2022],columns=['Austria', 'Belgium','Czech','Germany','France','Netherlands','Switzerland','Denmark'],index = x_label)
+    df_FCR_AVG = pd.DataFrame([Avg2019,Avg2020,Avg2021],columns=['Austria', 'Belgium','Czech','Germany','France','Netherlands','Switzerland','Denmark'],index = x_label)
+
+
+    fig, ax = plt.subplots()
+    ax = df_FCR_AVG.plot.bar(color=['firebrick','darkgoldenrod','teal','navy','darkmagenta','darkseagreen','darkviolet','crimson'],rot=20)
+
+
+    ax.set_ylabel('[€/MW/h]')
+    ax.set_title('Average FCR Price')
+    plt.legend()
+    plt.show()
+
+    return 
+
+
+
+
+### mFRR ### 
+def mFRR_Avg_plot(df_DKmFRR_raw):
+    
+
+    Avg = df_DKmFRR_raw.groupby(pd.PeriodIndex(df_DKmFRR_raw['HourDK'],freq="Y"))['mFRR_UpPriceEUR'].mean().reset_index()
+
+    x = ['2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020','2021','2022']
+
+
+    fig, ax = plt.subplots(nrows=1,ncols=1)
+
+    #ax.bar(x, df_Data_plot['SpotPriceEUR,,'], color='b',linestyle = 'solid', label ='Day-Ahead Price')
+    ax.bar(x , Avg['mFRR_UpPriceEUR'], color='darkgreen',linestyle = '-', label ='mFRR Up Price', linewidth=1)
+
+    ax.set_ylabel('[€/MW/h]')
+    ax.legend(loc='upper left')
+
+
+
+    ax.tick_params(axis='x', rotation=45)
+    plt.tight_layout()
+    plt.show()   
+mFRR_Avg_plot(df_DKmFRR_raw)
+
+
+df_DKmFRR_raw
+
+
+
+
+
+
+### aFRR ### 
+def aFRR_Mavg_plot():
+
+    Months = ['January','February', 'March', 'April','May','June','July','August','September','October','November','December']
+
+    aFRR_2020avg_price = np.array([30.94758065,48.92473118,51.94892473,54.43548387,56.72043011,51.74731183,49.8655914,61.29032258,42.87634409,32.66129032,45.09408602,43.8172043])
+    aFRR_2021avg_price = np.array([35.28225806,30.77956989,30.24193548,29.16666667,48.65591398,53.09139785,36.15591398,29.43548387,42.13709677,45.49731183,66.53225806,41.26344086])
+    aFRR_2022avg_price = np.array([145.97,69.81,98.28,109.73,92.51,0,0,0,164.05,0,0,0])
+
+    df_aFRR_Yavg = pd.DataFrame([aFRR_2020avg_price,aFRR_2021avg_price,aFRR_2022avg_price], columns= Months, index=['2020','2021','2022']).T
+
+
+    fig, ax = plt.subplots(nrows=1,ncols=1)
+
+    #ax.bar(x, df_Data_plot['SpotPriceEUR,,'], color='b',linestyle = 'solid', label ='Day-Ahead Price')
+    ax = df_aFRR_Yavg.plot.bar(color=['firebrick','navy','darkseagreen'],rot=20)
+
+
+    ax.set_ylabel('[€/MW/h]')
+    ax.legend(loc='upper right')
+
+
+
+    ax.tick_params(axis='x', rotation=45)
+    plt.tight_layout()
+    plt.show()   
+aFRR_Mavg_plot()
+
+#Finland #NOT DONE YEAT 
+
+
+df_FIafrr_raw
+MontlyAvgFI = df_FIafrr_raw.groupby(pd.PeriodIndex(df_FIafrr_raw.index,freq="M"))['Automatic Frequency Restoration Reserve, price, down','Automatic Frequency Restoration Reserve, price, up'].mean().reset_index()
+
+
+
+fig, ax = plt.subplots(nrows=1,ncols=1)
+
+#ax.bar(x, df_Data_plot['SpotPriceEUR,,'], color='b',linestyle = 'solid', label ='Day-Ahead Price')
+MontlyAvgFI.set_index('Start time UTC+02:00')
+
+ax = MontlyAvgFI.plot.bar(color=['firebrick','navy','darkseagreen'],rot=20)
+
+
+ax.set_ylabel('[€/MW/h]')
+ax.legend(loc='upper right')
+ax.set_xticks(np.arange(len(MontlyAvgFI)), MontlyAvgFI['Start time UTC+02:00'])
+ax.set_xticks(ax.get_xticks()[::3])
+#loc = plticker.MultipleLocator(1) # this locator puts ticks at regular intervals
+#ax.xaxis.set_major_locator(loc)
+#ax.tick_params(axis='x', rotation=45)
+plt.tight_layout()
+plt.show()   
+
+
+
+
+
+
+
+
+
 
 df2019 = df_solar_prod.loc[TimeRange2019]
 df2020 = df_solar_prod.loc[TimeRange2020]
@@ -431,6 +776,19 @@ plt.xticks(x_axis,x_label)
 plt.xticks(rotation=25)
 plt.legend()
 plt.show()
+
+
+
+
+################# DISPLAY FULL DATA FRAME ################
+
+#Displaying the full DAtaFrame 
+def print_full(x):
+    pd.set_option('display.max_rows', len(x))
+    print(x)
+    pd.reset_option('display.max_rows')
+
+print_full(df_FCR)
 
 
 
