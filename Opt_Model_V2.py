@@ -109,7 +109,6 @@ model.c4_2 = pe.ConstraintList()
 for t in model.T:
     model.c4_2.add(model.p_pem[t] <= model.P_pem_cap)
 
-
 model.c5 = pe.ConstraintList()
 for t in model.T:
     model.c5.add(model.m_H2[t] == model.k_CR*model.p_pem[t])

@@ -41,5 +41,5 @@ bidres_mFRR = 0.1
 PT = 1.37 #Producer tariff
 CT = 18.4815 #Consumer tariff 
 
-c_CO2 = 47.4/10^3 #EUR/kg
-c_H2O = 0.66/10^3 #EUR/kg 
+c_CO2 = 47.4/1000 #EUR/kg
+c_H2O = 0.66/1000 #EUR/kg 
