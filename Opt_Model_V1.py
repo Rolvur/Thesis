@@ -55,7 +55,7 @@ model.zT = pe.Var(model.T, domain = pe.Binary) #binary decision variable
 model.cT = pe.Var(model.T, domain = pe.Reals)
 
 #Objective
-expr = sum((model.DA[t]+model.cT[t])*model.p_grid[t] for t in model.T)
+expr = sum((model.DA[t]+model.cT[t])*model.p_grid[t] + (model.m_CO2[t]*c_CO2) + (model.m_H2O[t]*c_H2O) for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 
 #creating a set of constraints
@@ -176,41 +176,25 @@ results = solver.solve(model)
 print(results)
 
 
-print("Print values for each variable explicitly")
-for i in model.p_grid:
-  print(str(model.p_grid[i]), model.p_grid[i].value)
-for i in model.p_PV:
-  print(str(model.p_PV[i]), model.p_PV[i].value)
-for i in model.p_pem:
-  print(str(model.p_pem[i]), model.p_pem[i].value)
-for i in model.m_H2:
-  print(str(model.m_H2[i]), model.m_H2[i].value)
-for i in model.m_CO2:
-  print(str(model.m_CO2[i]), model.m_CO2[i].value)
-for i in model.m_Ri:
-  print(str(model.m_Ri[i]), model.m_Ri[i].value)
-for i in model.m_Ro:
-  print(str(model.m_Ro[i]), model.m_Ro[i].value)
-for i in model.m_H2O:
-  print(str(model.m_H2O[i]), model.m_H2O[i].value)
-for i in model.m_Pu:
-  print(str(model.m_Pu[i]), model.m_Pu[i].value)
-for i in model.m_Pu:
-  print(str(model.m_Pu[i]), model.m_Pu[i].value)
-
-for i in model.s_raw:
-  print(str(model.s_raw[i]), model.s_raw[i].value)
-for i in model.s_Pu:
-  print(str(model.s_Pu[i]), model.s_Pu[i].value)
-
 
 #Converting Pyomo resulst to list
 P_PEM = [model.p_pem[i].value for i in model.p_pem]  
 P_sRaw = [model.s_raw[i].value for i in model.s_raw]  
 P_sPu = [model.s_Pu[i].value for i in model.s_Pu]  
 P_PV = [model.p_PV[i].value for i in model.p_PV]  
-m_ri = [model.m_Ri[i].value for i in model.m_Ri]  
+P_grid = [model.p_grid[i].value for i in model.p_grid]
+m_ri = [model.m_Ri[i].value for i in model.m_Ri] 
+m_ro = [model.m_Ro[i].value for i in model.m_Ro]   
 m_pu = [model.m_Pu[i].value for i in model.m_Pu]  
+m_CO2 = [model.m_CO2[i].value for i in model.m_CO2]
+m_H2O = [model.m_H2O[i].value for i in model.m_H2O]
+zT = [model.zT[i].value for i in model.zT]
+s_raw = [model.s_raw[i].value for i in model.s_raw]
+s_pu = [model.s_Pu[i].value for i in model.s_Pu]
+
+
+
+
 
 
 #Creating result DataFrame
@@ -219,20 +203,22 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'P_sRaw': P_sRaw,
                           'P_sPu' : P_sPu,
                           'P_PV' : P_PV,
+                          'P_grid' : P_grid,
                           'Raw_In' : m_ri,
                           'Pure_In': m_pu,
+                          'Raw Storage' : s_raw,
+                          'Pure Storage' : s_pu,
                           'DA' : list(DA.values()),
-                          'Demand' : list(Demand.values())}, index=DateRange,
+                          'm_CO2' : m_CO2,
+                          'm_H2O' : m_H2O,
+                          'Demand' : list(Demand.values()), 
+                          'zT' : zT
+                          }, index=DateRange,
 
                           )
 
 
+#save to Excel 
+df_results.to_excel("Result_files\Model1_results.xlsx")
 
 
-
-
-
-
-    
-#model.dual.display()
-#print(model.c12[1].expr)

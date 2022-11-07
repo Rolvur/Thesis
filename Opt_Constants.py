@@ -7,8 +7,8 @@ P_pem_min = 0.05*P_pem_cap
 P_com = 4.5 #MW
 #P_H2O = 0.5 #MW
 P_grid_cap = 238 #MW
-P_PV_cap = 252 # Check again
-mu_pem = 0.755 #efficiency
+P_PV_cap = 257.2 # Due to transformer dimension
+mu_pem = 0.76 #efficiency
 M_H2O = 18.01528 #g/mol
 dHf0_H2O = 285830 #J/mol
 M_H2 = 2.016 #g/mol
@@ -40,3 +40,6 @@ bidres_mFRR = 0.1
 
 PT = 1.37 #Producer tariff
 CT = 18.4815 #Consumer tariff 
+
+c_CO2 = 47.4/1000 #EUR/kg
+c_H2O = 0.66/1000 #EUR/kg 
