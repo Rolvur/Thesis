@@ -55,7 +55,7 @@ model.zT = pe.Var(model.T, domain = pe.Binary) #binary decision variable
 model.cT = pe.Var(model.T, domain = pe.Reals)
 
 #Objective
-expr = sum((model.DA[t]+model.cT[t])*model.p_grid[t] for t in model.T)
+expr = sum((model.DA[t]+model.cT[t])*model.p_grid[t] + (model.m_CO2[t]*c_CO2) + (model.m_H2O[t]*c_H2O) for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 
 #creating a set of constraints
