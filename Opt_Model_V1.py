@@ -10,7 +10,7 @@ from Data_process import P_PV_max, DA, Demand, c_aFRR_up, c_aFRR_down, c_mFRR_up
 #____________________________________________
 
 
-solver = po.SolverFactory('glpk')
+solver = po.SolverFactory('gurobi')
 model = pe.ConcreteModel()
 
 #set t in T
@@ -26,7 +26,6 @@ model.m_demand = pe.Param(model.T, initialize = Demand)
 model.P_pem_cap = P_pem_cap 
 model.P_pem_min = P_pem_min
 model.P_com = P_com
-model.P_H2O = P_H2O
 model.P_grid_cap = P_grid_cap
 model.k_CR = k_CR
 model.r_in = r_in
@@ -38,27 +37,31 @@ model.m_H2_max = m_H2_max
 model.ramp_pem = ramp_pem
 model.ramp_com = ramp_com
 model.P_PV_cap = P_PV_cap
-
+model.PT = PT
+model.CT = CT
 #defining variables
 model.p_grid = pe.Var(model.T, domain=pe.Reals)
-model.p_PV = pe.Var(model.T, domain=pe.Reals)
-model.p_pem = pe.Var(model.T, domain=pe.Reals)
-model.m_H2 = pe.Var(model.T, domain=pe.Reals)
-model.m_CO2 = pe.Var(model.T, domain=pe.Reals)
-model.m_H2O = pe.Var(model.T, domain=pe.Reals)
-model.m_Ri = pe.Var(model.T, domain=pe.Reals)
-model.m_Ro = pe.Var(model.T, domain=pe.Reals)
-model.m_Pu = pe.Var(model.T, domain=pe.Reals)
-model.s_raw = pe.Var(model.T, domain=pe.Reals)
-model.s_Pu = pe.Var(model.T, domain=pe.Reals)
+model.p_PV = pe.Var(model.T, domain=pe.NonNegativeReals)
+model.p_pem = pe.Var(model.T, domain=pe.NonNegativeReals)
+model.m_H2 = pe.Var(model.T, domain=pe.NonNegativeReals)
+model.m_CO2 = pe.Var(model.T, domain=pe.NonNegativeReals)
+model.m_H2O = pe.Var(model.T, domain=pe.NonNegativeReals)
+model.m_Ri = pe.Var(model.T, domain=pe.NonNegativeReals)
+model.m_Ro = pe.Var(model.T, domain=pe.NonNegativeReals)
+model.m_Pu = pe.Var(model.T, domain=pe.NonNegativeReals)
+model.s_raw = pe.Var(model.T, domain=pe.NonNegativeReals)
+model.s_Pu = pe.Var(model.T, domain=pe.NonNegativeReals)
+model.zT = pe.Var(model.T, domain = pe.Binary) #binary decision variable
+model.cT = pe.Var(model.T, domain = pe.Reals)
 
-expr = sum(model.DA[t]*model.p_grid[t] for t in model.T)
+#Objective
+expr = sum((model.DA[t]+model.cT[t])*model.p_grid[t] for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 
 #creating a set of constraints
 model.c1 = pe.ConstraintList()
 for t in model.T:
-    model.c1.add(model.p_grid[t] + model.p_PV[t] == model.p_pem[t] + model.P_com + model.P_H2O)
+    model.c1.add(model.p_grid[t] + model.p_PV[t] == model.p_pem[t] + model.P_com)
 
 #Constraint 2.1
 model.c2_1 = pe.ConstraintList()
@@ -112,9 +115,9 @@ model.c10 = pe.ConstraintList()
 for t in model.T:
     model.c10.add(model.m_Pu[t] == model.k_d)
 
-model.c11_1 = pe.ConstraintList()
-for t in model.T:
-    model.c11_1.add(0 <= model.s_raw[t])
+#model.c11_1 = pe.ConstraintList()
+#for t in model.T:
+#    model.c11_1.add(0 <= model.s_raw[t])
 
 model.c11_2 = pe.ConstraintList()
 for t in model.T:
@@ -128,11 +131,10 @@ for t in model.T:
 model.c13_1 = pe.Constraint(expr=model.s_raw[1] == 0.5*model.S_raw_max + model.m_Ri[1] - model.m_Ro[1])
 
 model.c13_2 = pe.Constraint(expr=0.5*model.S_raw_max == model.s_raw[T])
-#model.ctest = pe.Constraint(expr = model.p_pem[1] == 50)
 
-model.c14_1 = pe.ConstraintList()
-for t in model.T:
-  model.c14_1.add(0 <= model.s_Pu[t])
+#model.c14_1 = pe.ConstraintList()
+#for t in model.T:
+#  model.c14_1.add(0 <= model.s_Pu[t])
 
 model.c14_2 = pe.ConstraintList()
 for t in model.T:
@@ -155,20 +157,21 @@ for t in model.T:
   if t >= 2:
     model.c17_2.add(model.p_pem[t] - model.p_pem[t-1] <= model.ramp_pem * model.P_pem_cap)
 
-#model.c18_1 = pe.ConstraintList()
-#for t in model.T:
-#    if t >= 2:
-#        model.c18_1.add(-model.ramp_com * model.m_H2_max <= model.m_H2[t] - model.m_H2[t-1])
 
-#model.c18_2 = pe.ConstraintList()
-#for t in model.T:
-#    if t >= 2:
-#        model.c18_2.add(model.m_H2[t] - model.m_H2[t-1] <= model.ramp_com * model.m_H2_max)
+model.c25_1 = pe.ConstraintList()
+for t in model.T:
+  model.c25_1.add(model.zT[t] >= -model.p_grid[t]/model.P_grid_cap)
+
+model.c25_2 = pe.ConstraintList()
+for t in model.T:
+  model.c25_2.add(model.zT[t] <= 1-model.p_grid[t]/model.P_grid_cap)
+
+model.c25_3 = pe.ConstraintList()
+for t in model.T:
+  model.c25_3.add(model.cT[t] == (1-model.zT[t])*model.CT - model.zT[t]*model.PT)
 
 
-
-
-model.dual = pe.Suffix(direction=pe.Suffix.IMPORT)
+#model.dual = pe.Suffix(direction=pe.Suffix.IMPORT)
 results = solver.solve(model)
 print(results)
 
@@ -224,10 +227,7 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           )
 
 
-#for i in model.p_pem:
-#  print(str('P_com'), model.P_com)
-#for i in model.p_pem:
-#  print(str('P_H2O'), model.P_H2O)
+
 
 
 
