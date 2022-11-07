@@ -58,48 +58,35 @@ model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 #creating a set of constraints
 model.c1 = pe.ConstraintList()
 for t in model.T:
-    lhs = model.p_grid[t] + model.p_PV[t]
-    rhs = model.p_pem[t] + model.P_com + model.P_H2O
-    model.c1.add(lhs == rhs)
+    model.c1.add(model.p_grid[t] + model.p_PV[t] == model.p_pem[t] + model.P_com + model.P_H2O)
 
 #Constraint 2.1
 model.c2_1 = pe.ConstraintList()
 for t in model.T:
-    lhs = -model.P_grid_cap
-    rhs = model.p_grid[t]
-    model.c2_1.add(lhs <= rhs)
+    model.c2_1.add(-model.P_grid_cap <= model.p_grid[t])
+
 #Constraint 2.2
 model.c2_2 = pe.ConstraintList()
 for t in model.T:
-    rhs = model.P_grid_cap
-    lhs = model.p_grid[t]
-    model.c2_2.add(lhs <= rhs)
+    model.c2_2.add(model.p_grid[t] <= model.P_grid_cap)
 
 #Constraint 3
 model.c3_1 = pe.ConstraintList()
 for t in model.T:
-    lhs = 0
-    rhs = model.p_PV[t]
-    model.c3_1.add(lhs <= rhs)
+    model.c3_1.add(0 <= model.p_PV[t])
+
 #Constraint 3
 model.c3_2 = pe.ConstraintList()
 for t in model.T:
-    rhs = model.P_PV_max[t]
-    lhs = model.p_PV[t]
-    model.c3_2.add(lhs <= rhs)
+    model.c3_2.add(model.p_PV[t] <= model.P_PV_max[t])
 
 model.c4_1 = pe.ConstraintList()
 for t in model.T:
-    rhs = model.p_pem[t]
-    lhs = model.P_pem_min
-    model.c4_1.add(lhs <= rhs)
+    model.c4_1.add(model.P_pem_min <= model.p_pem[t])
 
 model.c4_2 = pe.ConstraintList()
 for t in model.T:
-    lhs = model.p_pem[t]
-    rhs = model.P_pem_cap
-    model.c4_2.add(lhs <= rhs)
-
+    model.c4_2.add(model.p_pem[t] <= model.P_pem_cap)
 
 model.c5 = pe.ConstraintList()
 for t in model.T:
