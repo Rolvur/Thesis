@@ -176,12 +176,6 @@ StackBar(df_results,P_pem_cap,P_pem_min)
 
 ####################### Plot Input Data #######################
 
-df_solar_prod_raw
-
-
-x = df_solar_prod_2019['time']
-
-
 
 
 fig, (ax1,ax2) = plt.subplots(nrows=2,ncols=1,sharex=True)
