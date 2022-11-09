@@ -15,7 +15,7 @@ data_folder = Path("Data/")
 #Solar production data set
 #df_solar_prod= pd.read_csv('Data\PV production data 2019-2020.csv',sep=',')
 file_to_open = Path("Data/") / "PV production data 2019-2020.csv"
-df_solar_prod= pd.read_csv(file_to_open,sep=',')
+df_solar_prod = pd.read_csv(file_to_open,sep=',')
 df_solar_prod['time'] = df_solar_prod['time'].astype(str)
 
 #Converting time to datetime
@@ -31,7 +31,7 @@ df_solar_prod['time'] = df_solar_prod['time'].apply(pd.to_datetime)
 TimeRange2020PV = (df_solar_prod['time'] >= '2019-01-01 00:00') & (df_solar_prod['time']  <= '2020-12-31 23:59')
 df_solar_prod_raw = df_solar_prod[TimeRange2020PV]
 
-PV_Watt = df_solar_prod_2020['P'].tolist() #Convert from pandas data series to list
+PV_Watt = df_solar_prod_raw['P'].tolist() #Convert from pandas data series to list
 PV = [x/1000000 for x in PV_Watt]
 P_PV_max = dict(zip(np.arange(1,len(PV)+1),PV))
 
