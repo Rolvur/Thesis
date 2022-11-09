@@ -24,10 +24,24 @@ for i in range(0,len(df_solar_prod['time'])):
 df_solar_prod['time'] = df_solar_prod['time'].apply(pd.to_datetime)
 
 
+TimeRangeSolar_2019 = (df_solar_prod['time'] >= '2019-01-01 00:00') & (df_solar_prod['time']  <= '2019-12-31 23:59')
+TimeRangeSolar_2020 = (df_solar_prod['time'] >= '2020-01-01 00:00') & (df_solar_prod['time']  <= '2020-12-31 23:59')
+
+
+df_solar_prod_2020 = df_solar_prod[TimeRangeSolar_2020]
+df_solar_prod_2021 = df_solar_prod[TimeRangeSolar_2019]
+
+#Changing 2019 data to 2021 data and applying it to same dataframe 
+df_solar_prod_2021['time'] = df_solar_prod_2021['time'].apply(lambda x: x.replace(year=2021))
+
+solar_data_raw = pd.concat([df_solar_prod_2020,df_solar_prod_2021])
+
+
+
 #Input for model
 #Using year 2020
-TimeRange2020PV = (df_solar_prod['time'] >= '2019-01-01 00:00') & (df_solar_prod['time']  <= '2020-12-31 23:59')
-df_solar_prod_raw = df_solar_prod[TimeRange2020PV]
+TimeRangePV = (solar_data_raw['time'] >= Start_date) & (solar_data_raw['time']  <= End_date)
+df_solar_prod_raw = solar_data_raw[TimeRangePV]
 
 PV_Watt = df_solar_prod_raw['P'].tolist() #Convert from pandas data series to list
 PV = [x/1000000 for x in PV_Watt]
@@ -316,22 +330,6 @@ if Demand_pattern == 'Weekly':
             
 Demand = dict(zip(np.arange(1,len(Demand)+1),Demand))
 
-
-
-m_H2 = 1 # kg/s
-m_CO2 = 1000 # kg/s
-T_in = 300 # Kelvin
-CP_H2 = 14.307 #kJ/kgK
-CP_CO2 = 0.846 #kJ/kgK
-γ_H2 = 1.405 
-γ_CO2 = 1.289 
-η_th = 0.7 #Thermal efficiency (Asssumed to be 70%) 
-PR_H2 = 80/1
-PR_CO2 = 80/45
-
-P_CON_H2 = (m_H2*T_in*CP_H2*(PR_H2**((γ_H2)/(γ_H2-1))-1))/η_th
-
-P_CON_CO2 = (m_CO2*T_in*CP_H2*(PR_H2**((γ_H2-1)/(γ_H2))-1))/η_th
 
 
 

@@ -178,14 +178,10 @@ StackBar(df_results,P_pem_cap,P_pem_min)
 
 df_solar_prod_raw
 
-TimeRangePlot_2019 = (df_solar_prod_raw['time'] >= '2019-01-01 00:00') & (df_solar_prod_raw['time']  <= '2019-12-31 23:59')
-TimeRangePlot_2020 = (df_solar_prod_raw['time'] >= '2020-01-01 00:00') & (df_solar_prod_raw['time']  <= '2020-12-31 23:59')
-
-
-df_solar_prod_2019 = df_solar_prod_raw[TimeRangePlot_2019]
-df_solar_prod_2020 = df_solar_prod_raw[TimeRangePlot_2020]
 
 x = df_solar_prod_2019['time']
+
+
 
 
 fig, (ax1,ax2) = plt.subplots(nrows=2,ncols=1,sharex=True)
