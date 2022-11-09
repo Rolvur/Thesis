@@ -1,5 +1,5 @@
 from turtle import width
-from Data_process import DA,df_DKDA_raw,df_FCR,df_aFRR,df_FCRR2019_raw,df_FCR20_21,df_FCRR2022_raw,df_DKmFRR_raw,df_FIafrr_raw
+from Data_process import DA,df_DKDA_raw,df_FCR,df_aFRR,df_FCRR2019_raw,df_FCR20_21,df_FCRR2022_raw,df_DKmFRR_raw,df_FIafrr_raw, df_solar_prod_raw
 from Opt_Model_V2 import df_results
 from Opt_Constants import P_pem_min,P_pem_cap
 import scipy
@@ -175,6 +175,40 @@ StackBar(df_results,P_pem_cap,P_pem_min)
 
 
 ####################### Plot Input Data #######################
+
+df_solar_prod_raw
+
+TimeRangePlot_2019 = (df_solar_prod_raw['time'] >= '2019-01-01 00:00') & (df_solar_prod_raw['time']  <= '2019-12-31 23:59')
+TimeRangePlot_2020 = (df_solar_prod_raw['time'] >= '2020-01-01 00:00') & (df_solar_prod_raw['time']  <= '2020-12-31 23:59')
+
+
+df_solar_prod_2019 = df_solar_prod_raw[TimeRangePlot_2019]
+df_solar_prod_2020 = df_solar_prod_raw[TimeRangePlot_2020]
+
+x = df_solar_prod_2019['time']
+
+
+fig, (ax1,ax2) = plt.subplots(nrows=2,ncols=1,sharex=True)
+
+ax1.plot(x, df_solar_prod_raw['P'], color='teal',linestyle = 'solid', label ='PV_2019')
+ax2.plot(x, df_solar_prod_raw['P'], color='teal',linestyle = '-', label ='PV_2020', linewidth=1)
+ax1.set_ylabel('[MW]')
+ax2.set_ylabel('[MW]')
+#ax.set_ylim([-60, 170])
+ax1.legend(loc='upper left')
+ax1.legend(loc='upper left')
+
+#ax.set_title('Day-Ahead Price')
+ax1.tick_params(axis='x', rotation=45)
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+
 
 #Plotting Day ahead prices
 def DayAhead(df_DKDA_raw):

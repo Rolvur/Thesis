@@ -28,8 +28,8 @@ df_solar_prod['time'] = df_solar_prod['time'].apply(pd.to_datetime)
 
 #Input for model
 #Using year 2020
-TimeRange2020PV = (df_solar_prod['time'] >= Start_date) & (df_solar_prod['time']  <= End_date)
-df_solar_prod_2020 = df_solar_prod[TimeRange2020PV]
+TimeRange2020PV = (df_solar_prod['time'] >= '2019-01-01 00:00') & (df_solar_prod['time']  <= '2020-12-31 23:59')
+df_solar_prod_raw = df_solar_prod[TimeRange2020PV]
 
 PV_Watt = df_solar_prod_2020['P'].tolist() #Convert from pandas data series to list
 PV = [x/1000000 for x in PV_Watt]
