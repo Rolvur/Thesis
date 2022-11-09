@@ -9,10 +9,19 @@ P_com = 4.5 #MW
 P_grid_cap = 238 #MW
 P_PV_cap = 257.2 # Due to transformer dimension
 mu_pem = 0.76 #efficiency
+
+I_x = 1.5 # from silyzer reference
+mu_pem_x = 0.76 # from Silyzer reference
+eff_slope = -0.102283 # slope of efficiency af function of current density - in range 0-1.5A/cm2
+mu_pem_0 = mu_pem_x - (eff_slope*I_x) # efficiency at zero production
+
 M_H2O = 18.01528 #g/mol
 dHf0_H2O = 285830 #J/mol
 M_H2 = 2.016 #g/mol
 M_CO2 = 44.01 #g/mol
+
+mu_slope = (mu_pem_x - mu_pem_0)/(mu_pem_x*M_H2*P_pem_cap*(1000000)*3.6/dHf0_H2O)
+
 k_CR = mu_pem*(M_H2/dHf0_H2O)*3600000 #Constant from power[W] to Hydrogen flow
 M_CH3OH = 32.04
 r_in = (1/3)*(M_CO2/M_H2)
