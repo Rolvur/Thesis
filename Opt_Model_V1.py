@@ -1,9 +1,10 @@
 #from mmap import MAP_POPULATE
 import pyomo.environ as pe
 import pyomo.opt as po
+from pyomo.core import *
 import pandas as pd 
 from Opt_Constants import *
-from Data_process import P_PV_max, DA, Demand, DateRange
+from Data_process import P_PV_max, DA, Demand, DateRange, pem_setpoint, hydrogen_mass_flow
 
 #____________________________________________
 
@@ -42,8 +43,8 @@ model.CT = CT
 #defining variables
 model.p_grid = pe.Var(model.T, domain=pe.Reals)
 model.p_PV = pe.Var(model.T, domain=pe.NonNegativeReals)
-model.p_pem = pe.Var(model.T, domain=pe.NonNegativeReals)
-model.m_H2 = pe.Var(model.T, domain=pe.NonNegativeReals)
+model.p_pem = pe.Var(model.T, domain=pe.NonNegativeReals, bounds=(0,52.5))
+model.m_H2 = pe.Var(model.T, domain=pe.NonNegativeReals, bounds=(0,1100))
 model.m_CO2 = pe.Var(model.T, domain=pe.NonNegativeReals)
 model.m_H2O = pe.Var(model.T, domain=pe.NonNegativeReals)
 model.m_Ri = pe.Var(model.T, domain=pe.NonNegativeReals)
@@ -91,9 +92,18 @@ model.c4_2 = pe.ConstraintList()
 for t in model.T:
     model.c4_2.add(model.p_pem[t] <= model.P_pem_cap)
 
-model.c5 = pe.ConstraintList()
-for t in model.T:
-    model.c5.add(model.m_H2[t] == model.η[t]*model.k_CR*model.p_pem[t])
+#model.c5 = pe.ConstraintList()
+#for t in model.T:
+#    model.c5.add(model.m_H2[t] == model.k_CR*model.p_pem[t])
+
+model.c_piecewise = Piecewise(  model.T,
+                        model.m_H2,model.p_pem,
+                      pw_pts=pem_setpoint,
+                      pw_constr_type='EQ',
+                      f_rule=hydrogen_mass_flow,
+                      pw_repn='SOS2')
+
+
 
 model.c6 = pe.ConstraintList()
 for t in model.T:
@@ -111,9 +121,6 @@ model.c9 = pe.ConstraintList()
 for t in model.T:
     model.c9.add(model.m_Pu[t] == model.r_out * model.m_H2O[t])
 
-model.ceff = pe.ConstraintList()
-for t in model.T:
-    model.ceff.add(model.η[t] == model.η0 + model.α * model.m_H2[t])
 
 model.c10 = pe.ConstraintList()
 for t in model.T:
@@ -192,6 +199,7 @@ m_ro = [model.m_Ro[i].value for i in model.m_Ro]
 m_pu = [model.m_Pu[i].value for i in model.m_Pu]  
 m_CO2 = [model.m_CO2[i].value for i in model.m_CO2]
 m_H2O = [model.m_H2O[i].value for i in model.m_H2O]
+m_H2 = [model.m_H2[i].value for i in model.m_H2]
 zT = [model.zT[i].value for i in model.zT]
 s_raw = [model.s_raw[i].value for i in model.s_raw]
 s_pu = [model.s_Pu[i].value for i in model.s_Pu]
@@ -200,10 +208,10 @@ s_pu = [model.s_Pu[i].value for i in model.s_Pu]
 
 
 
-
 #Creating result DataFrame
 df_results = pd.DataFrame({#Col name : Value(list)
                           'P_PEM' : P_PEM,
+                          'm_H2' : m_H2,
                           'P_sRaw': P_sRaw,
                           'P_sPu' : P_sPu,
                           'P_PV' : P_PV,
@@ -223,6 +231,5 @@ df_results = pd.DataFrame({#Col name : Value(list)
 
 
 #save to Excel 
-df_results.to_excel("Result_files\Model1_results.xlsx")
-
+df_results.to_excel("Result_files/Model1_results.xlsx")
 
