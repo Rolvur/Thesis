@@ -52,3 +52,25 @@ CT = 18.4815 #Consumer tariff
 
 c_CO2 = 47.4/1000 #EUR/kg
 c_H2O = 0.66/1000 #EUR/kg 
+
+## Compressor calculation 
+
+m_H2 = 1 # kg/s
+m_CO2 = 1000 # kg/s
+T_in = 275 + 60 # Kelvin
+CP_H2 = 14.307 #kJ/kgK
+CP_CO2 = 0.846 #kJ/kgK
+γ_H2 = 1.405 
+γ_CO2 = 1.289 
+η_th = 0.7 #Thermal efficiency (Asssumed to be 70%) 
+PR_H2 = 80/1
+PR_CO2 = 80/45
+
+P_CON_H2 = (m_H2*T_in*CP_H2*(PR_H2**((γ_H2-1)/(γ_H2))-1))/η_th
+
+P_CON_CO2 = (m_CO2*T_in*CP_H2*(PR_H2**((γ_CO2-1)/(γ_CO2))-1))/η_th
+
+
+
+
+
