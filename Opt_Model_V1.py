@@ -1,4 +1,4 @@
-#from mmap import MAP_POPULATE
+from mmap import MAP_POPULATE
 import pyomo.environ as pe
 import pyomo.opt as po
 import pandas as pd 
@@ -93,7 +93,7 @@ for t in model.T:
 
 model.c5 = pe.ConstraintList()
 for t in model.T:
-    model.c5.add(model.m_H2[t] == model.η[t]*model.k_CR*model.p_pem[t])
+    model.c5.add(model.m_H2[t] == model.k_CR*model.p_pem[t])
 
 model.c6 = pe.ConstraintList()
 for t in model.T:
@@ -111,9 +111,9 @@ model.c9 = pe.ConstraintList()
 for t in model.T:
     model.c9.add(model.m_Pu[t] == model.r_out * model.m_H2O[t])
 
-model.ceff = pe.ConstraintList()
-for t in model.T:
-    model.ceff.add(model.η[t] == model.η0 + model.α * model.m_H2[t])
+#model.ceff = pe.ConstraintList()
+#for t in model.T:
+#    model.ceff.add(model.η[t] == model.η0 + model.α * model.m_H2[t])
 
 model.c10 = pe.ConstraintList()
 for t in model.T:
@@ -190,6 +190,7 @@ P_grid = [model.p_grid[i].value for i in model.p_grid]
 m_ri = [model.m_Ri[i].value for i in model.m_Ri] 
 m_ro = [model.m_Ro[i].value for i in model.m_Ro]   
 m_pu = [model.m_Pu[i].value for i in model.m_Pu]  
+m_H2 = [model.m_H2[i].value for i in model.m_H2]
 m_CO2 = [model.m_CO2[i].value for i in model.m_CO2]
 m_H2O = [model.m_H2O[i].value for i in model.m_H2O]
 zT = [model.zT[i].value for i in model.zT]
@@ -213,6 +214,7 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'Raw Storage' : s_raw,
                           'Pure Storage' : s_pu,
                           'DA' : list(DA.values()),
+                          'm_H2': m_H2,
                           'm_CO2' : m_CO2,
                           'm_H2O' : m_H2O,
                           'Demand' : list(Demand.values()), 
