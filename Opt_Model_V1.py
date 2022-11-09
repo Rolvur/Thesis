@@ -29,6 +29,8 @@ model.k_CR = k_CR
 model.r_in = r_in
 model.r_out = r_out
 model.k_d = k_d
+model.α = mu_slope #efficiency slope 
+model.η0 = mu_pem_0 #efficiency slope 
 model.S_Pu_max = S_Pu_max
 model.S_raw_max = S_raw_max
 model.m_H2_max = m_H2_max
@@ -51,7 +53,7 @@ model.s_raw = pe.Var(model.T, domain=pe.NonNegativeReals)
 model.s_Pu = pe.Var(model.T, domain=pe.NonNegativeReals)
 model.zT = pe.Var(model.T, domain = pe.Binary) #binary decision variable
 model.cT = pe.Var(model.T, domain = pe.Reals)
-
+model.η = pe.Var(model.T, domain = pe.NonNegativeReals)
 #Objective
 expr = sum((model.DA[t]+model.cT[t])*model.p_grid[t] + (model.m_CO2[t]*c_CO2) + (model.m_H2O[t]*c_H2O) for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
@@ -91,7 +93,7 @@ for t in model.T:
 
 model.c5 = pe.ConstraintList()
 for t in model.T:
-    model.c5.add(model.m_H2[t] == model.k_CR*model.p_pem[t])
+    model.c5.add(model.m_H2[t] == model.η[t]*model.k_CR*model.p_pem[t])
 
 model.c6 = pe.ConstraintList()
 for t in model.T:
@@ -108,6 +110,10 @@ for t in model.T:
 model.c9 = pe.ConstraintList()
 for t in model.T:
     model.c9.add(model.m_Pu[t] == model.r_out * model.m_H2O[t])
+
+model.ceff = pe.ConstraintList()
+for t in model.T:
+    model.ceff.add(model.η[t] == model.η0 + model.α * model.m_H2[t])
 
 model.c10 = pe.ConstraintList()
 for t in model.T:
