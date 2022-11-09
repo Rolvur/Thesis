@@ -299,10 +299,9 @@ c_aFRR_up = dict(zip(np.arange(1,len(list_aFRR_up)+1),list_aFRR_up))
 c_aFRR_down = dict(zip(np.arange(1,len(list_aFRR_down)+1),list_aFRR_down))
 
 ######################PEM efficiency table###################
-
-
-file_to_open = Path("Data/") / "PEM_efficiency_curve.xlsx"
-PEM_efficiency_raw = pd.read_excel(file_to_open, index_col=2)
+# whaa
+file_to_openn = Path("Data/") / "PEM_efficiency_curve.xlsx"
+PEM_efficiency_raw = pd.read_excel(file_to_openn, index_col=2)
 pem_setpoint =PEM_efficiency_raw['p_pem'].tolist() 
 hydrogen_mass_flow = PEM_efficiency_raw['m'].tolist()
 
