@@ -1,5 +1,22 @@
 #______________________CONSTANTS
 #from time import pthread_getcpuclockid
+## Compressor calculation 
+
+Max_m_H2 = 1013.114/(60*60)  # kg/s
+Max_m_CO2 = 7372.21/(60*60) # kg/s
+T_in_H2 = 275 + 60 # Kelvin
+T_in_CO2 = 275 - 35 # Kelvin
+CP_H2 = 14.307 #kJ/kgK
+CP_CO2 = 0.846 #kJ/kgK
+γ_H2 = 1.405 
+γ_CO2 = 1.289 
+η_th = 0.7 #Thermal efficiency (Asssumed to be 70%) 
+PR_CO2 = 80/12
+PR_H2 = 80/1
+
+P_CON_H2 = ((Max_m_H2*T_in_H2*CP_H2*(PR_H2**((γ_H2-1)/(γ_H2))-1))/η_th)/1000 #MW
+
+P_CON_CO2 = ((Max_m_CO2*T_in_CO2*CP_CO2*(PR_CO2**((γ_CO2-1)/(γ_CO2))-1))/η_th)/1000 #MW
 
 
 P_pem_cap = 52.5 # MW capacity 
@@ -22,7 +39,8 @@ M_CO2 = 44.01 #g/mol
 
 mu_slope = (mu_pem_x - mu_pem_0)/(mu_pem_x*M_H2*P_pem_cap*(1000000)*3.6/dHf0_H2O)
 
-k_CR = mu_pem*(M_H2/dHf0_H2O)*3600000 #Constant from power[W] to Hydrogen flow
+#k_CR = mu_pem*(M_H2/dHf0_H2O)*3600000 #Constant from power[W] to Hydrogen flow
+k_CR = (M_H2/dHf0_H2O)*3600000 #Constant from power[W] to Hydrogen flow
 M_CH3OH = 32.04
 r_in = (1/3)*(M_CO2/M_H2)
 r_out = M_CH3OH/M_H2O
@@ -52,23 +70,6 @@ CT = 18.4815 #Consumer tariff
 
 c_CO2 = 47.4/1000 #EUR/kg
 c_H2O = 0.66/1000 #EUR/kg 
-
-## Compressor calculation 
-
-m_H2 = 1 # kg/s
-m_CO2 = 1000 # kg/s
-T_in = 275 + 60 # Kelvin
-CP_H2 = 14.307 #kJ/kgK
-CP_CO2 = 0.846 #kJ/kgK
-γ_H2 = 1.405 
-γ_CO2 = 1.289 
-η_th = 0.7 #Thermal efficiency (Asssumed to be 70%) 
-PR_H2 = 80/1
-PR_CO2 = 80/45
-
-P_CON_H2 = (m_H2*T_in*CP_H2*(PR_H2**((γ_H2-1)/(γ_H2))-1))/η_th
-
-P_CON_CO2 = (m_CO2*T_in*CP_H2*(PR_H2**((γ_CO2-1)/(γ_CO2))-1))/η_th
 
 
 
