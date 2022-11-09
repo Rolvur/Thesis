@@ -7,12 +7,15 @@ from Opt_Constants import k_d
 import warnings
 import openpyxl
 
-
+from pathlib import Path
 ##################### Solar #######################
+data_folder = Path("Data/")
 
 
 #Solar production data set
-df_solar_prod= pd.read_csv('Data\PV production data 2019-2020.csv',sep=',')
+#df_solar_prod= pd.read_csv('Data\PV production data 2019-2020.csv',sep=',')
+file_to_open = Path("Data/") / "PV production data 2019-2020.csv"
+df_solar_prod= pd.read_csv(file_to_open,sep=',')
 df_solar_prod['time'] = df_solar_prod['time'].astype(str)
 
 #Converting time to datetime
