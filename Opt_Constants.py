@@ -21,7 +21,7 @@ P_CON_CO2 = ((Max_m_CO2*T_in_CO2*CP_CO2*(PR_CO2**((γ_CO2-1)/(γ_CO2))-1))/η_th
 
 P_pem_cap = 52.5 # MW capacity 
 P_pem_min = 0.05*P_pem_cap
-P_com = 4.5 #MW
+P_com = P_CON_CO2 + P_CON_H2 #MW
 #P_H2O = 0.5 #MW
 P_grid_cap = 238 #MW
 P_PV_cap = 257.2 # Due to transformer dimension
