@@ -1,7 +1,7 @@
 from turtle import width
-from Data_process import DA,df_DKDA_raw,df_FCR,df_aFRR,df_FCRR2019_raw,df_FCR20_21,df_FCRR2022_raw,df_DKmFRR_raw,df_FIafrr_raw, df_solar_prod_raw
-from Opt_Model_V2 import df_results
-from Opt_Constants import P_pem_min,P_pem_cap
+#from Data_process import DA,df_DKDA_raw,df_FCR,df_aFRR,df_FCRR2019_raw,df_FCR20_21,df_FCRR2022_raw,df_DKmFRR_raw,df_FIafrr_raw, df_solar_prod_raw
+#from Opt_Model_V2 import df_results
+#from Opt_Constants import P_pem_min,P_pem_cap
 import scipy
 import pandas as pd 
 import numpy as np
@@ -9,9 +9,12 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as plticker
 import matplotlib.dates as md
 from statistics import mean
-
+from pathlib import Path
 
 ####################### Plot Model Results (Ready to use) #######################
+
+file_to_open = Path("Result_files/") / "Model1_results.xlsx"
+df_resultsM1 = pd.read_excel(file_to_open)
 
 ## Subplot example
 def SubPlot1(Results):
@@ -75,7 +78,6 @@ def SubPlot1(Results):
     plt.tight_layout()
     #ax1.grid()
     plt.show()
-
 SubPlot1(df_results)
 
 #Subplot of Storage level(Shaded region), stack and line
@@ -170,17 +172,104 @@ def StackBar(Results,P_pem_cap,P_pem_min):
     plt.show()
 StackBar(df_results,P_pem_cap,P_pem_min)
 
+#### Scatter Plots ### 
+def ScatterPgridvsDA(Results):
+
+    x = Results['P_grid']
+    y = Results['DA']
+
+    z = np.polyfit(x, y, 1)
+    p = np.poly1d(z)
+
+
+    #plt.scatter(Results['P_grid'], Results['DA'], s=2, color = 'teal')
+    plt.scatter(x, y, s=2, color = 'teal')
+    #plt.legend(loc='best', fontsize=16)
+    plt.plot(x,p(x),"r--")
+    plt.xlabel('Grid [MW]')
+    plt.ylabel('Day Ahead Price [€/MWh]')
+
+
+    plt.show()
+ScatterPgridvsDA(df_resultsM1)
+
+def ScatterPEMvsDA(Results):
+
+    x = Results['P_PEM']
+    y = Results['DA']
+
+    z = np.polyfit(x, y, 1)
+    p = np.poly1d(z)
+
+
+    #plt.scatter(Results['P_grid'], Results['DA'], s=2, color = 'teal')
+    plt.scatter(x, y, s=2, color = 'teal')
+    #plt.legend(loc='best', fontsize=16)
+    plt.plot(x,p(x),"r--")
+    plt.xlabel('PEM [MW]')
+    plt.ylabel('Day Ahead Price [€/MWh]')
+
+
+    plt.show()
+ScatterPEMvsDA(df_resultsM1)
+
+#Subplot of Storage level(Shaded region), stack and line
+def SubPlot2(Results):
+
+    ##Two line(shaded under line) plot also subplots
+    x = Results['HourDK']
+    d = scipy.zeros(len(x))
+
+    fig, (ax1,ax2) = plt.subplots(nrows=2,ncols=1,sharex=True)
+
+    #1st Subplot 
+    ax4 = ax1.twinx()
+    ax1.fill_between(x, Results['Pure Storage'], where=Results['Pure Storage']>=d, interpolate=True, color='lightblue',label='Pure Storage')
+    ax1.bar(x, Results['Demand'], color='red',linestyle = 'solid', label ='Demand',width=0.05)
+
+    #ax1.tick_params(axis='x', rotation=45)
+    ax1.set_ylabel('kg')
+    ax1.set_ylim([0, 650000])
+    ax1.legend(loc='upper left')
+    ax1.set_title('Pure Methanol')
+
+    ax4.plot(x, Results['Pure_In'], color='midnightblue',linestyle = '--', label ='Pure In')
+    ax4.set_ylabel('kg/s')
+    ax4.set_ylim([0, 5000])
+    ax4.legend(loc='upper right')
+
+    #2nd Subplot
+    ax3 = ax2.twinx()
+
+    ax2.fill_between(x, Results['Raw Storage'], where=Results['Raw Storage']>=d, interpolate=True, color='lightgrey',label='Raw Storage')
+    ax2.tick_params(axis='x', rotation=45)
+    ax2.set_ylabel('kg')
+    ax2.set_ylim([0, 120000])
+    ax2.legend(loc='upper left')
+
+
+    ax3.plot(x, Results['Raw_In'], color='forestgreen',linestyle = 'solid', label ='Raw In')
+    ax3.plot(x, Results['Raw Out'], color='midnightblue',linestyle = '--', label ='Raw Out')
+    ax3.set_title('Raw Methanol')
+    ax3.set_ylabel('kg/s')
+    ax3.set_ylim([0, 11000])
+    ax3.legend(loc='upper right')
+
+    plt.tight_layout()
+    plt.show()
+SubPlot2(df_resultsM1)
+
+
+
+
+#########SCATTER ZOOM ##########  TRY THIS ON line plot 
+
+
 
 
 
 
 ####################### Plot Input Data #######################
-
-df_solar_prod_raw
-
-
-x = df_solar_prod_2019['time']
-
 
 
 
