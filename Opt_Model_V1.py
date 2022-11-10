@@ -1,4 +1,4 @@
-from mmap import MAP_POPULATE
+#from mmap import MAP_POPULATE
 import pyomo.environ as pe
 import pyomo.opt as po
 from pyomo.core import *
@@ -56,7 +56,7 @@ model.zT = pe.Var(model.T, domain = pe.Binary) #binary decision variable
 model.cT = pe.Var(model.T, domain = pe.Reals)
 model.η = pe.Var(model.T, domain = pe.NonNegativeReals)
 #Objective
-expr = sum((model.DA[t]+model.cT[t])*model.p_grid[t] + (model.m_CO2[t]*c_CO2) + (model.m_H2O[t]*c_H2O) for t in model.T)
+expr = sum((model.DA[t]+model.cT[t])*model.p_grid[t] for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 
 #creating a set of constraints
@@ -183,8 +183,7 @@ print(results)
 
 
 #Converting Pyomo resulst to list
-P_PEM = [model.p_pem[i].value for i in model.p_pem]  
-P_sRaw = [model.s_raw[i].value for i in model.s_raw]  
+P_PEM = [model.p_pem[i].value for i in model.p_pem]    
 P_sPu = [model.s_Pu[i].value for i in model.s_Pu]  
 P_PV = [model.p_PV[i].value for i in model.p_PV]  
 P_grid = [model.p_grid[i].value for i in model.p_grid]
@@ -207,11 +206,11 @@ s_pu = [model.s_Pu[i].value for i in model.s_Pu]
 df_results = pd.DataFrame({#Col name : Value(list)
                           'P_PEM' : P_PEM,
                           'm_H2' : m_H2,
-                          'P_sRaw': P_sRaw,
                           'P_sPu' : P_sPu,
                           'P_PV' : P_PV,
                           'P_grid' : P_grid,
                           'Raw_In' : m_ri,
+                          'Raw Out': m_ro,
                           'Pure_In': m_pu,
                           'Raw Storage' : s_raw,
                           'Pure Storage' : s_pu,
