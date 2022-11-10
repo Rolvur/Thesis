@@ -1,4 +1,4 @@
-from mmap import MAP_POPULATE
+#from mmap import MAP_POPULATE
 import pyomo.environ as pe
 import pyomo.opt as po
 from pyomo.core import *
@@ -26,12 +26,9 @@ model.P_pem_cap = P_pem_cap
 model.P_pem_min = P_pem_min
 model.P_com = P_com
 model.P_grid_cap = P_grid_cap
-model.k_CR = k_CR
 model.r_in = r_in
 model.r_out = r_out
 model.k_d = k_d
-model.α = mu_slope #efficiency slope 
-model.η0 = mu_pem_0 #efficiency slope 
 model.S_Pu_max = S_Pu_max
 model.S_raw_max = S_raw_max
 model.m_H2_max = m_H2_max
@@ -54,7 +51,7 @@ model.s_raw = pe.Var(model.T, domain=pe.NonNegativeReals)
 model.s_Pu = pe.Var(model.T, domain=pe.NonNegativeReals)
 model.zT = pe.Var(model.T, domain = pe.Binary) #binary decision variable
 model.cT = pe.Var(model.T, domain = pe.Reals)
-model.η = pe.Var(model.T, domain = pe.NonNegativeReals)
+#model.η = pe.Var(model.T, domain = pe.NonNegativeReals)
 #Objective
 expr = sum((model.DA[t]+model.cT[t])*model.p_grid[t] + (model.m_CO2[t]*c_CO2) + (model.m_H2O[t]*c_H2O) for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
