@@ -83,6 +83,8 @@ df_DKDA_raw = pd.read_csv(file_to_open,sep=';',decimal=',')
 
 #Converting to datetime
 df_DKDA_raw[['HourUTC','HourDK']] = df_DKDA_raw[['HourUTC','HourDK']].apply(pd.to_datetime)
+#save to Excel 
+#df_DKDA_raw.to_excel("Result_files/DA.xlsx")
 
 
 #Input for model
@@ -302,7 +304,7 @@ c_aFRR_down = dict(zip(np.arange(1,len(list_aFRR_down)+1),list_aFRR_down))
 # whaa
 file_to_openn = Path("Data/") / "PEM_efficiency_curve.xlsx"
 PEM_efficiency_raw = pd.read_excel(file_to_openn, index_col=2)
-pem_setpoint =PEM_efficiency_raw['p_pem'].tolist() 
+pem_setpoint = PEM_efficiency_raw['p_pem'].tolist() 
 hydrogen_mass_flow = PEM_efficiency_raw['m'].tolist()
 
 ##################### Methanol Demand #######################
@@ -333,16 +335,6 @@ if Demand_pattern == 'Weekly':
 
             
 Demand = dict(zip(np.arange(1,len(Demand)+1),Demand))
-
-
-
-
-
-
-#240 @ 1000 W/m^2
-
-#n_PV = (300*10**6)/310
-#P_pv = n_PV*(df_solar_irr['ALLSKY_SFC_SW_DWN']/800)ø
 
 
 
