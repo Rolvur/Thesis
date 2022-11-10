@@ -1,9 +1,10 @@
 #V1 -> V2: Include reserve products in optimization
 import pyomo.environ as pe
 import pyomo.opt as po
+from pyomo.core import *
 import pandas as pd 
 from Opt_Constants import *
-from Data_process import P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, DateRange
+from Data_process import P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, DateRange, pem_setpoint, hydrogen_mass_flow
 
 #____________________________________________
 solver = po.SolverFactory('gurobi')
@@ -109,9 +110,13 @@ model.c4_2 = pe.ConstraintList()
 for t in model.T:
     model.c4_2.add(model.p_pem[t] <= model.P_pem_cap)
 
-model.c5 = pe.ConstraintList()
-for t in model.T:
-    model.c5.add(model.m_H2[t] == model.k_CR*model.p_pem[t])
+model.c_piecewise = Piecewise(  model.T,
+                        model.m_H2,model.p_pem,
+                      pw_pts=pem_setpoint,
+                      pw_constr_type='EQ',
+                      f_rule=hydrogen_mass_flow,
+                      pw_repn='SOS2')
+
 
 model.c6 = pe.ConstraintList()
 for t in model.T:
