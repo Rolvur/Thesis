@@ -75,7 +75,7 @@ model.zT = pe.Var(model.T, domain = pe.Binary) #binary decision variable
 model.cT = pe.Var(model.T, domain = pe.Reals)
 
 #Objective
-expr = sum((model.DA[t]+model.cT[t])*model.p_grid[t] + (model.m_CO2[t]*c_CO2) + (model.m_H2O[t]*c_H2O) - (model.c_FCR[t]*model.r_FCR[t] + model.c_aFRR_up[t]*model.r_aFRR_up[t] + model.c_aFRR_down[t]*model.r_aFRR_down[t] + model.c_mFRR_up[t]*model.r_mFRR_up[t]) for t in model.T)
+expr = sum((model.DA[t]+model.cT[t])*model.p_grid[t] - (model.c_FCR[t]*model.r_FCR[t] + model.c_aFRR_up[t]*model.r_aFRR_up[t] + model.c_aFRR_down[t]*model.r_aFRR_down[t] + model.c_mFRR_up[t]*model.r_mFRR_up[t]) for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 
 #creating a set of constraints
@@ -351,31 +351,42 @@ R_FCR = [instance.r_FCR[i].value for i in instance.r_FCR]
 R_mFRRup = [instance.r_mFRR_up[i].value for i in instance.r_mFRR_up]
 R_aFRRup = [instance.r_aFRR_up[i].value for i in instance.r_aFRR_up]
 R_aFRRdown = [instance.r_aFRR_down[i].value for i in instance.r_aFRR_down]
-#s_raw = [instance.s_raw[i].value for i in instance.s_raw]
-#s_Pu =  [instance.s_Pu[i].value for i in instance.s_Pu]
+zT = [model.zT[i].value for i in model.zT]
+s_raw = [model.s_raw[i].value for i in model.s_raw]
+s_pu = [model.s_Pu[i].value for i in model.s_Pu]
+
+
 
 #Creating result DataFrame
 df_results = pd.DataFrame({#Col name : Value(list)
-                          'PEM' : P_PEM,
-                          'FCR "up"': R_FCR, 
-                          'FCR "down"': R_FCR,
+                          'P_PEM' : P_PEM,
+                          'P_PV' : P_PV,
                           'mFRR_up': R_mFRRup,
                           'aFRR_up': R_aFRRup,
                           'aFRR_down': R_aFRRdown,
-                          's_raw': sRaw,
-                          's_Pu' : sPu,
-                          'P_PV' : P_PV,
+                          'Raw Storage' : sRaw,
+                          'Pure Storage' : SPu,
+                          'P_grid' : P_grid,
                           'Raw_In' : m_ri,
                           'Raw_Out' : m_ro,
                           'Pure_In': m_pu,
+                          'zT' : zT,
                           'DA' : list(DA.values()),
+                          'FCR "up"': R_FCR, 
+                          'FCR "down"': R_FCR,
                           'cFCR' : list(c_FCR.values()),
                           'caFRRup' : list(c_aFRR_up.values()),
                           'caFRRdown' : list(c_aFRR_down.values()),
                           'cmFRRup' : list(c_mFRR_up.values()),
-                          'Demand' : list(Demand.values())}, index=DateRange,
+                          'Demand' : list(Demand.values())
+                          }, index=DateRange,
                           )
 
+
+
+
+#save to Excel 
+df_results.to_excel("Result_files/Model1_All2020.xlsx")
 
 
 
