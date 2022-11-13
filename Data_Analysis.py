@@ -1,7 +1,7 @@
 from turtle import width
-#from Data_process import DA,df_DKDA_raw,df_FCR,df_aFRR,df_FCRR2019_raw,df_FCR20_21,df_FCRR2022_raw,df_DKmFRR_raw,df_FIafrr_raw, df_solar_prod_raw
+from Data_process import DA,df_DKDA_raw,df_FCR,df_aFRR,df_FCRR2019_raw,df_FCR20_21,df_FCRR2022_raw,df_DKmFRR_raw,df_FIafrr_raw, df_solar_prod_raw
 #from Opt_Model_V2 import df_results
-#from Opt_Constants import P_pem_min,P_pem_cap
+from Opt_Constants import *
 import scipy
 import pandas as pd 
 import numpy as np
@@ -11,10 +11,14 @@ import matplotlib.dates as md
 from statistics import mean
 from pathlib import Path
 
+
 ####################### Plot Model Results (Ready to use) #######################
 
-file_to_open = Path("Result_files/") / "Model1_results.xlsx"
-df_resultsM1 = pd.read_excel(file_to_open)
+file_to_open1 = Path("Result_files/") / "Model1_All2020.xlsx"
+file_to_open2 = Path("Result_files/") / "Model1_All2021.xlsx"
+df_resultsM1_2020 = pd.read_excel(file_to_open1)
+df_resultsM1_2021 = pd.read_excel(file_to_open2)
+
 
 ## Subplot example
 def SubPlot1(Results):
@@ -214,7 +218,7 @@ def ScatterPEMvsDA(Results):
 ScatterPEMvsDA(df_resultsM1)
 
 #Subplot of Storage level(Shaded region), stack and line
-def SubPlot2(Results):
+def Model1StorageFlow(Results):
 
     ##Two line(shaded under line) plot also subplots
     x = Results['HourDK']
@@ -257,7 +261,120 @@ def SubPlot2(Results):
 
     plt.tight_layout()
     plt.show()
-SubPlot2(df_resultsM1)
+Model1StorageFlow(df_resultsM1)
+
+### ECO ##########################3 
+
+df_resultsM1_2020['P_PEM'].mean()
+
+
+#Calculate Cost, Revenue and Profit from DA market 
+
+
+a = df_resultsM1_2020.loc[df_resultsM1_2020['DA'] < 0-18.4815]
+a['P_PV'].mean()
+
+
+b = df_resultsM1_2020.loc[df_resultsM1_2020['zT'] == 1]
+a['PV'].mean()
+b['DA'].mean()
+
+
+def DACostRevProf(df):
+
+    consumer = df.loc[df['zT'] == 0]
+    producer = df.loc[df['zT'] == 1]
+
+    Cost_DA = sum((CT + consumer['DA'])*consumer['P_grid'])
+
+    Rev_DA = sum((producer['DA']-PT)* (-producer['P_grid']))
+
+    Profit = Rev_DA - Cost_DA
+
+    return Cost_DA,Rev_DA,Profit
+
+
+DA_Cost2020,DA_Rev_2020,DA_Profit_2020 = DACostRevProf(df_resultsM1_2020)
+DA_Cost2021,DA_Rev_2021,DA_Profit_2021 = DACostRevProf(df_resultsM1_2021)
+
+
+x = ['2020','2021']
+d = scipy.zeros(len(x))
+
+
+
+Revenue = np.transpose(np.array([DA_Rev_2020,DA_Rev_2021]))
+Cost = np.array([-DA_Cost2020,-DA_Cost2021])
+Profit = np.array([DA_Profit_2020,DA_Profit_2021])
+
+## DA Cost plot ## 
+
+
+fig , ax = plt.subplots(nrows=1,ncols=1,sharex=True)
+
+ax.bar(x, [DA_Rev_2020,DA_Rev_2021], color='darkgreen',linestyle = 'solid', label ='DA Revenue')
+
+ax.bar(x , [-DA_Cost2020,-DA_Cost2021], color='maroon',linestyle = '-', label ='DA Cost')
+
+ax.set_ylabel('€')
+ax.legend(loc='upper left')
+
+
+
+ax.tick_params(axis='x', rotation=45)
+plt.tight_layout()
+plt.show()  
+
+
+df_DA = pd.DataFrame({'Revenue' : Revenue, 'Cost':Cost , 'Profit':Profit}, index=['2020','2021'] )
+
+
+fig, ax = plt.subplots(nrows=1,ncols=1)
+
+#ax.bar(x, df_Data_plot['SpotPriceEUR,,'], color='b',linestyle = 'solid', label ='Day-Ahead Price')
+ax = df_DA.plot.bar(color=['firebrick','navy','darkseagreen'],rot=20, width = 0.5)
+
+
+ax.set_ylabel('€')
+ax.legend(loc='upper right')
+ax.set_ylim[300000,-600000]
+
+
+ax.tick_params(axis='x', rotation=45)
+plt.tight_layout()
+plt.show()   
+
+
+
+
+
+########## PEM vs DA and PV ######### 
+
+
+df_resultsM1_2020
+
+fig, (ax1,ax2) = plt.subplots(nrows=2,ncols=1,sharex=True)
+
+
+x = df_resultsM1_2020['HourDK']
+
+ax1.plot(x, df_resultsM1_2020['DA'], color='g',linestyle = '-', label ='DA')
+ax2.plot(x, df_resultsM1_2020['P_PV'], color='r',linestyle = '-', label ='PV')
+ax2.plot(x, df_resultsM1_2020['P_PEM'], color='b',linestyle = '-', label ='PEM')
+ax2.plot(x, df_resultsM1_2020['P_grid'], color='purple',linestyle = '-', label ='Grid')
+
+
+ax1.set_ylabel('€')
+ax2.set_ylabel('MW')
+ax1.legend(loc='best')
+ax2.legend(loc='best')
+#ax1.set_ylim[300000,-600000]
+
+
+ax2.tick_params(axis='x', rotation=45)
+plt.tight_layout()
+plt.show()   
+
 
 
 

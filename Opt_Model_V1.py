@@ -5,7 +5,7 @@ from pyomo.core import *
 import pandas as pd 
 from Opt_Constants import *
 from Data_process import P_PV_max, DA, Demand, DateRange, pem_setpoint, hydrogen_mass_flow
-
+from Settings import *
 #____________________________________________
 
 
@@ -202,8 +202,6 @@ s_pu = [model.s_Pu[i].value for i in model.s_Pu]
 #Creating result DataFrame
 df_results = pd.DataFrame({#Col name : Value(list)
                           'P_PEM' : P_PEM,
-                          'm_H2' : m_H2,
-                          'P_sPu' : P_sPu,
                           'P_PV' : P_PV,
                           'P_grid' : P_grid,
                           'Raw_In' : m_ri,
@@ -222,6 +220,8 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           )
 
 
+date = Start_date + "-" + End_date
+
 #save to Excel 
-df_results.to_excel("Result_files/Model1_results.xlsx")
+df_results.to_excel("Result_files/Model1_All2020.xlsx")
 
