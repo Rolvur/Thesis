@@ -264,8 +264,8 @@ file_to_open = Path("Data/") / "SE_AFRR_2021.csv"
 df_SEafrr2021_raw = pd.read_csv(file_to_open,sep=';',decimal=',') # decimal is used as in the csv the decimal is , and should be converted to .
 file_to_open = Path("Data/") / "SE_AFRR_2022.csv"
 file_to_openn = Path("Data/") / "SE_AFRR_2022.xlsx"
-df_SEafrr2022_raw = pd.read_excel(file_to_openn, index_col=2)
-df_SEafrr2022_raw = pd.read_csv(file_to_open,sep=';',decimal=',')
+#df_SEafrr2022_raw = pd.read_excel(file_to_openn, index_col=2)
+#df_SEafrr2022_raw = pd.read_csv(file_to_open,sep=';',decimal=',')
 file_to_open = Path("Data/") / "SE_AFRR_2022_2.csv"
 df_SEafrr2022_2_raw = pd.read_csv(file_to_open,sep=';',decimal=',')
 
@@ -288,8 +288,8 @@ df_SEafrr2020_raw['Period'] =  df_SEafrr2020_raw['Period'].apply(pd.to_datetime)
 df_SEafrr2020_raw['Publiceringstidpunkt'] =  df_SEafrr2020_raw['Publiceringstidpunkt'].apply(pd.to_datetime)
 df_SEafrr2021_raw['Period'] =  df_SEafrr2021_raw['Period'].apply(pd.to_datetime)
 df_SEafrr2021_raw['Publiceringstidpunkt'] =  df_SEafrr2021_raw['Publiceringstidpunkt'].apply(pd.to_datetime)
-df_SEafrr2022_raw['Period'] =  df_SEafrr2022_raw['Period'].apply(pd.to_datetime)
-df_SEafrr2022_raw['Publiceringstidpunkt'] =  df_SEafrr2022_raw['Publiceringstidpunkt'].apply(pd.to_datetime)
+#df_SEafrr2022_raw['Period'] =  df_SEafrr2022_raw['Period'].apply(pd.to_datetime)
+#df_SEafrr2022_raw['Publiceringstidpunkt'] =  df_SEafrr2022_raw['Publiceringstidpunkt'].apply(pd.to_datetime)
 
 
 
