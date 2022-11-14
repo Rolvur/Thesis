@@ -3,6 +3,7 @@ import pyomo.environ as pe
 import pyomo.opt as po
 from pyomo.core import *
 import pandas as pd 
+import numpy as np
 from Opt_Constants import *
 from Data_process import P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, DateRange, pem_setpoint, hydrogen_mass_flow
 
@@ -13,6 +14,11 @@ model = pe.ConcreteModel()
 #set t in T
 T = len(P_PV_max)
 model.T = pe.RangeSet(1,T)
+model.T_block = pe.RangeSet(1,T,4)
+
+#lst = []
+#for i in model.T_block:
+#  lst.append(i)
 
 #initializing parameters
 model.P_PV_max = pe.Param(model.T, initialize=P_PV_max)
@@ -206,6 +212,13 @@ model.c19_3 = pe.ConstraintList()
 for t in model.T:
   model.c19_3.add(model.r_FCR[t] == bidres_FCR* model.rx_FCR[t])
 
+model.c19_4 = pe.ConstraintList()
+for t in model.T_block:
+    model.c19_4.add(model.r_FCR[t+1] == model.r_FCR[t])
+    model.c19_4.add(model.r_FCR[t+2] == model.r_FCR[t])
+    model.c19_4.add(model.r_FCR[t+3] == model.r_FCR[t]) 
+
+
 model.c22_1 = pe.ConstraintList()
 for t in model.T:
   model.c22_1.add(model.rx_aFRR_up[t] >= (model.R_aFRR_min/model.bidres_aFRR)*model.zaFRRup[t])
@@ -342,7 +355,8 @@ for i in instance.s_Pu:
 #Converting Pyomo resulst to list
 sRaw = [instance.s_raw[i].value for i in instance.s_raw]  
 sPu = [instance.s_Pu[i].value for i in instance.s_Pu]  
-P_PV = [instance.p_PV[i].value for i in instance.p_PV]  
+P_PV = [instance.p_PV[i].value for i in instance.p_PV] 
+P_grid = [instance.p_grid[i].value for i in instance.p_grid]
 m_ri = [instance.m_Ri[i].value for i in instance.m_Ri]
 m_ro = [instance.m_Pu[i].value for i in instance.m_Pu]  
 m_pu = [instance.m_Pu[i].value for i in instance.m_Pu]  
@@ -351,9 +365,9 @@ R_FCR = [instance.r_FCR[i].value for i in instance.r_FCR]
 R_mFRRup = [instance.r_mFRR_up[i].value for i in instance.r_mFRR_up]
 R_aFRRup = [instance.r_aFRR_up[i].value for i in instance.r_aFRR_up]
 R_aFRRdown = [instance.r_aFRR_down[i].value for i in instance.r_aFRR_down]
-zT = [model.zT[i].value for i in model.zT]
-s_raw = [model.s_raw[i].value for i in model.s_raw]
-s_pu = [model.s_Pu[i].value for i in model.s_Pu]
+zT = [instance.zT[i].value for i in instance.zT]
+s_raw = [instance.s_raw[i].value for i in instance.s_raw]
+s_pu = [instance.s_Pu[i].value for i in instance.s_Pu]
 
 
 
@@ -365,7 +379,7 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'aFRR_up': R_aFRRup,
                           'aFRR_down': R_aFRRdown,
                           'Raw Storage' : sRaw,
-                          'Pure Storage' : SPu,
+                          'Pure Storage' : s_pu,
                           'P_grid' : P_grid,
                           'Raw_In' : m_ri,
                           'Raw_Out' : m_ro,
@@ -386,7 +400,7 @@ df_results = pd.DataFrame({#Col name : Value(list)
 
 
 #save to Excel 
-df_results.to_excel("Result_files/Model1_All2020.xlsx")
+df_results.to_excel("Result_files/Model2_All2020.xlsx")
 
 
 
