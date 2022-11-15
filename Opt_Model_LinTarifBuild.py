@@ -54,7 +54,9 @@ model.bidres_mFRR = bidres_mFRR #100kW bid resolution
 model.PT = PT
 model.CT = CT
 #defining variables
-model.p_grid = pe.Var(model.T, domain=pe.Reals)
+#model.p_grid = pe.Var(model.T, domain=pe.Reals)
+model.p_import = pe.Var(model.T, domain=pe.NonNegativeReals)
+model.p_export = pe.Var(model.T, domain=pe.NonNegativeReals)
 model.p_PV = pe.Var(model.T, domain=pe.NonNegativeReals)
 model.p_pem = pe.Var(model.T, domain=pe.NonNegativeReals, bounds=(0,52.5))
 model.m_H2 = pe.Var(model.T, domain=pe.NonNegativeReals, bounds=(0,1100))
@@ -77,27 +79,36 @@ model.zaFRRdown = pe.Var(model.T, domain = pe.Binary) #binary decision variable
 model.rx_mFRR_up = pe.Var(model.T, domain = pe.NonNegativeIntegers) #ancillary integer to realize the bid resolution
 model.r_mFRR_up = pe.Var(model.T, domain = pe.NonNegativeReals)
 model.zmFRRup = pe.Var(model.T, domain = pe.Binary) #binary decision variable
-model.zT = pe.Var(model.T, domain = pe.Binary) #binary decision variable
-model.cT = pe.Var(model.T, domain = pe.Reals)
+#model.zT = pe.Var(model.T, domain = pe.Binary) #binary decision variable
+#model.cT = pe.Var(model.T, domain = pe.Reals)
+model.z_grid = pe.Var(model.T, domain = pe.Binary) #binary decision variable
+
 
 #Objective
-expr = sum((model.DA[t]+model.cT[t])*model.p_grid[t] - (model.c_FCR[t]*model.r_FCR[t] + model.c_aFRR_up[t]*model.r_aFRR_up[t] + model.c_aFRR_down[t]*model.r_aFRR_down[t] + model.c_mFRR_up[t]*model.r_mFRR_up[t]) for t in model.T)
+expr = sum((model.DA[t]+model.CT)*model.p_import[t] - (model.DA[t]-model.PT)*model.p_export[t] - (model.c_FCR[t]*model.r_FCR[t] + model.c_aFRR_up[t]*model.r_aFRR_up[t] + model.c_aFRR_down[t]*model.r_aFRR_down[t] + model.c_mFRR_up[t]*model.r_mFRR_up[t]) for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 
 #creating a set of constraints
 model.c1 = pe.ConstraintList()
 for t in model.T:
-    model.c1.add(model.p_grid[t] + model.p_PV[t] == model.p_pem[t] + model.P_com)
+    model.c1.add((model.p_import[t]-model.p_export[t]) + model.p_PV[t] == model.p_pem[t] + model.P_com)
 
 #Constraint 2.1
-model.c2_1 = pe.ConstraintList()
-for t in model.T:
-    model.c2_1.add(-model.P_grid_cap <= model.p_grid[t])
+#model.c2_1 = pe.ConstraintList()
+#for t in model.T:
+#    model.c2_1.add(-model.P_grid_cap <= model.p_grid[t])
 
 #Constraint 2.2
-model.c2_2 = pe.ConstraintList()
+#model.c2_2 = pe.ConstraintList()
+#for t in model.T:
+#    model.c2_2.add(model.p_grid[t] <= model.P_grid_cap)
+
+#New Constraint
+model.c2 = pe.ConstraintList()
 for t in model.T:
-    model.c2_2.add(model.p_grid[t] <= model.P_grid_cap)
+    model.c2.add(model.p_import[t] <= model.z_grid[t]*model.P_grid_cap)
+    model.c2.add(model.p_export[t] <= (1-model.z_grid[t])*model.P_grid_cap)
+
 
 #Constraint 3
 model.c3_1 = pe.ConstraintList()
@@ -192,17 +203,17 @@ for t in model.T:
     model.c17_2.add(model.p_pem[t] - model.p_pem[t-1] <= model.ramp_pem * model.P_pem_cap)
 
 
-model.c25_1 = pe.ConstraintList()
-for t in model.T:
-  model.c25_1.add(model.zT[t] >= -model.p_grid[t]/model.P_grid_cap)
+#model.c25_1 = pe.ConstraintList()
+#for t in model.T:
+#  model.c25_1.add(model.zT[t] >= -model.p_grid[t]/model.P_grid_cap)
 
-model.c25_2 = pe.ConstraintList()
-for t in model.T:
-  model.c25_2.add(model.zT[t] <= 1-model.p_grid[t]/model.P_grid_cap)
+#model.c25_2 = pe.ConstraintList()
+#for t in model.T:
+#  model.c25_2.add(model.zT[t] <= 1-model.p_grid[t]/model.P_grid_cap)
 
-model.c25_3 = pe.ConstraintList()
-for t in model.T:
-  model.c25_3.add(model.cT[t] == (1-model.zT[t])*model.CT - model.zT[t]*model.PT)
+#model.c25_3 = pe.ConstraintList()
+#for t in model.T:
+#  model.c25_3.add(model.cT[t] == (1-model.zT[t])*model.CT - model.zT[t]*model.PT)
 
 
 model.c19_1 = pe.ConstraintList()
@@ -276,11 +287,11 @@ for t in model.T:
 # grid constraints taking reserves into account
 model.c20_1 = pe.ConstraintList()
 for t in model.T:
-  model.c20_1.add(model.P_grid_cap + model.p_grid[t]  >= model.r_FCR[t] + model.r_aFRR_up[t] + model.r_mFRR_up[t])
+  model.c20_1.add(model.P_grid_cap + (model.p_import[t]-model.p_export[t])  >= model.r_FCR[t] + model.r_aFRR_up[t] + model.r_mFRR_up[t])
 
 model.c20_2 = pe.ConstraintList()
 for t in model.T:
-  model.c20_2.add(model.P_grid_cap - model.p_grid[t]  >= model.r_FCR[t] + model.r_aFRR_down[t])
+  model.c20_2.add(model.P_grid_cap - (model.p_import[t]-model.p_export[t])  >= model.r_FCR[t] + model.r_aFRR_down[t])
 
 model.c21_1 = pe.ConstraintList()
 for t in model.T:
@@ -289,9 +300,6 @@ for t in model.T:
 model.c21_2 = pe.ConstraintList()
 for t in model.T:
   model.c21_2.add(model.p_pem[t] - model.P_pem_min >= model.r_FCR[t] + model.r_aFRR_up[t] + model.r_mFRR_up[t])
-
-
-
 
 
 ###############SOLVE THE MODEL########################
@@ -361,7 +369,9 @@ print(results)
 sRaw = [instance.s_raw[i].value for i in instance.s_raw]  
 sPu = [instance.s_Pu[i].value for i in instance.s_Pu]  
 P_PV = [instance.p_PV[i].value for i in instance.p_PV] 
-P_grid = [instance.p_grid[i].value for i in instance.p_grid]
+#P_grid = [instance.p_grid[i].value for i in instance.p_grid]
+P_import = [instance.p_import[i].value for i in instance.p_import]
+P_export = [instance.p_export[i].value for i in instance.p_export]
 m_ri = [instance.m_Ri[i].value for i in instance.m_Ri]
 m_ro = [instance.m_Pu[i].value for i in instance.m_Pu]  
 m_pu = [instance.m_Pu[i].value for i in instance.m_Pu]  
@@ -370,7 +380,7 @@ R_FCR = [instance.r_FCR[i].value for i in instance.r_FCR]
 R_mFRRup = [instance.r_mFRR_up[i].value for i in instance.r_mFRR_up]
 R_aFRRup = [instance.r_aFRR_up[i].value for i in instance.r_aFRR_up]
 R_aFRRdown = [instance.r_aFRR_down[i].value for i in instance.r_aFRR_down]
-zT = [instance.zT[i].value for i in instance.zT]
+z_grid = [instance.z_grid[i].value for i in instance.z_grid]
 s_raw = [instance.s_raw[i].value for i in instance.s_raw]
 s_pu = [instance.s_Pu[i].value for i in instance.s_Pu]
 
@@ -385,11 +395,13 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'aFRR_down': R_aFRRdown,
                           'Raw Storage' : sRaw,
                           'Pure Storage' : s_pu,
-                          'P_grid' : P_grid,
+                          #'P_grid' : P_grid,
+                          'P_import' : P_import,
+                          'P_export' : P_export,
                           'Raw_In' : m_ri,
                           'Raw_Out' : m_ro,
                           'Pure_In': m_pu,
-                          'zT' : zT,
+                          'z_grid' : z_grid,
                           'DA' : list(DA.values()),
                           'FCR "up"': R_FCR, 
                           'FCR "down"': R_FCR,
@@ -405,7 +417,7 @@ df_results = pd.DataFrame({#Col name : Value(list)
 
 
 #save to Excel 
-df_results.to_excel("Result_files/Model2_All2020.xlsx")
+df_results.to_excel("Result_files/ModelLinTarif.xlsx")
 
 
 
