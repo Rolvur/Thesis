@@ -56,8 +56,8 @@ model.CT = CT
 #defining variables
 model.p_grid = pe.Var(model.T, domain=pe.Reals)
 model.p_PV = pe.Var(model.T, domain=pe.NonNegativeReals)
-model.p_pem = pe.Var(model.T, domain=pe.NonNegativeReals)
-model.m_H2 = pe.Var(model.T, domain=pe.NonNegativeReals)
+model.p_pem = pe.Var(model.T, domain=pe.NonNegativeReals, bounds=(0,52.5))
+model.m_H2 = pe.Var(model.T, domain=pe.NonNegativeReals, bounds=(0,1100))
 model.m_CO2 = pe.Var(model.T, domain=pe.NonNegativeReals)
 model.m_H2O = pe.Var(model.T, domain=pe.NonNegativeReals)
 model.m_Ri = pe.Var(model.T, domain=pe.NonNegativeReals)
@@ -212,11 +212,11 @@ model.c19_3 = pe.ConstraintList()
 for t in model.T:
   model.c19_3.add(model.r_FCR[t] == bidres_FCR* model.rx_FCR[t])
 
-model.c19_4 = pe.ConstraintList()
-for t in model.T_block:
-    model.c19_4.add(model.r_FCR[t+1] == model.r_FCR[t])
-    model.c19_4.add(model.r_FCR[t+2] == model.r_FCR[t])
-    model.c19_4.add(model.r_FCR[t+3] == model.r_FCR[t]) 
+#model.c19_4 = pe.ConstraintList()
+#for t in model.T_block:
+ #   model.c19_4.add(model.r_FCR[t] == model.r_FCR[t+1])
+  #  model.c19_4.add(model.r_FCR[t] == model.r_FCR[t+2])
+   # model.c19_4.add(model.r_FCR[t] == model.r_FCR[t+3]) 
 
 
 model.c22_1 = pe.ConstraintList()
