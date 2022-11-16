@@ -139,6 +139,8 @@ df_FCR.insert(len(df_FCR.columns),'BLOCK_LENGTH',df_FCR.iloc[:,4].map(dic_block)
 #df_FCR.iloc[:,30] = df_FCR.iloc[:,4].map(dic_block)
 df_FCR = df_FCR.loc[df_FCR.index.repeat(df_FCR.BLOCK_LENGTH)].reset_index(drop=True)
 
+
+
 #check if any date is appearing more than once:
 #for i in range (0,len(df_FCR['DATE_FROM'])-24):
 #    if df_FCR['DATE_FROM'][i] == df_FCR['DATE_FROM'][i+24]:
@@ -180,17 +182,26 @@ for i in range(0,len(df_FCR['DATE_FROM'])):
     df_FCR.iloc[i,0] = datetime.datetime.strptime(df_FCR.iloc[i,0], '%d/%m/%Y %H:%M')
     df_FCR.iloc[i,0] = df_FCR.iloc[i,0].strftime('%Y-%m-%d %H:%M')
 
-df_FCR20_21 = df_FCR
+
+
+#df_FCR_DE['DATE_FROM'] = df_FCR['DATE_FROM']
+file_to_open = Path("Data/") / "df_FCR_DE.csv"
+df_FCR_DE = pd.read_csv(file_to_open,sep=',')
+df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'] = df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].astype(float)
 
 #Input for model
-TimeRange_FCR = (df_FCR['DATE_FROM'] >= Start_date) & (df_FCR['DATE_FROM']  <= End_date)
-df_FCR = df_FCR[TimeRange_FCR]
+TimeRange_FCR = (df_FCR_DE['DATE_FROM'] >= Start_date) & (df_FCR_DE['DATE_FROM']  <= End_date)
+df_FCR_DE = df_FCR_DE[TimeRange_FCR]
+
+
+
+#pd.date_range(start = '2021-01-01', end = '2021-12-31' ).difference(df_FCR.index)
 
 #converting string values to float
-df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'] = df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].astype(float)
+#df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'] = df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].astype(float)
 
 #Convert from pandas data series to list
-list_FCR = df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+list_FCR = df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
 c_FCR = dict(zip(np.arange(1,len(list_FCR)+1),list_FCR))
 
 
