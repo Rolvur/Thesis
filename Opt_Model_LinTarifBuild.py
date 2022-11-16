@@ -16,6 +16,10 @@ T = len(P_PV_max)
 model.T = pe.RangeSet(1,T)
 model.T_block = pe.RangeSet(1,T,4)
 
+
+
+
+
 #lst = []
 #for i in model.T_block:
 #  lst.append(i)
