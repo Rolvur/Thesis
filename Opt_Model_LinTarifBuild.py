@@ -34,6 +34,7 @@ model.P_pem_min = P_pem_min
 model.P_com = P_com
 model.P_grid_cap = P_grid_cap
 model.k_CR = k_CR
+model.eff = eff
 model.r_in = r_in
 model.r_out = r_out
 model.k_d = k_d
@@ -138,7 +139,7 @@ if sEfficiency == 'pw':
 if sEfficiency == 'k':
   model.csimple = pe.ConstraintList()
   for t in model.T:
-      model.csimple.add(model.p_pem[t] == model.m_H2[t]/20)
+      model.csimple.add(model.p_pem[t] == model.m_H2[t]/model.eff)
 
 model.c6 = pe.ConstraintList()
 for t in model.T:
@@ -227,6 +228,7 @@ for t in model.T:
 model.c19_3 = pe.ConstraintList()
 for t in model.T:
   model.c19_3.add(model.r_FCR[t] == bidres_FCR* model.rx_FCR[t])
+
 
 model.c19_4 = pe.ConstraintList()
 for t in model.T_block:
@@ -417,7 +419,7 @@ df_results = pd.DataFrame({#Col name : Value(list)
 
 
 #save to Excel 
-df_results.to_excel("Result_files/ModelLinTarif.xlsx")
+df_results.to_excel("Result_files/Oct_ModelLinTarif.xlsx")
 
 
 

@@ -41,6 +41,8 @@ mu_slope = (mu_pem_x - mu_pem_0)/(mu_pem_x*M_H2*P_pem_cap*(1000000)*3.6/dHf0_H2O
 
 #k_CR = mu_pem*(M_H2/dHf0_H2O)*3600000 #Constant from power[W] to Hydrogen flow
 k_CR = (M_H2/dHf0_H2O)*3600000 #Constant from power[W] to Hydrogen flow
+#eff = 21.127106
+eff = 20.447 # see pem_efficiency_approximation and "stikprove" excel files for calculation
 M_CH3OH = 32.04
 r_in = (1/3)*(M_CO2/M_H2)
 r_out = M_CH3OH/M_H2O
