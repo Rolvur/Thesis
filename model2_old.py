@@ -5,8 +5,8 @@ from pyomo.core import *
 import pandas as pd 
 import numpy as np
 from Opt_Constants import *
-from Data_process import P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, DateRange, pem_setpoint, hydrogen_mass_flow
-from Settings import sEfficiency
+from Data_process import P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, DateRange,pem_setpoint, hydrogen_mass_flow
+
 #____________________________________________
 solver = po.SolverFactory('gurobi')
 model = pe.ConcreteModel()
@@ -15,10 +15,6 @@ model = pe.ConcreteModel()
 T = len(P_PV_max)
 model.T = pe.RangeSet(1,T)
 model.T_block = pe.RangeSet(1,T,4)
-
-#lst = []
-#for i in model.T_block:
-#  lst.append(i)
 
 #initializing parameters
 model.P_PV_max = pe.Param(model.T, initialize=P_PV_max)
@@ -81,7 +77,7 @@ model.zT = pe.Var(model.T, domain = pe.Binary) #binary decision variable
 model.cT = pe.Var(model.T, domain = pe.Reals)
 
 #Objective
-expr = sum((model.DA[t]+model.cT[t])*model.p_grid[t] - (model.c_FCR[t]*model.r_FCR[t] + model.c_aFRR_up[t]*model.r_aFRR_up[t] + model.c_aFRR_down[t]*model.r_aFRR_down[t] + model.c_mFRR_up[t]*model.r_mFRR_up[t]) for t in model.T)
+expr = sum((model.DA[t]+model.cT[t])*model.p_grid[t] + (model.m_CO2[t]*c_CO2) + (model.m_H2O[t]*c_H2O) - (model.c_FCR[t]*model.r_FCR[t] + model.c_aFRR_up[t]*model.r_aFRR_up[t] + model.c_aFRR_down[t]*model.r_aFRR_down[t] + model.c_mFRR_up[t]*model.r_mFRR_up[t]) for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 
 #creating a set of constraints
@@ -116,18 +112,20 @@ model.c4_2 = pe.ConstraintList()
 for t in model.T:
     model.c4_2.add(model.p_pem[t] <= model.P_pem_cap)
 
-if sEfficiency == 'pw':
-  model.c_piecewise = Piecewise(  model.T,
-                          model.m_H2,model.p_pem,
-                        pw_pts=pem_setpoint,
-                        pw_constr_type='EQ',
-                        f_rule=hydrogen_mass_flow,
-                        pw_repn='SOS2')
-                   
-if sEfficiency == 'k':
-  model.csimple = pe.ConstraintList()
-  for t in model.T:
-      model.csimple.add(model.p_pem[t] == model.m_H2[t]/20)
+model.c_piecewise = Piecewise(  model.T,
+                        model.m_H2,model.p_pem,
+                      pw_pts=pem_setpoint,
+                      pw_constr_type='EQ',
+                      f_rule=hydrogen_mass_flow,
+                      pw_repn='SOS2')
+
+
+
+
+
+#model.c5 = pe.ConstraintList()
+#for t in model.T:
+#    model.c5.add(model.m_H2[t] == model.k_CR*model.p_pem[t])
 
 model.c6 = pe.ConstraintList()
 for t in model.T:
@@ -217,11 +215,12 @@ model.c19_3 = pe.ConstraintList()
 for t in model.T:
   model.c19_3.add(model.r_FCR[t] == bidres_FCR* model.rx_FCR[t])
 
-#model.c19_4 = pe.ConstraintList()
-#for t in model.T_block:
- #   model.c19_4.add(model.r_FCR[t] == model.r_FCR[t+1])
-  #  model.c19_4.add(model.r_FCR[t] == model.r_FCR[t+2])
-   # model.c19_4.add(model.r_FCR[t] == model.r_FCR[t+3]) 
+model.c19_4 = pe.ConstraintList()
+for t in model.T_block:
+    model.c19_4.add(model.r_FCR[t] == model.r_FCR[t+1])
+    model.c19_4.add(model.r_FCR[t] == model.r_FCR[t+2])
+    model.c19_4.add(model.r_FCR[t] == model.r_FCR[t+3]) 
+
 
 
 model.c22_1 = pe.ConstraintList()
@@ -302,40 +301,13 @@ results = solver.solve(instance)
 print(results)
 #instance.display()
 
-#print("Print values for each variable explicitly")
-#for i in instance.p_grid:
-#  print(str(instance.p_grid[i]), instance.p_grid[i].value)
-#  print(str(instance.zT[i]), instance.zT[i].value)
-#  print(str(instance.cT[i]), instance.cT[i].value)
-
-#for i in instance.p_PV:
-#  print(str(instance.p_PV[i]), instance.p_PV[i].value)
-#for i in instance.p_pem:
-#  print(str(instance.p_pem[i]), instance.p_pem[i].value)
-#for i in instance.r_FCR:
-#  print(str(instance.r_FCR[i]), instance.r_FCR[i].value)
-#for i in instance.rx_aFRR_up:
-#  print(str(instance.rx_aFRR_up[i]), instance.rx_aFRR_up[i].value)
-#for i in instance.r_aFRR_up:
-#  print(str(instance.r_aFRR_up[i]), instance.r_aFRR_up[i].value)
-#for i in instance.zaFRRup:
-#  print(str(instance.zaFRRup[i]), instance.zaFRRup[i].value)
-#for i in instance.r_aFRR_down:
-#  print(str(instance.r_aFRR_down[i]), instance.r_aFRR_down[i].value)
-#for i in instance.zaFRRdown:
-#  print(str(instance.zaFRRdown[i]), instance.zaFRRdown[i].value)
-#for i in instance.r_mFRR_up:
-#  print(str(instance.r_mFRR_up[i]), instance.r_mFRR_up[i].value)
-#for i in instance.zmFRRup:
-#  print(str(instance.zmFRRup[i]), instance.zmFRRup[i].value)
-
 
 #for i in instance.m_H2:
 #  print(str(instance.m_H2[i]), instance.m_H2[i].value)
-#for i in instance.m_CO2:
-#  print(str(instance.m_CO2[i]), instance.m_CO2[i].value)
-#CO2Mass = sum(instance.m_CO2)
-#print(CO2Mass)
+for i in instance.m_CO2:
+  print(str(instance.m_CO2[i]), instance.m_CO2[i].value)
+CO2Mass = sum(instance.m_CO2)
+print(CO2Mass)
 #for i in instance.m_Ri:
 #  print(str(instance.m_Ri[i]), instance.m_Ri[i].value)
 #for i in instance.m_Ro:
@@ -344,13 +316,13 @@ print(results)
 #  print(str(instance.m_H2O[i]), instance.m_H2O[i].value)
 #for i in instance.m_Pu:
 #  print(str(instance.m_Pu[i]), instance.m_Pu[i].value)
-#for i in instance.m_Pu:
-#  print(str(instance.m_Pu[i]), instance.m_Pu[i].value)
+for i in instance.m_Pu:
+  print(str(instance.m_Pu[i]), instance.m_Pu[i].value)
 
-#for i in instance.s_raw:
-#  print(str(instance.s_raw[i]), instance.s_raw[i].value)
-#for i in instance.s_Pu:
-#  print(str(instance.s_Pu[i]), instance.s_Pu[i].value)
+for i in instance.s_raw:
+  print(str(instance.s_raw[i]), instance.s_raw[i].value)
+for i in instance.s_Pu:
+  print(str(instance.s_Pu[i]), instance.s_Pu[i].value)
 
 
 #for i in instance.r_FCR:
@@ -360,8 +332,7 @@ print(results)
 #Converting Pyomo resulst to list
 sRaw = [instance.s_raw[i].value for i in instance.s_raw]  
 sPu = [instance.s_Pu[i].value for i in instance.s_Pu]  
-P_PV = [instance.p_PV[i].value for i in instance.p_PV] 
-P_grid = [instance.p_grid[i].value for i in instance.p_grid]
+P_PV = [instance.p_PV[i].value for i in instance.p_PV]  
 m_ri = [instance.m_Ri[i].value for i in instance.m_Ri]
 m_ro = [instance.m_Pu[i].value for i in instance.m_Pu]  
 m_pu = [instance.m_Pu[i].value for i in instance.m_Pu]  
@@ -370,42 +341,36 @@ R_FCR = [instance.r_FCR[i].value for i in instance.r_FCR]
 R_mFRRup = [instance.r_mFRR_up[i].value for i in instance.r_mFRR_up]
 R_aFRRup = [instance.r_aFRR_up[i].value for i in instance.r_aFRR_up]
 R_aFRRdown = [instance.r_aFRR_down[i].value for i in instance.r_aFRR_down]
-zT = [instance.zT[i].value for i in instance.zT]
-s_raw = [instance.s_raw[i].value for i in instance.s_raw]
-s_pu = [instance.s_Pu[i].value for i in instance.s_Pu]
-
-
+#s_raw = [instance.s_raw[i].value for i in instance.s_raw]
+#s_Pu =  [instance.s_Pu[i].value for i in instance.s_Pu]
 
 #Creating result DataFrame
 df_results = pd.DataFrame({#Col name : Value(list)
-                          'P_PEM' : P_PEM,
-                          'P_PV' : P_PV,
+                          'PEM' : P_PEM,
+                          'FCR "up"': R_FCR, 
+                          'FCR "down"': R_FCR,
                           'mFRR_up': R_mFRRup,
                           'aFRR_up': R_aFRRup,
                           'aFRR_down': R_aFRRdown,
-                          'Raw Storage' : sRaw,
-                          'Pure Storage' : s_pu,
-                          'P_grid' : P_grid,
+                          's_raw': sRaw,
+                          's_Pu' : sPu,
+                          'P_PV' : P_PV,
                           'Raw_In' : m_ri,
                           'Raw_Out' : m_ro,
                           'Pure_In': m_pu,
-                          'zT' : zT,
                           'DA' : list(DA.values()),
-                          'FCR "up"': R_FCR, 
-                          'FCR "down"': R_FCR,
                           'cFCR' : list(c_FCR.values()),
                           'caFRRup' : list(c_aFRR_up.values()),
                           'caFRRdown' : list(c_aFRR_down.values()),
                           'cmFRRup' : list(c_mFRR_up.values()),
-                          'Demand' : list(Demand.values())
-                          }, index=DateRange,
+                          'Demand' : list(Demand.values())}, index=DateRange,
                           )
-
 
 
 
 #save to Excel 
 df_results.to_excel("Result_files/Model2_All2020.xlsx")
+
 
 
 

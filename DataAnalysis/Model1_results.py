@@ -1,7 +1,5 @@
 
 from turtle import width
-#from Data_process import DA,df_DKDA_raw,df_FCR,df_aFRR,df_FCRR2019_raw,df_FCR20_21,df_FCRR2022_raw,df_DKmFRR_raw,df_FIafrr_raw, df_solar_prod_raw
-#from Opt_Model_V2 import df_results
 from Opt_Constants import *
 import scipy
 import pandas as pd 
