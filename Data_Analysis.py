@@ -1,5 +1,5 @@
 from turtle import width
-from Data_process import DA,df_DKDA_raw,df_FCR,df_aFRR,df_FCRR2019_raw,df_FCR20_21,df_FCRR2022_raw,df_DKmFRR_raw,df_FIafrr_raw, df_solar_prod_raw
+from Data_process import DA,df_DKDA_raw,df_aFRR,df_DKmFRR_raw,df_mFRR,df_FCR_DE
 #from Opt_Model_V2 import df_results
 from Opt_Constants import *
 import scipy
@@ -10,6 +10,10 @@ import matplotlib.ticker as plticker
 import matplotlib.dates as md
 from statistics import mean
 from pathlib import Path
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import rc
+rc('mathtext', default='regular')
 
 
 ####################### Plot Model Results (Ready to use) #######################
@@ -20,7 +24,7 @@ df_resultsM1_2020 = pd.read_excel(file_to_open1)
 df_resultsM1_2021 = pd.read_excel(file_to_open2)
 
 
-## Subplot example
+## Subplot exa½ple
 def SubPlot1(Results):
 
 
@@ -389,28 +393,49 @@ plt.show()
 ####################### Plot Input Data #######################
 
 
+### PV ### 
+file_to_open = Path("Data/") / "PV_data.xlsx"
+PV_data = pd.read_excel(file_to_open)
 
-fig, (ax1,ax2) = plt.subplots(nrows=2,ncols=1,sharex=True)
+def PlotPVdata(PV_data):
+    x = PV_data['Hour UTC']
 
-ax1.plot(x, df_solar_prod_raw['P'], color='teal',linestyle = 'solid', label ='PV_2019')
-ax2.plot(x, df_solar_prod_raw['P'], color='teal',linestyle = '-', label ='PV_2020', linewidth=1)
-ax1.set_ylabel('[MW]')
-ax2.set_ylabel('[MW]')
-#ax.set_ylim([-60, 170])
-ax1.legend(loc='upper left')
-ax1.legend(loc='upper left')
+    PV_data_month = PV_data.groupby(pd.PeriodIndex(PV_data['Hour UTC'], freq='M'))['Power [MW]'].mean()
 
-#ax.set_title('Day-Ahead Price')
-ax1.tick_params(axis='x', rotation=45)
-plt.tight_layout()
-plt.show()
+    PV_data_month = PV_data_month.tolist() 
 
+    days = [31,29,31,30,31,30,31,31,30,31,30,31,31,28,31,30,31,30,31,31,30,31,30,31]
+    hours = 24 
+    PV_avg = []
+    y = 0
+    for i in PV_data_month:
+        for j in range(0,days[y]):
 
-
-
-
+            for z in range(0,hours):
+                PV_avg.append(i)
+        y = y+1
 
 
+
+    #Counting occurances in array 
+    PV_avg_arr = np.array(PV_avg)
+    np.count_nonzero(PV_avg_arr == PV_data_month[3])
+
+    fig, ax = plt.subplots(nrows=1,ncols=1,sharex=True)
+
+
+    ax.bar(x, PV_data['Power [MW]'], color='red', label ='Hourly Production')
+    ax.plot(x,PV_avg, color='green',linewidth=2 , label ='Monthly average')
+
+    ax.set_ylabel('[MW]')
+    #ax.set_ylim([-60, 170])
+    ax.legend(loc='upper left')
+
+    #ax.set_title('Day-Ahead Price')
+    ax.tick_params(axis='x', rotation=45)
+    plt.tight_layout()
+    plt.show()
+PlotPVdata(PV_data)
 
 #Plotting Day ahead prices
 def DayAhead(df_DKDA_raw):
@@ -434,7 +459,6 @@ def DayAhead(df_DKDA_raw):
     plt.tight_layout()
     plt.show()
 DayAhead(df_DKDA_raw)
-
 
 ## Plottting FCR(Germany) Capacity prices 
 def FCR(df_FCR):
@@ -461,8 +485,7 @@ def FCR(df_FCR):
     ax.tick_params(axis='x', rotation=45)
     plt.tight_layout()
     plt.show()
-FCR(df_FCR)
-
+FCR(df_FCR_DE)
 
 #Plotting aFRR (Sweden) 
 def aFRR(df_aFRR):
@@ -488,8 +511,63 @@ def aFRR(df_aFRR):
     plt.show()   
 aFRR(df_aFRR)
 
-#Plotting PV
+#Plotting mFRR
 
+x = df_mFRR['HourDK']
+
+df_mFRR_avg = df_mFRR.groupby(pd.PeriodIndex(df_mFRR['HourDK'], freq='M'))['mFRR_UpPriceEUR'].mean()
+
+mFRR_avg = df_mFRR_avg.tolist() 
+
+days = [31,29,31,30,31,30,31,31,30,31,30,31,31,28,31,30,31,30,31,31,30,31,30,31]
+hours = 24 
+mFRR = []
+y = 0
+for i in mFRR_avg:
+    for j in range(0,days[y]):
+
+        for z in range(0,hours):
+            mFRR.append(i)
+    y = y+1
+
+
+#Begining figure
+fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
+
+#fig = plt.figure()
+#ax = fig.add_subplot(111)
+
+
+
+
+#ax.bar(x, df_Data_plot['SpotPriceEUR,,'], color='b',linestyle = 'solid', label ='Day-Ahead Price')
+ax1.bar(x, df_mFRR['mFRR_UpPriceEUR'], color='saddlebrown', label ='mFRR Hourly')
+#ax2 = ax.twinx()
+ax1.plot(x,mFRR, color='navy',linestyle = '-', label ='mFRR Monthly Average ', linewidth=2)
+
+ax2.bar(x, df_mFRR['mFRR_UpPriceEUR'], color='saddlebrown', label ='mFRR Hourly')
+#ax2 = ax.twinx()
+ax2.plot(x,mFRR, color='navy',linestyle = '-', label ='mFRR Monthly Average ', linewidth=2)
+
+
+
+#lns = lns1+lns2
+#labs = [l.get_label() for l in lns]
+#fig.legend(loc='upper right')
+
+#ax1.legend(loc="upper left", bbox_to_anchor=(0,1), bbox_transform=ax.transAxes)
+ax1.legend(loc="upper left")
+ax2.legend(loc="upper left")
+#ax.set_title('Day-Ahead Price')
+ax1.set_ylabel('[€/MW]')
+ax2.set_ylabel('[€/MW]')
+
+ax2.set_ylim([0,50])
+ax1.tick_params(axis='x', rotation=45)
+ax2.tick_params(axis='x', rotation=45)
+
+plt.tight_layout()
+plt.show()
 
 
 

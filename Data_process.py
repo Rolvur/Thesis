@@ -14,7 +14,8 @@ from pathlib import Path
 file_to_open = Path("Data/") / "PV_data.xlsx"
 df_solar_prod = pd.read_excel(file_to_open)
 
-TimeRangePV = (df_solar_prod['Unnamed: 0'] >= Start_date) & (df_solar_prod['Unnamed: 0']  <= End_date)
+
+TimeRangePV = (df_solar_prod['Hour UTC'] >= Start_date) & (df_solar_prod['Hour UTC']  <= End_date)
 df_solar_prod_time = df_solar_prod[TimeRangePV]
 
 PV = df_solar_prod_time['Power [MW]'].tolist() #Convert from pandas data series to list
@@ -74,7 +75,7 @@ sum(df_mFRR['mFRR_UpPriceEUR'])
 TimeRange_mFRR = (df_mFRR['HourDK'] >= Start_date) & (df_mFRR['HourDK']  <= End_date)
 df_mFRR = df_mFRR[TimeRange_mFRR]
 #convert to list
-list_mFRR_up = df_mFRR['mFRR_UpPriceDKK'].tolist() #Convert from pandas data series to list
+list_mFRR_up = df_mFRR['mFRR_UpPriceEUR'].tolist() #Convert from pandas data series to list
 
 #convert to dict
 c_mFRR_up = dict(zip(np.arange(1,len(list_mFRR_up)+1),list_mFRR_up))

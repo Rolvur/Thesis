@@ -11,6 +11,7 @@ from Settings import sEfficiency
 solver = po.SolverFactory('gurobi')
 model = pe.ConcreteModel()
 
+
 #set t in T
 T = len(P_PV_max)
 model.T = pe.RangeSet(1,T)
@@ -423,7 +424,7 @@ df_results = pd.DataFrame({#Col name : Value(list)
 
 
 #save to Excel 
-df_results.to_excel("Result_files/Model2_Result_Lin.xlsx")
+df_results.to_excel("Result_files/Model2_All2020.xlsx")
 
 
 
