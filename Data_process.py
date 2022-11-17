@@ -43,106 +43,16 @@ DA = dict(zip(np.arange(1,len(DA)+1),DA))
 DateRange = df_DKDA_raw2020['HourDK']
 
 
-
-
-##################### FCR #######################
-file_to_open = Path("Data/") / "RESULT_CAPACITY_2019_FCR .csv"
-df_FCRR2019_raw = pd.read_csv(file_to_open,sep=',')
-file_to_open = Path("Data/") / "ANONYM_CAPACITY_2020_BIDS_FCR.csv"
-df_FCRA2020_raw = pd.read_csv(file_to_open,sep=',')
-file_to_open = Path("Data/") / "DEMAND_CAPACITY_2020_FCR.csv"
-df_FCRD2020_raw = pd.read_csv(file_to_open,sep=',')
-file_to_open = Path("Data/") / "RESULT_CAPACITY_2020_FCR.csv"
-df_FCRR2020_raw = pd.read_csv(file_to_open,sep=',')
-file_to_open = Path("Data/") / "ANONYM_CAPACITY_2021_BIDS_FCR.csv"
-df_FCRA2021_raw = pd.read_csv(file_to_open,sep=',')
-file_to_open = Path("Data/") / "DEMAND_CAPACITY_2021_FCR.csv"
-df_FCRD2021_raw = pd.read_csv(file_to_open,sep=',')
-file_to_open = Path("Data/") / "RESULT_CAPACITY_2021_FCR.csv"
-df_FCRR2021_raw = pd.read_csv(file_to_open,sep=',')
-file_to_open = Path("Data/") / "RESULT_CAPACITY_2022_FCR.csv"
-df_FCRR2022_raw = pd.read_csv(file_to_open,sep=',')
-
-#### Cleaning up FCR data
-
-#Merging the two datasets
-df_FCRR_raw = pd.concat([df_FCRR2020_raw, df_FCRR2021_raw], ignore_index=True, sort=False)
-del df_FCRR_raw['Column1']
-del df_FCRR_raw['Unnamed: 31']
-del df_FCRR_raw['Unnamed: 32']
-
-#deleteting any row where column 'TENDER_NUMBER' is not '1'
-df_FCR = df_FCRR_raw[df_FCRR_raw.TENDER_NUMBER == 1]
-#resetting index
-df_FCR.reset_index(drop=True)
-#creating a dictionary linking the PRODUCTNAME to the amount of hours in block
-dic_block = {'NEGPOS_00_24': 24, 'NEGPOS_00_04': 4, 'NEGPOS_04_08': 4, 'NEGPOS_08_12': 4, 'NEGPOS_12_16': 4, 'NEGPOS_16_20': 4, 'NEGPOS_20_24': 4}
-
-#writing new column in FCR data using dictionary
-df_FCR.insert(len(df_FCR.columns),'BLOCK_LENGTH',df_FCR.iloc[:,4].map(dic_block))
-#df_FCR.iloc[:,30] = df_FCR.iloc[:,4].map(dic_block)
-df_FCR = df_FCR.loc[df_FCR.index.repeat(df_FCR.BLOCK_LENGTH)].reset_index(drop=True)
-
-
-
-#check if any date is appearing more than once:
-#for i in range (0,len(df_FCR['DATE_FROM'])-24):
-#    if df_FCR['DATE_FROM'][i] == df_FCR['DATE_FROM'][i+24]:
-#        print(i) 
-
-#writing hour to all data
-for j in range(0,int(len(df_FCR['DATE_FROM'])/24)):
-    i = j*24
-    df_FCR.iloc[i,0] = df_FCR.iloc[i,0] + " 00:00"
-    df_FCR.iloc[i+1,0] = df_FCR.iloc[i+1,0] + " 01:00" 
-    df_FCR.iloc[i+2,0] = df_FCR.iloc[i+2,0] + " 02:00"
-    df_FCR.iloc[i+3,0] = df_FCR.iloc[i+3,0] + " 03:00" 
-    df_FCR.iloc[i+4,0] = df_FCR.iloc[i+4,0] + " 04:00"
-    df_FCR.iloc[i+5,0] = df_FCR.iloc[i+5,0] + " 05:00" 
-    df_FCR.iloc[i+6,0] = df_FCR.iloc[i+6,0] + " 06:00"
-    df_FCR.iloc[i+7,0] = df_FCR.iloc[i+7,0] + " 07:00" 
-    df_FCR.iloc[i+8,0] = df_FCR.iloc[i+8,0] + " 08:00"
-    df_FCR.iloc[i+9,0] = df_FCR.iloc[i+9,0] + " 09:00" 
-    df_FCR.iloc[i+10,0] = df_FCR.iloc[i+10,0] + " 10:00"
-    df_FCR.iloc[i+11,0] = df_FCR.iloc[i+11,0] + " 11:00" 
-    df_FCR.iloc[i+12,0] = df_FCR.iloc[i+12,0] + " 12:00"
-    df_FCR.iloc[i+13,0] = df_FCR.iloc[i+13,0] + " 13:00" 
-    df_FCR.iloc[i+14,0] = df_FCR.iloc[i+14,0] + " 14:00"
-    df_FCR.iloc[i+15,0] = df_FCR.iloc[i+15,0] + " 15:00" 
-    df_FCR.iloc[i+16,0] = df_FCR.iloc[i+16,0] + " 16:00"
-    df_FCR.iloc[i+17,0] = df_FCR.iloc[i+17,0] + " 17:00" 
-    df_FCR.iloc[i+18,0] = df_FCR.iloc[i+18,0] + " 18:00"
-    df_FCR.iloc[i+19,0] = df_FCR.iloc[i+19,0] + " 19:00" 
-    df_FCR.iloc[i+20,0] = df_FCR.iloc[i+20,0] + " 20:00"
-    df_FCR.iloc[i+21,0] = df_FCR.iloc[i+21,0] + " 21:00" 
-    df_FCR.iloc[i+22,0] = df_FCR.iloc[i+22,0] + " 22:00"
-    df_FCR.iloc[i+23,0] = df_FCR.iloc[i+23,0] + " 23:00"
-    
-  
-
-#df_FCR['DATE_FROM'] = df_FCR['DATE_FROM'].astype(str) #probably not necessary, at the field is already a string
-#Converting time to datetime
-for i in range(0,len(df_FCR['DATE_FROM'])):
-    df_FCR.iloc[i,0] = datetime.datetime.strptime(df_FCR.iloc[i,0], '%d/%m/%Y %H:%M')
-    df_FCR.iloc[i,0] = df_FCR.iloc[i,0].strftime('%Y-%m-%d %H:%M')
-
-
-
 #df_FCR_DE['DATE_FROM'] = df_FCR['DATE_FROM']
 file_to_open = Path("Data/") / "df_FCR_DE.csv"
-df_FCR_DE = pd.read_csv(file_to_open,sep=',')
+
+df_FCR_DE = pd.read_csv(file_to_open,sep=',',low_memory=False)
 df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'] = df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].astype(float)
 
 #Input for model
 TimeRange_FCR = (df_FCR_DE['DATE_FROM'] >= Start_date) & (df_FCR_DE['DATE_FROM']  <= End_date)
 df_FCR_DE = df_FCR_DE[TimeRange_FCR]
 
-
-
-#pd.date_range(start = '2021-01-01', end = '2021-12-31' ).difference(df_FCR.index)
-
-#converting string values to float
-#df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'] = df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].astype(float)
 
 #Convert from pandas data series to list
 list_FCR = df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
@@ -152,24 +62,7 @@ c_FCR = dict(zip(np.arange(1,len(list_FCR)+1),list_FCR))
 ##################### mFRR #######################
 file_to_open = Path("Data/") / "MfrrReservesDK1.csv"
 df_DKmFRR_raw = pd.read_csv(file_to_open,sep=';', decimal=',')
-# HourUTC
-# HourDK
-# mFRR_DownExpected
-# mFRR_DownPurchased
-# mFRR_DownPriceDKK
-# mFRR_DownPriceEUR
-# mFRR_DownExpectedXtra
-# mFRR_DownPurchasedXtra
-# mFRR_DownPriceXtraDKK
-# mFRR_DownPriceXtraEUR
-# mFRR_UpExpected
-# mFRR_UpPurchased
-# mFRR_UpPriceDKK
-# mFRR_UpPriceEUR
-# mFRR_UpExpectedXtra
-# mFRR_UpPurchasedXtra
-# mFRR_UpPriceXtraDKK
-# mFRR_UpPriceXtraEUR
+
 
 #Converting to datetime
 df_DKmFRR_raw[['HourUTC','HourDK']] =  df_DKmFRR_raw[['HourUTC','HourDK']].apply(pd.to_datetime)
@@ -177,8 +70,6 @@ df_mFRR = df_DKmFRR_raw.iloc[0:24095,:]
 df_mFRR = df_mFRR[::-1]
 sum(df_mFRR['mFRR_UpPriceEUR'])
 
-#df_mFRR['mFRR_UpPriceEUR'].isnull().sum()
-#df_mFRR[df_mFRR['mFRR_UpPriceEUR'].isnull()]
 
 TimeRange_mFRR = (df_mFRR['HourDK'] >= Start_date) & (df_mFRR['HourDK']  <= End_date)
 df_mFRR = df_mFRR[TimeRange_mFRR]
@@ -192,64 +83,10 @@ c_mFRR_up = dict(zip(np.arange(1,len(list_mFRR_up)+1),list_mFRR_up))
 
 
 ##################### aFRR #######################
-#Reading data from csv
-# Finland
-file_to_open = Path("Data/") / "FI_AFFR_2020.xlsx"
-df_FIafrr2020_raw = pd.read_excel(file_to_open, index_col=2)
-file_to_open = Path("Data/") / "FI_AFFR_2021.xlsx"
-df_FIafrr2021_raw = pd.read_excel(file_to_open, index_col=2)
-file_to_open = Path("Data/") / "FI_AFFR_2022.xlsx"
-df_FIafrr2022_raw = pd.read_excel(file_to_open, index_col=2)
 
-df_FIafrr_raw = pd.concat([df_FIafrr2020_raw,df_FIafrr2021_raw,df_FIafrr2022_raw])
+file_to_open = Path("Data/") / "df_aFRR.xlsx"
+df_aFRR = pd.read_excel(file_to_open)
 
-#'End time UTC' 
-#'Start time UTC+02:00' 
-#'End time UTC+02:00'
-#'Automatic Frequency Restoration Reserve, price, down'
-#'Automatic Frequency Restoration Reserve, capacity, up'
-#'Automatic Frequency Restoration Reserve, capacity, down'
-#'Automatic Frequency Restoration Reserve, price, up'
-
-
-#Sweden
-file_to_open = Path("Data/") / "SE_AFRR_2020.csv"
-df_SEafrr2020_raw = pd.read_csv(file_to_open,sep=';',decimal=',') # decimal is used as in the csv the decimal is , and should be converted to .
-file_to_open = Path("Data/") / "SE_AFRR_2021.csv"
-df_SEafrr2021_raw = pd.read_csv(file_to_open,sep=';',decimal=',') # decimal is used as in the csv the decimal is , and should be converted to .
-file_to_open = Path("Data/") / "SE_AFRR_2022.csv"
-file_to_openn = Path("Data/") / "SE_AFRR_2022.xlsx"
-#df_SEafrr2022_raw = pd.read_excel(file_to_openn, index_col=2)
-#df_SEafrr2022_raw = pd.read_csv(file_to_open,sep=';',decimal=',')
-file_to_open = Path("Data/") / "SE_AFRR_2022_2.csv"
-df_SEafrr2022_2_raw = pd.read_csv(file_to_open,sep=';',decimal=',')
-
-#'Period'
-# #'Elområde'
-#'aFRR Upp Pris (EUR/MW)'
-#'aFRR Upp Volym (MW)'
-#'aFRR Ned Pris (EUR/MW)'
-#'aFRR Ned Volym (MW)'
-#'Publiceringstidpunkt' 
-#'Unnamed: 7']
-#Drop last (25) rows
-#Sweden
-df_SEafrr2020_raw.drop(df_SEafrr2020_raw.tail(25).index, inplace=True) #Dropping last row as it is a sum
-df_SEafrr2021_raw.drop(df_SEafrr2021_raw.tail(25).index, inplace=True) #Dropping last row as it is a sum
-
-#Converting time
-#Sweden
-df_SEafrr2020_raw['Period'] =  df_SEafrr2020_raw['Period'].apply(pd.to_datetime)
-df_SEafrr2020_raw['Publiceringstidpunkt'] =  df_SEafrr2020_raw['Publiceringstidpunkt'].apply(pd.to_datetime)
-df_SEafrr2021_raw['Period'] =  df_SEafrr2021_raw['Period'].apply(pd.to_datetime)
-df_SEafrr2021_raw['Publiceringstidpunkt'] =  df_SEafrr2021_raw['Publiceringstidpunkt'].apply(pd.to_datetime)
-#df_SEafrr2022_raw['Period'] =  df_SEafrr2022_raw['Period'].apply(pd.to_datetime)
-#df_SEafrr2022_raw['Publiceringstidpunkt'] =  df_SEafrr2022_raw['Publiceringstidpunkt'].apply(pd.to_datetime)
-
-
-
-#combine the two
-df_aFRR = pd.concat([df_SEafrr2020_raw, df_SEafrr2021_raw], ignore_index=True, sort=False)
 #reduce data point to the chosen time period
 TimeRange_aFRR = (df_aFRR['Period'] >= Start_date) & (df_aFRR['Period']  <= End_date)
 df_aFRR = df_aFRR[TimeRange_aFRR]
@@ -262,7 +99,7 @@ c_aFRR_up = dict(zip(np.arange(1,len(list_aFRR_up)+1),list_aFRR_up))
 c_aFRR_down = dict(zip(np.arange(1,len(list_aFRR_down)+1),list_aFRR_down))
 
 ######################PEM efficiency table###################
-# whaa
+
 file_to_openn = Path("Data/") / "PEM_efficiency_curve.xlsx"
 PEM_efficiency_raw = pd.read_excel(file_to_openn, index_col=2)
 pem_setpoint = PEM_efficiency_raw['p_pem'].tolist() 
