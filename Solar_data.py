@@ -38,14 +38,6 @@ for i in file_names:
    df_results = pd.concat([df_results,df_hourly])
 
 
-
-
-
-
-
-
-
-
 df_results.columns=['Irradiance']
 
 
