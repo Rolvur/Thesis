@@ -9,73 +9,17 @@ import openpyxl
 from pathlib import Path
 ##################### Solar #######################
 
-#Solar production data set
-#df_solar_prod= pd.read_csv('Data\PV production data 2019-2020.csv',sep=',')
-file_to_open = Path("Data/") / "PV production data 2019-2020.csv"
-df_solar_prod = pd.read_csv(file_to_open,sep=',')
-df_solar_prod['time'] = df_solar_prod['time'].astype(str)
-
-#Converting time to datetime
-for i in range(0,len(df_solar_prod['time'])):
-    df_solar_prod.iloc[i,0] = datetime.datetime.strptime(df_solar_prod.iloc[i,0], '%Y%m%d:%H%M')
-    df_solar_prod.iloc[i,0] = df_solar_prod.iloc[i,0].strftime('%Y-%m-%d - %H:%M')
-    
-df_solar_prod['time'] = df_solar_prod['time'].apply(pd.to_datetime)
-
-
-TimeRangeSolar_2019 = (df_solar_prod['time'] >= '2019-01-01 00:00') & (df_solar_prod['time']  <= '2019-12-31 23:59')
-TimeRangeSolar_2020 = (df_solar_prod['time'] >= '2020-01-01 00:00') & (df_solar_prod['time']  <= '2020-12-31 23:59')
-
-
-df_solar_prod_2020 = df_solar_prod[TimeRangeSolar_2020]
-df_solar_prod_2021 = df_solar_prod[TimeRangeSolar_2019]
-
-#Changing 2019 data to 2021 data and applying it to same dataframe 
-df_solar_prod_2021['time'] = df_solar_prod_2021['time'].apply(lambda x: x.replace(year=2021))
-
-solar_data_raw = pd.concat([df_solar_prod_2020,df_solar_prod_2021])
-
-
 
 #Input for model
-#Using year 2020
-TimeRangePV = (solar_data_raw['time'] >= Start_date) & (solar_data_raw['time']  <= End_date)
-df_solar_prod_raw = solar_data_raw[TimeRangePV]
+file_to_open = Path("Data/") / "PV_data.xlsx"
+df_solar_prod = pd.read_excel(file_to_open)
 
-PV_Watt = df_solar_prod_raw['P'].tolist() #Convert from pandas data series to list
-PV = [x/1000000 for x in PV_Watt]
+TimeRangePV = (df_solar_prod['Unnamed: 0'] >= Start_date) & (df_solar_prod['Unnamed: 0']  <= End_date)
+df_solar_prod_time = df_solar_prod[TimeRangePV]
+
+PV = df_solar_prod_time['Power [MW]'].tolist() #Convert from pandas data series to list
+
 P_PV_max = dict(zip(np.arange(1,len(PV)+1),PV))
-
-#print(PV,Start_date,End_date)
-
-#Solar irradiance data set
-file_to_open = Path("Data/") / "Irradiance data 2020-2021.csv"
-df_solar_irr= pd.read_csv(file_to_open,sep=',')
-df_solar_irr[['YEAR','MO','DY','HR']] = df_solar_irr[['YEAR','MO','DY','HR']].astype(str)
-
-#Adding 0 to time stamp to get similar length
-for i in range(0,len(df_solar_irr['YEAR'])):
-    #Month
-    if len(df_solar_irr.iloc[i,1]) == 1: 
-        df_solar_irr.iloc[i,1] ='0' + df_solar_irr.iloc[i,1] 
-    #Day
-    if len(df_solar_irr.iloc[i,2]) == 1: 
-        df_solar_irr.iloc[i,2] ='0' + df_solar_irr.iloc[i,2] 
-    #Hour
-    if len(df_solar_irr.iloc[i,3]) == 1: 
-        df_solar_irr.iloc[i,3] ='0' + df_solar_irr.iloc[i,3] 
-
-
-df_solar_irr['Date'] = df_solar_irr['YEAR'] + df_solar_irr['MO'] + df_solar_irr['DY'] + df_solar_irr['HR'] 
-
-#Converting time to datetime
-for i in range(0,len(df_solar_irr['Date'])):
-    df_solar_irr.iloc[i,9] = datetime.datetime.strptime(df_solar_irr.iloc[i,9], '%Y%m%d%H')
-    df_solar_irr.iloc[i,9] = df_solar_irr.iloc[i,9].strftime('%Y-%m-%d - %H')
-    
-
-df_solar_irr['Date'] = df_solar_irr['Date'].apply(pd.to_datetime) 
-
 
 ##################### Day ahead #######################
 file_to_open = Path("Data/") / "Elspotprices_RAW.csv"
