@@ -375,9 +375,9 @@ print(results)
 sRaw = [instance.s_raw[i].value for i in instance.s_raw]  
 sPu = [instance.s_Pu[i].value for i in instance.s_Pu]  
 P_PV = [instance.p_PV[i].value for i in instance.p_PV] 
-#P_grid = [instance.p_grid[i].value for i in instance.p_grid]
 P_import = [instance.p_import[i].value for i in instance.p_import]
 P_export = [instance.p_export[i].value for i in instance.p_export]
+P_grid = [P_import[i] - P_export[i] for i in range(0,len(P_import)) ]
 m_ri = [instance.m_Ri[i].value for i in instance.m_Ri]
 m_ro = [instance.m_Pu[i].value for i in instance.m_Pu]  
 m_pu = [instance.m_Pu[i].value for i in instance.m_Pu]  
@@ -401,7 +401,7 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'aFRR_down': R_aFRRdown,
                           'Raw Storage' : sRaw,
                           'Pure Storage' : s_pu,
-                          #'P_grid' : P_grid,
+                          'P_grid' : P_grid,
                           'P_import' : P_import,
                           'P_export' : P_export,
                           'Raw_In' : m_ri,
@@ -423,7 +423,7 @@ df_results = pd.DataFrame({#Col name : Value(list)
 
 
 #save to Excel 
-df_results.to_excel("Result_files/Oct_ModelLinTarif.xlsx")
+df_results.to_excel("Result_files/Model2_Result_Lin.xlsx")
 
 
 
