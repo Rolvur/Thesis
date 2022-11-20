@@ -477,7 +477,7 @@ def FCR(df_FCR):
     fig, ax = plt.subplots(nrows=1,ncols=1)
 
     #ax.bar(x, df_Data_plot['SpotPriceEUR,,'], color='b',linestyle = 'solid', label ='Day-Ahead Price')
-    ax.plot(x, df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'], color='teal',linestyle = '-', label ='FCR Capacity', linewidth=1)
+    ax.plot(x, df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'], color='royalblue',linestyle = '-', label ='FCR Capacity', linewidth=1)
     ax.set_ylabel('[€/MW]')
     #ax.set_ylim([-60, 170])
     ax.legend(loc='upper left')
