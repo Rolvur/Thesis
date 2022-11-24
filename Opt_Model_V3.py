@@ -6,7 +6,7 @@ from pyomo.core import *
 import pandas as pd 
 import numpy as np
 from Opt_Constants import *
-from Data_process import P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω, DateRange, pem_setpoint, hydrogen_mass_flow
+from Data_process import P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, π, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω, DateRange, pem_setpoint, hydrogen_mass_flow
 from Settings import sEfficiency
 #____________________________________________
 solver = po.SolverFactory('gurobi')
@@ -27,6 +27,7 @@ model.c_FCR = pe.Param(model.Ω,model.T,initialize = c_FCRs)
 model.c_aFRR_up = pe.Param(model.Ω, model.T, initialize = c_aFRR_ups)
 model.c_aFRR_down = pe.Param(model.Ω, model.T, initialize = c_aFRR_downs)
 model.c_mFRR_up = pe.Param(model.Ω, model.T, initialize = c_mFRR_ups)
+model.π = pe.Param(model.Ω, initialize = π)
 
 model.P_pem_cap = P_pem_cap 
 model.P_pem_min = P_pem_min
@@ -101,7 +102,7 @@ model.r_mFRR_up = pe.Var(model.Ω, model.T, domain = pe.NonNegativeReals)
 
 
 #Objective
-expr = sum((model.DA[t]+model.CT)*model.p_import[t] - (model.DA[t]-model.PT)*model.p_export[t] - (model.c_FCR[t]*model.r_FCR[t] + model.c_aFRR_up[t]*model.r_aFRR_up[t] + model.c_aFRR_down[t]*model.r_aFRR_down[t] + model.c_mFRR_up[t]*model.r_mFRR_up[t]) for t in model.T)
+expr = sum(sum(-model.π(ω)*((model.c_FCRs[ω,t]*model.r_FCR[ω,t] + model.c_aFRR_ups[ω,]*model.r_aFRR_up[ω,t] + model.c_aFRR_downs[ω,t]*model.r_aFRR_down[ω,t] + model.c_mFRR_ups[ω,t]*model.r_mFRR_up[ω,t]) + (model.DA[t]+model.CT)*model.p_import[ω,t] - (model.DA[t]-model.PT)*model.p_export[ω,t]) for ω in model.Ω) for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 
 model.c_a = pe.ConstraintList()
@@ -328,21 +329,29 @@ for t in model.T:
 
 # grid constraints taking reserves into account
 model.c20_1 = pe.ConstraintList()
-for t in model.T:
-  model.c20_1.add(model.P_grid_cap + (model.p_import[t]-model.p_export[t])  >= model.b_FCR[t] + model.b_aFRR_up[t] + model.b_mFRR_up[t])
+for ω in model.Ω:
+  for t in model.T:
+    model.c20_1.add(model.P_grid_cap + (model.p_import[ω,t]-model.p_export[ω,t])  >= model.r_FCR[ω,t] + model.r_aFRR_up[ω,t] + model.r_mFRR_up[ω,t])
 
 model.c20_2 = pe.ConstraintList()
-for t in model.T:
-  model.c20_2.add(model.P_grid_cap - (model.p_import[t]-model.p_export[t])  >= model.b_FCR[t] + model.b_aFRR_down[t])
+for ω in model.Ω:
+  for t in model.T:
+    model.c20_2.add(model.P_grid_cap - (model.p_import[ω,t]-model.p_export[ω,t])  >= model.r_FCR[ω,t] + model.r_aFRR_down[ω,t])
 
 model.c21_1 = pe.ConstraintList()
-for t in model.T:
-  model.c21_1.add(model.P_pem_cap - model.p_pem[t]  >= model.b_FCR[t] + model.b_aFRR_down[t])
+for ω in model.Ω:
+  for t in model.T:
+    model.c21_1.add(model.P_pem_cap - model.p_pem[ω,t]  >= model.r_FCR[ω,t] + model.r_aFRR_down[ω,t])
 
 model.c21_2 = pe.ConstraintList()
-for t in model.T:
-  model.c21_2.add(model.p_pem[t] - model.P_pem_min >= model.b_FCR[t] + model.b_aFRR_up[t] + model.b_mFRR_up[t])
+for ω in model.Ω:
+  for t in model.T:
+    model.c21_2.add(model.p_pem[ω,t] - model.P_pem_min >= model.r_FCR[ω,t] + model.r_aFRR_up[ω,t] + model.r_mFRR_up[ω,t])
 
+model.c22 = pe.ConstraintList()
+for t in model.T:
+  model.c22.add(model.b_FCR[t] + model.b_aFRR_up[t] + model.b_mFRR_up[t] <= model.P_pem_cap - model.P_pem_min)
+  model.c22.add(model.b_FCR[t] + model.b_aFRR_down[t] <= model.P_pem_cap - model.P_pem_min)
 
 ###############SOLVE THE MODEL########################
 

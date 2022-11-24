@@ -143,8 +143,9 @@ c_FCRs = {}
 c_aFRR_ups = {}
 c_aFRR_downs = {}
 c_mFRR_ups = {}
-
+π = {}
 for i in range(1,Ω+1):
+    π[i] = 0.5
     for j in range(1,len(c_FCR)+1):
         c_FCRs[(i,j)] = c_FCR[j]*i
         c_aFRR_ups[(i,j)] = c_aFRR_up[j]*i
