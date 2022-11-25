@@ -102,7 +102,7 @@ model.r_mFRR_up = pe.Var(model.Ω, model.T, domain = pe.NonNegativeReals)
 
 
 #Objective
-expr = sum(sum(-model.π[ω]*((model.c_FCR[ω,t]*model.r_FCR[ω,t] + model.c_aFRR_up[ω,t]*model.r_aFRR_up[ω,t] + model.c_aFRR_down[ω,t]*model.r_aFRR_down[ω,t] + model.c_mFRR_up[ω,t]*model.r_mFRR_up[ω,t]) + (model.DA[t]+model.CT)*model.p_import[ω,t] - (model.DA[t]-model.PT)*model.p_export[ω,t]) for ω in model.Ω) for t in model.T)
+expr = sum(sum(model.π[ω]*(-(model.c_FCR[ω,t]*model.r_FCR[ω,t] + model.c_aFRR_up[ω,t]*model.r_aFRR_up[ω,t] + model.c_aFRR_down[ω,t]*model.r_aFRR_down[ω,t] + model.c_mFRR_up[ω,t]*model.r_mFRR_up[ω,t]) + (model.DA[t]+model.CT)*model.p_import[ω,t] - (model.DA[t]-model.PT)*model.p_export[ω,t]) for ω in model.Ω) for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 
 model.c_a = pe.ConstraintList()
@@ -225,9 +225,10 @@ for ω in model.Ω:
     if t >= 2:
       model.c12.add(model.s_raw[ω,t] == model.s_raw[ω,t-1] + model.m_Ri[ω,t] - model.m_Ro[ω,t])
 
-model.c13_1 = pe.Constraint(expr=model.s_raw[ω,1] == 0.5*model.S_raw_max + model.m_Ri[ω,1] - model.m_Ro[ω,1])
-
-model.c13_2 = pe.Constraint(expr=0.5*model.S_raw_max == model.s_raw[ω,T])
+model.c13 = pe.ConstraintList()
+for ω in model.Ω:
+  model.c13.add(model.s_raw[ω,1] == 0.5*model.S_raw_max + model.m_Ri[ω,1] - model.m_Ro[ω,1])
+  model.c13.add(0.5*model.S_raw_max == model.s_raw[ω,T])
 
 #model.c14_1 = pe.ConstraintList()
 #for t in model.T:
@@ -239,7 +240,9 @@ for ω in model.Ω:
     model.c14_2.add(model.s_Pu[ω,t] <= model.S_Pu_max)
 
 # Pure methanol level at "time zero" is zero, therefore the level at time 1 equals the inflow in time 1
-model.c15 = pe.Constraint(expr = model.s_Pu[ω,1] == model.m_Pu[ω,1])
+model.c15 = pe.ConstraintList()
+for ω in model.Ω:
+  model.c15.add(model.s_Pu[ω,1] == model.m_Pu[ω,1])
 
 model.c16 = pe.ConstraintList()
 for ω in model.Ω:
@@ -436,21 +439,27 @@ m_pu2 = [instance.m_Pu[2,i].value for i in range(1,T+1)]
 P_PEM1 = [instance.p_pem[1,i].value for i in range(1,T+1)]  
 P_PEM2 = [instance.p_pem[2,i].value for i in range(1,T+1)]  
 b_FCR = [instance.b_FCR[i].value for i in range(1,T+1)]
+β_FCR = [instance.β_FCR[i].value for i in range(1,T+1)]
 R_FCR1 = [instance.r_FCR[1,i].value for i in range(1,T+1)]
 R_FCR2 = [instance.r_FCR[2,i].value for i in range(1,T+1)]
 b_mFRRup = [instance.b_mFRR_up[i].value for i in range(1,T+1)]
+β_mFRRup = [instance.β_mFRR_up[i].value for i in range(1,T+1)]
 R_mFRRup1 = [instance.r_mFRR_up[1,i].value for i in range(1,T+1)]
 R_mFRRup2= [instance.r_mFRR_up[2,i].value for i in range(1,T+1)]
+β_aFRRup = [instance.β_aFRR_up[i].value for i in range(1,T+1)]
+b_aFRRup = [instance.b_aFRR_up[i].value for i in range(1,T+1)]
 R_aFRRup1 = [instance.r_aFRR_up[1,i].value for i in range(1,T+1)]
 R_aFRRup2 = [instance.r_aFRR_up[2,i].value for i in range(1,T+1)]
+b_aFRRdown = [instance.b_aFRR_down[i].value for i in range(1,T+1)]
+β_aFRRdown = [instance.β_aFRR_down[i].value for i in range(1,T+1)]
 R_aFRRdown1 = [instance.r_aFRR_down[1,i].value for i in range(1,T+1)]
 R_aFRRdown2 = [instance.r_aFRR_down[2,i].value for i in range(1,T+1)]
 z_grid1 = [instance.z_grid[1,i].value for i in range(1,T+1)]
 z_grid2 = [instance.z_grid[2,i].value for i in range(1,T+1)]
 s_raw1 = [instance.s_raw[1,i].value for i in range(1,T+1)]
 s_raw2 = [instance.s_raw[2,i].value for i in range(1,T+1)]
-s_pu1 = [instance.s_pu[1,i].value for i in range(1,T+1)]
-s_pu2 = [instance.s_pu[2,i].value for i in range(1,T+1)]
+s_pu1 = [instance.s_Pu[1,i].value for i in range(1,T+1)]
+s_pu2 = [instance.s_Pu[2,i].value for i in range(1,T+1)]
 #sRaw1 = [instance.s_raw[1,i].value for i in range(1,T+1)]
 #sRaw2 = [instance.s_raw[2,i].value for i in range(1,T+1)]  
 #sPu1 = [instance.s_Pu[1,i].value for i in range(1,T+1)]  
@@ -462,12 +471,30 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'P_PEM2' : P_PEM2,
                           'P_PV1' : P_PV1,
                           'P_PV2' : P_PV2,
+                          'bidVol_FCR': b_FCR,
+                          'bidPrice_FCR': β_FCR,
+                          'c_FCR1' : list(c_FCRs.values())[0:168],
+                          'c_FCR2' : list(c_FCRs.values())[168:337],
+                          'FCR_1' : R_FCR1, 
+                          'FCR_2' : R_FCR2,
+                          'bidVol_mFRR_up': b_mFRRup,
+                          'bidPrice_mFRR_up': β_mFRRup,
+                          'c_mFRRup1' : list(c_mFRR_ups.values())[0:168],
+                          'c_mFRRup2' : list(c_mFRR_ups.values())[168:336],
                           'mFRR_up1': R_mFRRup1,
-                          'mFRR_up1': R_mFRRup1,
+                          'mFRR_up2': R_mFRRup2,
+                          'bidVol_aFRR_up': b_aFRRup,
+                          'bidPrice_aFRR_up': β_aFRRup,
+                          'c_aFRRup1' : list(c_aFRR_ups.values())[0:168],
+                          'c_aFRRup2' : list(c_aFRR_ups.values())[168:337],
                           'aFRR_up1': R_aFRRup1,
                           'aFRR_up2': R_aFRRup2,
+                          'bidVol_aFRR_down': b_aFRRdown,
+                          'bidPrice_aFRR_down': β_aFRRdown,
                           'aFRR_down1': R_aFRRdown1,
                           'aFRR_down2': R_aFRRdown2,
+                          'c_aFRRdown1' : list(c_aFRR_downs.values())[0:168],
+                          'c_aFRRdown2' : list(c_aFRR_downs.values())[168:336],
                           'Raw Storage1' : s_raw1,
                           'Raw Storage2' : s_raw2,
                           'Pure Storage1' : s_pu1,
@@ -488,18 +515,6 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'z_grid2' : z_grid2,
                           'DA1' : list(DA.values()),
                           'DA1' : list(DA.values()),
-                          'FCR "up"': R_FCR1, 
-                          'FCR "up"': R_FCR2, 
-                          'FCR "down"': R_FCR1,
-                          'FCR "down"': R_FCR2,
-                          'cFCR1' : list(c_FCRs.values())[0:168],
-                          'cFCR2' : list(c_FCRs.values())[169:337],
-                          'aFRRup1' : list(c_aFRR_ups.values())[0:168],
-                          'aFRRup2' : list(c_aFRR_ups.values())[169:337],
-                          'aFRRdown1' : list(c_aFRR_downs.values())[0:168],
-                          'aFRRdown2' : list(c_aFRR_downs.values())[169:337],
-                          'mFRRup1' : list(c_mFRR_ups.values())[0:168],
-                          'mFRRup2' : list(c_mFRR_ups.values())[169:337],
                           'Demand1' : list(Demand.values()),
                           'Demand2' : list(Demand.values())
                           }, index=DateRange,
@@ -509,7 +524,7 @@ df_results = pd.DataFrame({#Col name : Value(list)
 
 
 #save to Excel 
-df_results.to_excel("Result_files/Model2_All2020.xlsx")
+df_results.to_excel("Result_files/Model3_TestResults.xlsx")
 
 
 
