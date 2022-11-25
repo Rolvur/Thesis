@@ -83,7 +83,7 @@ model.b_FCR =pe.Var(model.T, domain = pe.NonNegativeReals) #Defining the variabl
 model.b_aFRR_up = pe.Var(model.T, domain = pe.NonNegativeReals)
 model.b_aFRR_down = pe.Var(model.T, domain = pe.NonNegativeReals)
 model.b_mFRR_up = pe.Var(model.T, domain = pe.NonNegativeReals)
-model.z_grid = pe.Var(model.T, domain = pe.Binary) #binary decision variable
+model.z_grid = pe.Var(model.Ω, model.T, domain = pe.Binary) #binary decision variable
 # Bid prices
 model.β_FCR = pe.Var(model.T, domain = pe.NonNegativeReals) #
 model.β_aFRR_up = pe.Var(model.T, domain = pe.NonNegativeReals) #
@@ -102,7 +102,7 @@ model.r_mFRR_up = pe.Var(model.Ω, model.T, domain = pe.NonNegativeReals)
 
 
 #Objective
-expr = sum(sum(-model.π(ω)*((model.c_FCRs[ω,t]*model.r_FCR[ω,t] + model.c_aFRR_ups[ω,]*model.r_aFRR_up[ω,t] + model.c_aFRR_downs[ω,t]*model.r_aFRR_down[ω,t] + model.c_mFRR_ups[ω,t]*model.r_mFRR_up[ω,t]) + (model.DA[t]+model.CT)*model.p_import[ω,t] - (model.DA[t]-model.PT)*model.p_export[ω,t]) for ω in model.Ω) for t in model.T)
+expr = sum(sum(-model.π[ω]*((model.c_FCR[ω,t]*model.r_FCR[ω,t] + model.c_aFRR_up[ω,t]*model.r_aFRR_up[ω,t] + model.c_aFRR_down[ω,t]*model.r_aFRR_down[ω,t] + model.c_mFRR_up[ω,t]*model.r_mFRR_up[ω,t]) + (model.DA[t]+model.CT)*model.p_import[ω,t] - (model.DA[t]-model.PT)*model.p_export[ω,t]) for ω in model.Ω) for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 
 model.c_a = pe.ConstraintList()
@@ -112,14 +112,14 @@ M_aFRR_down = 3000 #
 M_mFRR_up = 3000 #
 for ω in model.Ω:
   for t in model.T:
-    model.c_a.add(model.c_FCRs[ω,t] - model.β_FCR[t] <= M_FCR*model.δ_FCR[ω,t])
-    model.c_a.add(model.c_aFRR_ups[ω,t] - model.β_aFRR_up[t] <= M_aFRR_up*model.δ_aFRR_up[ω,t])
-    model.c_a.add(model.c_aFRR_downs[ω,t] - model.β_aFRR_down[t] <= M_aFRR_down*model.δ_aFRR_down[ω,t])
-    model.c_a.add(model.c_mFRR_ups[ω,t] - model.β_mFRR_up[t] <= M_mFRR_up*model.δ_mFRR_up[ω,t])
-    model.c_a.add(model.β_FCR[t] - model.c_FCRs[ω,t] <= M_FCR * (1 - model.δ_FCR[ω,t]))
-    model.c_a.add(model.β_aFRR_up[t] - model.c_aFRR_ups[ω,t] <= M_aFRR_up * (1 - model.δ_aFRR_up[ω,t]))
-    model.c_a.add(model.β_aFRR_down[t] - model.c_aFRR_downs[ω,t] <= M_aFRR_down * (1 - model.δ_aFRR_down[ω,t]))
-    model.c_a.add(model.β_mFRR_up[t] - model.c_mFRR_ups[ω,t] <= M_mFRR_up * (1 - model.δ_mFRR_up[ω,t]))
+    model.c_a.add(model.c_FCR[ω,t] - model.β_FCR[t] <= M_FCR*model.δ_FCR[ω,t])
+    model.c_a.add(model.c_aFRR_up[ω,t] - model.β_aFRR_up[t] <= M_aFRR_up*model.δ_aFRR_up[ω,t])
+    model.c_a.add(model.c_aFRR_down[ω,t] - model.β_aFRR_down[t] <= M_aFRR_down*model.δ_aFRR_down[ω,t])
+    model.c_a.add(model.c_mFRR_up[ω,t] - model.β_mFRR_up[t] <= M_mFRR_up*model.δ_mFRR_up[ω,t])
+    model.c_a.add(model.β_FCR[t] - model.c_FCR[ω,t] <= M_FCR * (1 - model.δ_FCR[ω,t]))
+    model.c_a.add(model.β_aFRR_up[t] - model.c_aFRR_up[ω,t] <= M_aFRR_up * (1 - model.δ_aFRR_up[ω,t]))
+    model.c_a.add(model.β_aFRR_down[t] - model.c_aFRR_down[ω,t] <= M_aFRR_down * (1 - model.δ_aFRR_down[ω,t]))
+    model.c_a.add(model.β_mFRR_up[t] - model.c_mFRR_up[ω,t] <= M_mFRR_up * (1 - model.δ_mFRR_up[ω,t]))
 
 model.c_b = pe.ConstraintList()
 for ω in model.Ω:
@@ -132,8 +132,9 @@ for ω in model.Ω:
 
 #creating a set of constraints
 model.c1 = pe.ConstraintList()
-for t in model.T:
-    model.c1.add((model.p_import[t]-model.p_export[t]) + model.p_PV[t] == model.p_pem[t] + model.P_com)
+for ω in model.Ω:
+  for t in model.T:
+    model.c1.add((model.p_import[ω,t]-model.p_export[ω,t]) + model.p_PV[ω,t] == model.p_pem[ω,t] + model.P_com)
 
 #Constraint 2.1
 #model.c2_1 = pe.ConstraintList()
@@ -147,28 +148,29 @@ for t in model.T:
 
 #New Constraint
 model.c2 = pe.ConstraintList()
-for t in model.T:
-    model.c2.add(model.p_import[t] <= model.z_grid[t]*model.P_grid_cap)
-    model.c2.add(model.p_export[t] <= (1-model.z_grid[t])*model.P_grid_cap)
+for ω in model.Ω:
+  for t in model.T:
+    model.c2.add(model.p_import[ω,t] <= model.z_grid[ω,t]*model.P_grid_cap)
+    model.c2.add(model.p_export[ω,t] <= (1-model.z_grid[ω,t])*model.P_grid_cap)
 
 
 #Constraint 3
-model.c3_1 = pe.ConstraintList()
-for t in model.T:
-    model.c3_1.add(0 <= model.p_PV[t])
-#Constraint 3
-model.c3_2 = pe.ConstraintList()
-for t in model.T:
-    model.c3_2.add(model.p_PV[t] <= model.P_PV_max[t])
+model.c3 = pe.ConstraintList()
+for ω in model.Ω: 
+  for t in model.T:
+    model.c3.add(model.p_PV[ω,t]<= model.P_PV_max[t])
 
 model.c4_1 = pe.ConstraintList()
-for t in model.T:
-    model.c4_1.add(model.P_pem_min <= model.p_pem[t])
+for ω in model.Ω:
+  for t in model.T:
+    model.c4_1.add(model.P_pem_min <= model.p_pem[ω,t])
 
 model.c4_2 = pe.ConstraintList()
-for t in model.T:
-    model.c4_2.add(model.p_pem[t] <= model.P_pem_cap)
+for ω in model.Ω:
+  for t in model.T:
+    model.c4_2.add(model.p_pem[ω,t] <= model.P_pem_cap)
 
+#may not work after the implementation of scenarios
 if sEfficiency == 'pw':
   model.c_piecewise = Piecewise(  model.T,
                           model.m_H2,model.p_pem,
@@ -179,70 +181,83 @@ if sEfficiency == 'pw':
                    
 if sEfficiency == 'k':
   model.csimple = pe.ConstraintList()
-  for t in model.T:
-      model.csimple.add(model.p_pem[t] == model.m_H2[t]/model.eff)
+  for ω in model.Ω:
+    for t in model.T:
+      model.csimple.add(model.p_pem[ω,t] == model.m_H2[ω,t]/model.eff)
 
 model.c6 = pe.ConstraintList()
-for t in model.T:
-    model.c6.add(model.m_CO2[t] == model.r_in*model.m_H2[t])
+for ω in model.Ω:
+  for t in model.T:
+    model.c6.add(model.m_CO2[ω,t] == model.r_in*model.m_H2[ω,t])
 
 model.c7 = pe.ConstraintList()
-for t in model.T:
-    model.c7.add(model.m_Ri[t] == model.m_H2[t] + model.m_CO2[t])
+for ω in model.Ω:
+  for t in model.T:
+    model.c7.add(model.m_Ri[ω,t] == model.m_H2[ω,t] + model.m_CO2[ω,t])
 
 model.c8 = pe.ConstraintList()
-for t in model.T:
-    model.c8.add(model.m_Ro[t] == model.m_Pu[t] + model.m_H2O[t])
+for ω in model.Ω:
+  for t in model.T:
+    model.c8.add(model.m_Ro[ω,t] == model.m_Pu[ω,t] + model.m_H2O[ω,t])
 
 model.c9 = pe.ConstraintList()
-for t in model.T:
-    model.c9.add(model.m_Pu[t] == model.r_out * model.m_H2O[t])
+for ω in model.Ω:
+  for t in model.T:
+    model.c9.add(model.m_Pu[ω,t] == model.r_out * model.m_H2O[ω,t])
 
 model.c10 = pe.ConstraintList()
-for t in model.T:
-    model.c10.add(model.m_Pu[t] == model.k_d)
+for ω in model.Ω:
+  for t in model.T:
+    model.c10.add(model.m_Pu[ω,t] == model.k_d)
 
 #model.c11_1 = pe.ConstraintList()
 #for t in model.T:
 #    model.c11_1.add(0 <= model.s_raw[t])
 
 model.c11_2 = pe.ConstraintList()
-for t in model.T:
-    model.c11_2.add(model.s_raw[t] <= model.S_raw_max)
+for ω in model.Ω:
+  for t in model.T:
+    model.c11_2.add(model.s_raw[ω,t] <= model.S_raw_max)
 
 model.c12 = pe.ConstraintList()
-for t in model.T:
+for ω in model.Ω:
+  for t in model.T:
     if t >= 2:
-        model.c12.add(model.s_raw[t] == model.s_raw[t-1] + model.m_Ri[t] - model.m_Ro[t])
+      model.c12.add(model.s_raw[ω,t] == model.s_raw[ω,t-1] + model.m_Ri[ω,t] - model.m_Ro[ω,t])
 
-model.c13_1 = pe.Constraint(expr=model.s_raw[1] == 0.5*model.S_raw_max + model.m_Ri[1] - model.m_Ro[1])
+model.c13_1 = pe.Constraint(expr=model.s_raw[ω,1] == 0.5*model.S_raw_max + model.m_Ri[ω,1] - model.m_Ro[ω,1])
 
-model.c13_2 = pe.Constraint(expr=0.5*model.S_raw_max == model.s_raw[T])
+model.c13_2 = pe.Constraint(expr=0.5*model.S_raw_max == model.s_raw[ω,T])
 
 #model.c14_1 = pe.ConstraintList()
 #for t in model.T:
 #  model.c14_1.add(0 <= model.s_Pu[t])
 
 model.c14_2 = pe.ConstraintList()
-for t in model.T:
-  model.c14_2.add(model.s_Pu[t] <= model.S_Pu_max)
+for ω in model.Ω:
+  for t in model.T:
+    model.c14_2.add(model.s_Pu[ω,t] <= model.S_Pu_max)
 
-model.c15 = pe.Constraint(expr = model.s_Pu[1] == model.m_Pu[1])
+# Pure methanol level at "time zero" is zero, therefore the level at time 1 equals the inflow in time 1
+model.c15 = pe.Constraint(expr = model.s_Pu[ω,1] == model.m_Pu[ω,1])
 
 model.c16 = pe.ConstraintList()
-for t in model.T:
-  if t >= 2:
-    model.c16.add(model.s_Pu[t] == model.s_Pu[t-1] + model.m_Pu[t] - model.m_demand[t])
+for ω in model.Ω:
+  for t in model.T:
+    if t >= 2:
+      model.c16.add(model.s_Pu[ω,t] == model.s_Pu[ω,t-1] + model.m_Pu[ω,t] - model.m_demand[t])
 
 model.c17_1 = pe.ConstraintList()
-for t in model.T:
-  if t >= 2:
-    model.c17_1.add(-model.ramp_pem * model.P_pem_cap <= model.p_pem[t] - model.p_pem[t-1])
+for ω in model.Ω:
+  for t in model.T:
+    if t >= 2:
+      model.c17_1.add(-model.ramp_pem * model.P_pem_cap <= model.p_pem[ω,t] - model.p_pem[ω,t-1])
 
 model.c17_2 = pe.ConstraintList()
-for t in model.T:
-  if t >= 2:
-    model.c17_2.add(model.p_pem[t] - model.p_pem[t-1] <= model.ramp_pem * model.P_pem_cap)
+for ω in model.Ω:
+  for t in model.T:
+    if t >= 2:
+      model.c17_2.add(model.p_pem[ω,t] - model.p_pem[ω,t-1] <= model.ramp_pem * model.P_pem_cap)
 
 
 #model.c25_1 = pe.ConstraintList()
@@ -257,14 +272,13 @@ for t in model.T:
 #for t in model.T:
 #  model.c25_3.add(model.cT[t] == (1-model.zT[t])*model.CT - model.zT[t]*model.PT)
 
-
 model.c19_1 = pe.ConstraintList()
 for t in model.T:
-  model.c19_1.add((R_FCR_min/bidres_FCR)*model.zFCR[t] <= model.b_FCR[t])
+  model.c19_1.add((R_FCR_min/bidres_FCR)*model.zFCR[t] <= model.bx_FCR[t])
 
 model.c19_2 = pe.ConstraintList()
 for t in model.T:
-  model.c19_2.add(model.b_FCR[t] <=(R_FCR_max/bidres_FCR)* model.zFCR[t])
+  model.c19_2.add(model.bx_FCR[t] <=(R_FCR_max/bidres_FCR)* model.zFCR[t])
 
 model.c19_3 = pe.ConstraintList()
 for t in model.T:
@@ -290,10 +304,6 @@ model.c22_3 = pe.ConstraintList()
 for t in model.T:
   model.c22_3.add(model.b_aFRR_up[t] == model.bx_aFRR_up[t]*(model.bidres_aFRR))
 
-model.c22_4 = pe.ConstraintList()
-for t in model.T:
-  model.c22_4.add(model.b_aFRR_up[t] <= model.R_aFRR_max)
-
 model.c23_1 = pe.ConstraintList()
 for t in model.T:
   model.c23_1.add(model.bx_aFRR_down[t] >= (model.R_aFRR_min/model.bidres_aFRR)*model.zaFRRdown[t])
@@ -306,10 +316,6 @@ model.c23_3 = pe.ConstraintList()
 for t in model.T:
   model.c23_3.add(model.b_aFRR_down[t] == model.bx_aFRR_down[t]*(model.bidres_aFRR))
 
-model.c23_4 = pe.ConstraintList()
-for t in model.T:
-  model.c23_4.add(model.b_aFRR_down[t] <= model.R_aFRR_max)
-
 model.c24_1 = pe.ConstraintList()
 for t in model.T:
   model.c24_1.add(model.bx_mFRR_up[t] >= (model.R_mFRR_min/model.bidres_mFRR)*model.zmFRRup[t])
@@ -321,10 +327,6 @@ for t in model.T:
 model.c24_3 = pe.ConstraintList()
 for t in model.T:
   model.c24_3.add(model.b_mFRR_up[t] == model.bx_mFRR_up[t]*model.bidres_mFRR)
-
-model.c24_4 = pe.ConstraintList()
-for t in model.T:
-  model.c24_4.add(model.b_mFRR_up[t] <= model.R_mFRR_max)
 
 
 # grid constraints taking reserves into account
@@ -350,8 +352,8 @@ for ω in model.Ω:
 
 model.c22 = pe.ConstraintList()
 for t in model.T:
-  model.c22.add(model.b_FCR[t] + model.b_aFRR_up[t] + model.b_mFRR_up[t] <= model.P_pem_cap - model.P_pem_min)
-  model.c22.add(model.b_FCR[t] + model.b_aFRR_down[t] <= model.P_pem_cap - model.P_pem_min)
+  model.c22.add(model.b_FCR[t]*2 + model.b_aFRR_up[t] + model.b_mFRR_up[t] <= model.P_pem_cap - model.P_pem_min)
+  model.c22.add(model.b_FCR[t]*2 + model.b_aFRR_down[t] <= model.P_pem_cap - model.P_pem_min)
 
 ###############SOLVE THE MODEL########################
 
@@ -417,50 +419,89 @@ print(results)
 
 
 #Converting Pyomo resulst to list
-sRaw = [instance.s_raw[i].value for i in instance.s_raw]  
-sPu = [instance.s_Pu[i].value for i in instance.s_Pu]  
-P_PV = [instance.p_PV[i].value for i in instance.p_PV] 
-P_import = [instance.p_import[i].value for i in instance.p_import]
-P_export = [instance.p_export[i].value for i in instance.p_export]
-P_grid = [P_import[i] - P_export[i] for i in range(0,len(P_import)) ]
-m_ri = [instance.m_Ri[i].value for i in instance.m_Ri]
-m_ro = [instance.m_Pu[i].value for i in instance.m_Pu]  
-m_pu = [instance.m_Pu[i].value for i in instance.m_Pu]  
-P_PEM = [instance.p_pem[i].value for i in instance.p_pem]  
-R_FCR = [instance.r_FCR[i].value for i in instance.r_FCR]
-R_mFRRup = [instance.r_mFRR_up[i].value for i in instance.r_mFRR_up]
-R_aFRRup = [instance.r_aFRR_up[i].value for i in instance.r_aFRR_up]
-R_aFRRdown = [instance.r_aFRR_down[i].value for i in instance.r_aFRR_down]
-z_grid = [instance.z_grid[i].value for i in instance.z_grid]
-s_raw = [instance.s_raw[i].value for i in instance.s_raw]
-s_pu = [instance.s_Pu[i].value for i in instance.s_Pu]
-
-
+P_PV1 = [instance.p_PV[1,i].value for i in range(1,T+1)]
+P_PV2 = [instance.p_PV[2,i].value for i in range(1,T+1)]
+P_import1 = [instance.p_import[1,i].value for i in range(1,T+1)]
+P_import2 = [instance.p_import[2,i].value for i in range(1,T+1)]
+P_export1 = [instance.p_export[1,i].value for i in range(1,T+1)]
+P_export2 = [instance.p_export[2,i].value for i in range(1,T+1)]
+P_grid1 = [P_import1[i] - P_export1[i] for i in range(0,len(P_import1)) ]
+P_grid2 = [P_import2[i] - P_export2[i] for i in range(0,len(P_import2)) ]
+m_ri1 = [instance.m_Ri[1,i].value for i in range(1,T+1)]
+m_ri2 = [instance.m_Ri[2,i].value for i in range(1,T+1)]
+m_ro1 = [instance.m_Pu[1,i].value for i in range(1,T+1)]
+m_ro2 = [instance.m_Pu[2,i].value for i in range(1,T+1)]  
+m_pu1 = [instance.m_Pu[1,i].value for i in range(1,T+1)]
+m_pu2 = [instance.m_Pu[2,i].value for i in range(1,T+1)] 
+P_PEM1 = [instance.p_pem[1,i].value for i in range(1,T+1)]  
+P_PEM2 = [instance.p_pem[2,i].value for i in range(1,T+1)]  
+b_FCR = [instance.b_FCR[i].value for i in range(1,T+1)]
+R_FCR1 = [instance.r_FCR[1,i].value for i in range(1,T+1)]
+R_FCR2 = [instance.r_FCR[2,i].value for i in range(1,T+1)]
+b_mFRRup = [instance.b_mFRR_up[i].value for i in range(1,T+1)]
+R_mFRRup1 = [instance.r_mFRR_up[1,i].value for i in range(1,T+1)]
+R_mFRRup2= [instance.r_mFRR_up[2,i].value for i in range(1,T+1)]
+R_aFRRup1 = [instance.r_aFRR_up[1,i].value for i in range(1,T+1)]
+R_aFRRup2 = [instance.r_aFRR_up[2,i].value for i in range(1,T+1)]
+R_aFRRdown1 = [instance.r_aFRR_down[1,i].value for i in range(1,T+1)]
+R_aFRRdown2 = [instance.r_aFRR_down[2,i].value for i in range(1,T+1)]
+z_grid1 = [instance.z_grid[1,i].value for i in range(1,T+1)]
+z_grid2 = [instance.z_grid[2,i].value for i in range(1,T+1)]
+s_raw1 = [instance.s_raw[1,i].value for i in range(1,T+1)]
+s_raw2 = [instance.s_raw[2,i].value for i in range(1,T+1)]
+s_pu1 = [instance.s_pu[1,i].value for i in range(1,T+1)]
+s_pu2 = [instance.s_pu[2,i].value for i in range(1,T+1)]
+#sRaw1 = [instance.s_raw[1,i].value for i in range(1,T+1)]
+#sRaw2 = [instance.s_raw[2,i].value for i in range(1,T+1)]  
+#sPu1 = [instance.s_Pu[1,i].value for i in range(1,T+1)]  
+#sPu2 = [instance.s_Pu[2,i].value for i in range(1,T+1)]  
 
 #Creating result DataFrame
 df_results = pd.DataFrame({#Col name : Value(list)
-                          'P_PEM' : P_PEM,
-                          'P_PV' : P_PV,
-                          'mFRR_up': R_mFRRup,
-                          'aFRR_up': R_aFRRup,
-                          'aFRR_down': R_aFRRdown,
-                          'Raw Storage' : sRaw,
-                          'Pure Storage' : s_pu,
-                          'P_grid' : P_grid,
-                          'P_import' : P_import,
-                          'P_export' : P_export,
-                          'Raw_In' : m_ri,
-                          'Raw_Out' : m_ro,
-                          'Pure_In': m_pu,
-                          'z_grid' : z_grid,
-                          'DA' : list(DA.values()),
-                          'FCR "up"': R_FCR, 
-                          'FCR "down"': R_FCR,
-                          'cFCR' : list(c_FCR.values()),
-                          'caFRRup' : list(c_aFRR_up.values()),
-                          'caFRRdown' : list(c_aFRR_down.values()),
-                          'cmFRRup' : list(c_mFRR_up.values()),
-                          'Demand' : list(Demand.values())
+                          'P_PEM1' : P_PEM1,
+                          'P_PEM2' : P_PEM2,
+                          'P_PV1' : P_PV1,
+                          'P_PV2' : P_PV2,
+                          'mFRR_up1': R_mFRRup1,
+                          'mFRR_up1': R_mFRRup1,
+                          'aFRR_up1': R_aFRRup1,
+                          'aFRR_up2': R_aFRRup2,
+                          'aFRR_down1': R_aFRRdown1,
+                          'aFRR_down2': R_aFRRdown2,
+                          'Raw Storage1' : s_raw1,
+                          'Raw Storage2' : s_raw2,
+                          'Pure Storage1' : s_pu1,
+                          'Pure Storage2' : s_pu2,
+                          'P_grid1' : P_grid1,
+                          'P_grid2' : P_grid2,
+                          'P_import1' : P_import1,
+                          'P_import2' : P_import2,
+                          'P_export1' : P_export1,
+                          'P_export2' : P_export2,
+                          'Raw_In1' : m_ri1,
+                          'Raw_In2' : m_ri2,
+                          'Raw_Out1' : m_ro1,
+                          'Raw_Out2' : m_ro2,
+                          'Pure_In1': m_pu1,
+                          'Pure_In2': m_pu2,
+                          'z_grid1' : z_grid1,
+                          'z_grid2' : z_grid2,
+                          'DA1' : list(DA.values()),
+                          'DA1' : list(DA.values()),
+                          'FCR "up"': R_FCR1, 
+                          'FCR "up"': R_FCR2, 
+                          'FCR "down"': R_FCR1,
+                          'FCR "down"': R_FCR2,
+                          'cFCR1' : list(c_FCRs.values())[0:168],
+                          'cFCR2' : list(c_FCRs.values())[169:337],
+                          'aFRRup1' : list(c_aFRR_ups.values())[0:168],
+                          'aFRRup2' : list(c_aFRR_ups.values())[169:337],
+                          'aFRRdown1' : list(c_aFRR_downs.values())[0:168],
+                          'aFRRdown2' : list(c_aFRR_downs.values())[169:337],
+                          'mFRRup1' : list(c_mFRR_ups.values())[0:168],
+                          'mFRRup2' : list(c_mFRR_ups.values())[169:337],
+                          'Demand1' : list(Demand.values()),
+                          'Demand2' : list(Demand.values())
                           }, index=DateRange,
                           )
 
