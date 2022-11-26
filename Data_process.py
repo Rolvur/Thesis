@@ -36,8 +36,8 @@ df_DKDA_raw[['HourUTC','HourDK']] = df_DKDA_raw[['HourUTC','HourDK']].apply(pd.t
 #Using year 2020
 TimeRange2020DA = (df_DKDA_raw['HourDK'] >= Start_date) & (df_DKDA_raw['HourDK']  <= End_date)
 df_DKDA_raw2020 = df_DKDA_raw[TimeRange2020DA]
-DA = df_DKDA_raw2020['SpotPriceEUR,,'].tolist()
-DA = dict(zip(np.arange(1,len(DA)+1),DA))
+DA_list = df_DKDA_raw2020['SpotPriceEUR,,'].tolist()
+DA = dict(zip(np.arange(1,len(DA_list)+1),DA_list))
 #print(DA,Start_date,End_date)
 
 #Getting time range
