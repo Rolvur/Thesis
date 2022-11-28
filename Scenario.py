@@ -149,12 +149,9 @@ def K_Medoids(scenarios,n_clusters):
 Rep_scen,Prob = K_Medoids(scenarios,n_clusters)     
 
 # Rep_scen[0] = DA scenarios, Rep_scen[1] = FCR scenarios, Rep_scen[2] = aFRR_up scenarios, Rep_scen[3] = aFRR_Down scenarios, Rep_scen[4] = mFRR scenarios 
-Rep_scen[1][0][0]
-
+Rep_scen[1][0][0]   #Market , Omega, time 
 
 Prob # Prob scenario 1 in DA = Prob[0,0], Prob scenario 2 in DA = Prob[1,0] osv... Prob scenario 1 FCR = Prob[0,1] ..... 
-
-
 
 
 
