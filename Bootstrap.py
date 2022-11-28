@@ -142,7 +142,7 @@ mFRR =  df_test['Data5'].tolist()
 Data = [DA,FCR,aFRR_up,aFRR_down,mFRR]
 Data_names = ['DA','FCR','aFRR_up','aFRR_down','mFRR']
 
-Type = 'combined'   # 'single' or 'combined'
+Type = 'single'   # 'single' or 'combined'
 
 n_samples = 5 #Number of samples to be made  
 
@@ -241,10 +241,23 @@ scenarios = Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length)
 
 
 
+scen_DA = scenarios[0]
 
 
+## Scenario reduction ## 
 
+from dtaidistance import dtw, clustering
+from sklearn_extra.cluster import KMedoids
 
+from sklearn_extra.cluster import TimeSeriesKMedoids
+
+model = clustering.KMedoids(dtw.distance_matrix_fast, {}, k=3)
+
+cluster_idx = model.fit(scenarios_DA)
+
+kmedoids = KMedoids(n_clusters=2, random_state=0).fit(scen_DA)
+
+TimeSeriesKMedoids
 
 
 

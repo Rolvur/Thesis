@@ -30,10 +30,10 @@ Data_names = ['DA','FCR','aFRR_up','aFRR_down','mFRR']
 
 Type = 'single'   # 'single' or 'combined'
 
-n_samples = 100 #Number of samples to be made  
+n_samples = 50 #Number of samples to be made  
 
 blocksize = 2 # 7days = 168 hours
-sample_length = blocksize* # sampling 52 weeks blocks
+sample_length = blocksize*5 # sampling 52 weeks blocks
 
 
 def Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length):
@@ -129,29 +129,67 @@ scenarios = Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length)
 ### Scenario reduction ###
 
 
-
-
-
-
-
-
+scenarios_DA = scenarios[0]
 
 from dtaidistance import dtw, clustering
  
-model5 = clustering.KMedoids(dtw.distance_matrix_fast, {}, k=10)
-cluster_idx = model5.fit(scenarios[0])
+model5 = clustering.KMedoids(dtw.distance_matrix_fast, {}, k=3)
+cluster_idx = model5.fit(scenarios_DA)
+
+
+model5.plot()
+plt.show()
+
+
+from sklearn_extra.cluster import KMedoids
+import numpy as np
+data=np.asarray([[9,6,0],[10,4,0],[4,4,5],[5,8,2],[3,8,7],[2,5,2],[8,5,1],[4,6,6],[8,3,4],[9,2,3]])
+
+kmedoids = KMedoids(n_clusters=2,metric='euclidean').fit(scenarios_DA)
+
+print(kmedoids.labels_)
+
+kmedoids.cluster_centers_
+
+kmedoids.n_clusters
+
+kmedoids.medoid_indices_
+
+scenarios_DA
+
+
+
+#from sktime import TimeSeriesKMedoids
+
+from sktime import clustering
+
+#from dtaidistance import dtw, clustering
+ 
+clustering.TimeSeriesKMedoids()
+
+model5 = clustering.KMedoids(dtw.distance_matrix_fast, {}, k=3)
+
+
+cluster_idx = model5.fit(scenarios_DA)
 
 
 model5.plot()
 
 
+from dtaidistance import dtw, clustering
+
+
+model = clustering.KMedoids(dtw.distance_matrix_fast, {}, k=3)
+
+cluster_idx = model.fit(scenarios_DA)
+
+#kmedoids = KMedoids(n_clusters=2, random_state=0).fit(scenarios_DA)
+
+model.plot("kmedoids.png")
 
 
 
-
-
-
-
+""" 
 
 # The example.database3 synthetic database is loaded
 data(example.database3)
@@ -223,3 +261,39 @@ plt.title("KMedoids clustering. Medoids are represented in cyan.")
 plt.show()
 
 
+
+
+
+ """
+
+
+from pyclustering.cluster.kmedoids import kmedoids
+from pyclustering.cluster.center_initializer import kmeans_plusplus_initializer
+from pyclustering.cluster import cluster_visualizer
+from pyclustering.utils import read_sample
+from pyclustering.samples.definitions import FCPS_SAMPLES
+ 
+# Load list of points for cluster analysis.
+sample = read_sample(FCPS_SAMPLES.SAMPLE_TWO_DIAMONDS)
+sample = scenarios_DA
+ 
+# Initialize initial medoids using K-Means++ algorithm
+initial_medoids = kmeans_plusplus_initializer(sample, 2).initialize(return_index=True)
+ 
+# Create instance of K-Medoids (PAM) algorithm.
+kmedoids_instance = kmedoids(sample, initial_medoids)
+ 
+# Run cluster analysis and obtain results.
+kmedoids_instance.process()
+clusters = kmedoids_instance.get_clusters()
+medoids = kmedoids_instance.get_medoids()
+ 
+# Print allocated clusters.
+print("Clusters:", clusters)
+ 
+# Display clustering results.
+visualizer = cluster_visualizer()
+visualizer.append_clusters(clusters, sample)
+visualizer.append_cluster(initial_medoids, sample, markersize=12, marker='*', color='gray')
+visualizer.append_cluster(medoids, sample, markersize=14, marker='*', color='black')
+visualizer.show()
