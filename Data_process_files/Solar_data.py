@@ -69,4 +69,3 @@ df_solar['Power [MW]'] = ((df_solar['Irradiance']/0.8)*454.6*n_pv)/10**6
 df_solar.to_excel('PV_data.xlsx')
 
 
-

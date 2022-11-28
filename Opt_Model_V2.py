@@ -424,7 +424,7 @@ df_results = pd.DataFrame({#Col name : Value(list)
 
 
 #save to Excel 
-df_results.to_excel("Result_files/Model2_All2020.xlsx")
+df_results.to_excel("Result_files/Model2_2020.xlsx")
 
 
 

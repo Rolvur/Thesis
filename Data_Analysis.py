@@ -460,6 +460,39 @@ def DayAhead(df_DKDA_raw):
     plt.show()
 DayAhead(df_DKDA_raw)
 
+#Kernel density plot 
+def KDEPlot(df):
+
+    plot1 = df_FCR_DE[['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]']].plot.kde(bw_method=0.2).get_lines()[0].get_xydata()
+    #plot2 = df_aFRR['aFRR Ned Pris (EUR/MW)'].plot.kde(bw_method=0.2).get_lines()[0].get_xydata()
+
+    x1 = plot1[:,0]
+    y1 = plot1[:,1]
+
+
+    #x2 = plot2[:,0]
+    #y2 = plot2[:,1]
+
+
+
+    fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2,sharey=True)
+
+    ax1.plot(x1,y1, color='royalblue',linewidth=2)
+    ax2.plot(x1,y1, color='royalblue',linewidth=2)
+
+    ax1.set_xlabel('[€/MW]')
+    #ax1.set_xlim([-30, 180])
+    ax2.set_xlabel('[€/MW]')
+    ax2.set_xlim([-30, 350])
+
+    #ax1.legend(loc='upper right')
+    #ax2.legend(loc='upper right')
+
+    plt.tight_layout()
+    plt.show()
+
+
+
 ## Plottting FCR(Germany) Capacity prices 
 def FCR(df_FCR):
     
@@ -477,7 +510,7 @@ def FCR(df_FCR):
     fig, ax = plt.subplots(nrows=1,ncols=1)
 
     #ax.bar(x, df_Data_plot['SpotPriceEUR,,'], color='b',linestyle = 'solid', label ='Day-Ahead Price')
-    ax.plot(x, df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'], color='teal',linestyle = '-', label ='FCR Capacity', linewidth=1)
+    ax.plot(x, df_FCR['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'], color='royalblue',linestyle = '-', label ='FCR Capacity', linewidth=1)
     ax.set_ylabel('[€/MW]')
     #ax.set_ylim([-60, 170])
     ax.legend(loc='upper left')
@@ -486,6 +519,9 @@ def FCR(df_FCR):
     plt.tight_layout()
     plt.show()
 FCR(df_FCR_DE)
+
+
+
 
 #Plotting aFRR (Sweden) 
 def aFRR(df_aFRR):
@@ -510,6 +546,8 @@ def aFRR(df_aFRR):
     plt.tight_layout()
     plt.show()   
 aFRR(df_aFRR)
+
+
 
 #Plotting mFRR
 

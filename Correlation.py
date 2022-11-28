@@ -242,3 +242,31 @@ plt.tight_layout()
 plt.show()
 
 
+
+
+### Correlation between different markets ### 
+#Input data
+DA = DA_list
+aFRR_up = df_aFRR['aFRR Upp Pris (EUR/MW)'].tolist()
+aFRR_down = df_aFRR['aFRR Ned Pris (EUR/MW)'].tolist()
+mFRR = df_mFRR['mFRR_UpPriceEUR'].tolist()
+FCR = df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+
+Data = [DA,FCR,aFRR_up,aFRR_down,mFRR]
+Data_names = ['DA','FCR','aFRR Up','aFRR Down','mFRR']
+####### Correlation ########
+df_data = pd.DataFrame(index=pd.to_datetime(df_FCR_DE['DATE_FROM']))
+df_data.index.names = ['Time']
+
+#Creating dataframe 
+for i in range(0,len(Data)):
+    df_data[Data_names[i]] = Data[i]
+
+
+df_data.corr()    
+
+sn.heatmap(df_data() , annot=True)
+sn.color_palette("husl", 8)
+plt.tight_layout()
+plt.show()
+

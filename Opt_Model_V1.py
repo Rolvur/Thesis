@@ -220,8 +220,9 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           )
 
 
-date = Start_date + "-" + End_date
+
 
 #save to Excel 
-df_results.to_excel("Result_files/Model1_All2020.xlsx")
+df_results.to_excel("Result_files/Model_2021.xlsx")
+
 
