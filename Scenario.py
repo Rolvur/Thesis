@@ -4,7 +4,6 @@ import random
 from Settings import*
 from sklearn_extra.cluster import KMedoids
 from Data_process import df_aFRR,df_mFRR,df_FCR_DE,DA_list
-import seaborn as sn
 import matplotlib.pyplot as plt
 random.seed(123)
 
@@ -18,16 +17,14 @@ FCR = df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist()
 Data = [DA,FCR,aFRR_up,aFRR_down,mFRR]
 Data_names = ['DA','FCR','aFRR Up','aFRR Down','mFRR']
 
-
-
 ## Scenario generation ## 
 
 Type = 'single'   # 'single' or 'combined'
 
-n_samples = 10000 #Number of samples to be made  
+n_samples = 1000 #Number of samples to be made  
 
 blocksize = 24 # 7days = 168 hours
-sample_length = blocksize*3 # sampling 52 weeks blocks
+sample_length = blocksize*3 # sampling 52 weeks blocks 
 
 def Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length):
 
@@ -152,7 +149,8 @@ def K_Medoids(scenarios,n_clusters):
 Rep_scen,Prob = K_Medoids(scenarios,n_clusters)     
 
 # Rep_scen[0] = DA scenarios, Rep_scen[1] = FCR scenarios, Rep_scen[2] = aFRR_up scenarios, Rep_scen[3] = aFRR_Down scenarios, Rep_scen[4] = mFRR scenarios 
-Rep_scen[0]
+Rep_scen[1][0][0]
+
 
 Prob # Prob scenario 1 in DA = Prob[0,0], Prob scenario 2 in DA = Prob[1,0] osv... Prob scenario 1 FCR = Prob[0,1] ..... 
 
