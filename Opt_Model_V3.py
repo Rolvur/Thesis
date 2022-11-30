@@ -6,7 +6,7 @@ from pyomo.core import *
 import pandas as pd 
 import numpy as np
 from Opt_Constants import *
-from Data_process import P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, π, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω, DateRange, pem_setpoint, hydrogen_mass_flow
+from Data_process import Start_date,End_date, P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, π, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω, DateRange, pem_setpoint, hydrogen_mass_flow
 from Settings import sEfficiency
 #____________________________________________
 solver = po.SolverFactory('gurobi')
@@ -524,9 +524,6 @@ df_results = pd.DataFrame({#Col name : Value(list)
 
 
 #save to Excel 
-df_results.to_excel("Result_files/Model3_TestResults.xlsx")
+#df_results.to_excel("Result_files/Model3_TestResults.xlsx")
+df_results.to_excel("Result_files/Model3_"+Start_date+"_"+End_date+".xlsx")
 
-
-
-
- 
