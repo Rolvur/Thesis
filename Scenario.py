@@ -15,26 +15,6 @@ mFRR = df_mFRR['mFRR_UpPriceEUR'].tolist()
 FCR = df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
 
 
-
-
-### TEST ### 
-data1 = [1,2,3,4,5,6,7,8,9,10]
-data2 = [10,20,30,40,50,60,70,80,90,100]
-data3 = [100,200,300,400,500,600,700,800,900,1000]
-data4 = [1000,2000,3000,4000,5000,6000,7000,8000,9000,10000]
-data5 = [10000,20000,30000,40000,50000,60000,70000,80000,90000,100000]
-df_test = pd.DataFrame({'Data1':data1,'Data2':data2,'Data3':data3,'Data4':data4,'Data5':data5})
-
-
-
-DA = df_test['Data1'].tolist()
-FCR =  df_test['Data2'].tolist() 
-aFRR_up =  df_test['Data3'].tolist()
-aFRR_down =  df_test['Data4'].tolist()
-mFRR =  df_test['Data5'].tolist()
-
-
-
 Data = [DA,FCR,aFRR_up,aFRR_down,mFRR]
 Data_names = ['DA','FCR','aFRR Up','aFRR Down','mFRR']
 
@@ -138,7 +118,8 @@ def Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length):
 
 scenarios = Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length)
 
-## Generate Average Price for all markets for each time (Only for "Combined scenario generation"!!) ## 
+## Generate Average Price for all markets for each time (Only for "Combined scenario generation"!!) ##
+ 
 def GenAverage(scenarios,n_samples,sample_length):
     Avg_scenarios = np.zeros((n_samples,sample_length))
 
@@ -150,106 +131,10 @@ def GenAverage(scenarios,n_samples,sample_length):
 Avg_scenarios = GenAverage(scenarios,n_samples,sample_length)
             
 ## Scenario reduction ## 
+
+## Scenario reduction (Single!!!) ## 
 #Specify number of clusters(scenarios)
-
-n_clusters = 2
-
-
-Red_Scen = []   ## Red_Scen[0] = DA scenarios, Red_Scen[1] = FCR scenarios, Red_Scen[2] = aFRR_up scenarios, Red_Scen[3] = aFRR_Down scenarios, Red_Scen[4] = mFRR scenarios 
-
-Prob = np.zeros(n_clusters) # Prob scenario 1 in DA = Prob[0,0], Prob scenario 2 in DA = Prob[1,0] osv... Prob scenario 1 FCR = Prob[0,1] .....   
-
-
-
-
-
-kmedoids = KMedoids(n_clusters=n_clusters,metric='euclidean').fit(Avg_scenarios)
-
-
-## Calculating scenario probability ## 
-
-Red_Scen.append(kmedoids.cluster_centers_) 
-
-for j in range(0,n_clusters):
-    Prob[j] = np.count_nonzero(kmedoids.labels_ == j)/len(kmedoids.labels_)
-
-
-        
-
-
-#Rep_scen,Prob = K_Medoids(scenarios,n_clusters)     
-
-
-Red_Scen[0][0]
-
-
-#RedAvg_scenarios =[[19999.8, 22222. ,  2222.2,  4444.4,  2222.2,  4444.4, 11111. ,13333.2], [15555.4, 17777.6, 11111. , 13333.2, 15555.4, 17777.6,  6666.6,8888.8]]
-true = 0
-index = []
-
-
-#RedAvg_scenarios[0][0] == scenarios[0][0].mean()
-#true = true+1
-
-for j in range(0,len(Red_Scen[0])):   
-    for x in range(0,n_samples):     
-        for i in range(0,sample_length):
-        
-            if Red_Scen[0][j][i] == scenarios[x][i].mean():
-                print('Hey')
-                true = true+1
-                if true == sample_length:
-                    index.append(x)
-                    print('Hello')
-            if Red_Scen[0][j][i] != scenarios[x][i].mean():
-                true = 0
-    else:
-        continue
-
-    
-rep_senc1 = []
-
-index
-for i in index:
-    rep_senc1.append(scenarios[i]) 
-
-# Rep_scen[0] = DA scenarios, Rep_scen[1] = FCR scenarios, Rep_scen[2] = aFRR_up scenarios, Rep_scen[3] = aFRR_Down scenarios, Rep_scen[4] = mFRR scenarios 
-#Rep_scen[1][0][0]   #Market , Omega, time 
-
-rep_senc1[1][0].mean()
-
-rep_senc1[1][:,0]
-
-len(rep_senc1[0][0])
-
-Rep_scen1 = np.zeros((len(rep_senc1[0][0]),n_clusters,sample_length,))
-
-Rep_scen1[4]
-
-
-for i in range(0,len(rep_senc1[0][0])): # nr markets
-    for j in range(0,n_clusters):
-        Rep_scen1[i][j] = rep_senc1[j][:,i]
-
-        
-
-
-
-
-
-
-
-
-DA_scen = [rep_senc1[1][:,0], rep_senc1[0][:,0]]
-
-
-
-
-
-
-## Scenario reduction ## 
-#Specify number of clusters(scenarios)
-n_clusters = 5
+n_clusters = 4
 def K_Medoids(scenarios,n_clusters):
 
     Red_Scen = []   ## Red_Scen[0] = DA scenarios, Red_Scen[1] = FCR scenarios, Red_Scen[2] = aFRR_up scenarios, Red_Scen[3] = aFRR_Down scenarios, Red_Scen[4] = mFRR scenarios 
@@ -278,17 +163,150 @@ def K_Medoids(scenarios,n_clusters):
 Rep_scen,Prob = K_Medoids(scenarios,n_clusters)     
 
 # Rep_scen[0] = DA scenarios, Rep_scen[1] = FCR scenarios, Rep_scen[2] = aFRR_up scenarios, Rep_scen[3] = aFRR_Down scenarios, Rep_scen[4] = mFRR scenarios 
-Rep_scen[1][0][0]   #Market , Omega, time 
+#Rep_scen[1][0][0]   #Market , Omega, time 
 
-Prob # Prob scenario 1 in DA = Prob[0,0], Prob scenario 2 in DA = Prob[1,0] osv... Prob scenario 1 FCR = Prob[0,1] ..... 
+#Prob # Prob scenario 1 in DA = Prob[0,0], Prob scenario 2 in DA = Prob[1,0] osv... Prob scenario 1 FCR = Prob[0,1] ..... 
 
-Rep_scen[0]
+
+
+## Scenario reduction (Combined!!!) ##
+#Specify number of clusters(scenarios)
+n_clusters = 3
+def AvgKmedReduction(Avg_scenarios,scenarios,n_clusters,n_samples,sample_length):
+
+    Red_Scen = []   ## Red_Scen[0] = DA scenarios, Red_Scen[1] = FCR scenarios, Red_Scen[2] = aFRR_up scenarios, Red_Scen[3] = aFRR_Down scenarios, Red_Scen[4] = mFRR scenarios 
+
+    Prob = np.zeros(n_clusters) # Prob scenario 1 in DA = Prob[0,0], Prob scenario 2 in DA = Prob[1,0] osv... Prob scenario 1 FCR = Prob[0,1] .....   
+
+    kmedoids = KMedoids(n_clusters=n_clusters,metric='euclidean').fit(Avg_scenarios)
+
+
+    ## Calculating scenario probability ## 
+
+    Red_Scen.append(kmedoids.cluster_centers_) 
+
+    for j in range(0,n_clusters):
+        Prob[j] = np.count_nonzero(kmedoids.labels_ == j)/len(kmedoids.labels_)
+
+
+            
+
+
+    #Rep_scen,Prob = K_Medoids(scenarios,n_clusters)     
+
+
+    
+
+
+    #RedAvg_scenarios =[[19999.8, 22222. ,  2222.2,  4444.4,  2222.2,  4444.4, 11111. ,13333.2], [15555.4, 17777.6, 11111. , 13333.2, 15555.4, 17777.6,  6666.6,8888.8]]
+    true = 0
+    index = []
+
+
+    #RedAvg_scenarios[0][0] == scenarios[0][0].mean()
+    #true = true+1
+
+    for j in range(0,len(Red_Scen[0])):   
+        for x in range(0,n_samples):     
+            for i in range(0,sample_length):
+            
+                if Red_Scen[0][j][i] == scenarios[x][i].mean():
+                    true = true+1
+                    
+                    if true == sample_length:
+                        index.append(x)
+                        
+                if Red_Scen[0][j][i] != scenarios[x][i].mean():
+                    true = 0
+        else:
+            continue
+
+        
+    rep_senc1 = []
+
+    index
+    for i in index:
+        rep_senc1.append(scenarios[i]) 
+
+    # Rep_scen[0] = DA scenarios, Rep_scen[1] = FCR scenarios, Rep_scen[2] = aFRR_up scenarios, Rep_scen[3] = aFRR_Down scenarios, Rep_scen[4] = mFRR scenarios 
+    #Rep_scen[1][0][0]   #Market , Omega, time 
+
+    #rep_senc1[1][0].mean()
+
+    #rep_senc1[1][:,0]
+
+    #len(rep_senc1[0][0])
+
+    Rep_scen1 = np.zeros((len(rep_senc1[0][0]),n_clusters,sample_length))
+
+
+
+
+    for i in range(0,len(rep_senc1[0][0])): # nr markets
+        for j in range(0,n_clusters):
+            Rep_scen1[i][j] = rep_senc1[j][:,i]
+
+    
+            
+            
+            
+    return Rep_scen1, Prob
+
+
+Rep_scen_comb, Prob_comb = AvgKmedReduction(Avg_scenarios,scenarios,n_clusters,n_samples,sample_length) 
+#Rep_scen_comb[market][scenario][hour]
+
+
+
+
+
+
+### Model Input ### 
+
+#Rep_scen_comb[market][scenario][hour]
+
+# Rep_scen[0] = DA scenarios, Rep_scen[1] = FCR scenarios, Rep_scen[2] = aFRR_up scenarios, Rep_scen[3] = aFRR_Down scenarios, Rep_scen[4] = mFRR scenarios 
+#Rep_scen[1][0][0]   #Market , Omega, time 
+
+#Prob # Prob scenario 1 in DA = Prob[0,0], Prob scenario 2 in DA = Prob[1,0] osv... Prob scenario 1 FCR = Prob[0,1] ..... 
+
+sum(Prob[:,0])
+
+Hours = len(Rep_scen[1][1])
+Ω = len(Rep_scen[0])
+c_FCRs = {}
+c_aFRR_ups = {}
+c_aFRR_downs = {}
+c_mFRR_ups = {}
+#π = {}
+π_FCR = {}
+π_aFRR_up = {}
+π_aFRR_down = {}
+π_mFRR = {}
+
+for i in range(1,Ω+1):
+    π_FCR[i] = Prob[i-1,1]
+    π_aFRR_up[i] = Prob[i-1,2]
+    π_aFRR_down[i] = Prob[i-1,3]
+    π_mFRR[i] = Prob[i-1,4]
+    for j in range(1,Hours+1):
+        c_FCRs[(i,j)] = Rep_scen[1][i-1][j-1]
+        c_aFRR_ups[(i,j)] = Rep_scen[2][i-1][j-1]
+        c_aFRR_downs[(i,j)] = Rep_scen[3][i-1][j-1]
+        c_mFRR_ups[(i,j)] = Rep_scen[4][i-1][j-1]
+
+
+
+#[(sen,hour)]
+
+
+
+
+
+
 
 
 ### Plot ### 
-
-
-#Plotting Day ahead prices
 def ScenariosPlots(Rep_scen,scenarios,sample_length,n_samples):
 
 
@@ -315,21 +333,6 @@ def ScenariosPlots(Rep_scen,scenarios,sample_length,n_samples):
     plt.show()
 
 ScenariosPlots(Rep_scen,scenarios,sample_length,n_samples)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

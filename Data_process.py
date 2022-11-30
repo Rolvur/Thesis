@@ -37,6 +37,7 @@ df_DKDA_raw[['HourUTC','HourDK']] = df_DKDA_raw[['HourUTC','HourDK']].apply(pd.t
 TimeRange2020DA = (df_DKDA_raw['HourDK'] >= Start_date) & (df_DKDA_raw['HourDK']  <= End_date)
 df_DKDA_raw2020 = df_DKDA_raw[TimeRange2020DA]
 DA_list = df_DKDA_raw2020['SpotPriceEUR,,'].tolist()
+
 DA = dict(zip(np.arange(1,len(DA_list)+1),DA_list))
 #print(DA,Start_date,End_date)
 
@@ -136,7 +137,7 @@ if Demand_pattern == 'Weekly':
 Demand = dict(zip(np.arange(1,len(Demand)+1),Demand))
 
 
-
+""" 
 ######Creating test scenarios for reserve market variables#######
 Ω = 2
 c_FCRs = {}
@@ -152,3 +153,4 @@ for i in range(1,Ω+1):
         c_aFRR_downs[(i,j)] = c_aFRR_down[j]*i
         c_mFRR_ups[(i,j)] = c_mFRR_up[j]*i
 
+ """
