@@ -13,7 +13,7 @@ from pathlib import Path
 
 
 file_to_open1 = Path("Result_files/") / "Model1_All2020.xlsx"
-file_to_open2 = Path("Result_files/") / "Model1_All2021.xlsx"
+file_to_open2 = Path("Result_files/") / "Model1_2021.xlsx"
 df_resultsM1_2020 = pd.read_excel(file_to_open1)
 df_resultsM1_2021 = pd.read_excel(file_to_open2)
 
@@ -98,35 +98,35 @@ def DACostRevProf(df):
 
 
 ## DA Cost plot w. tarrif ## 
-def DAcostRev():
+def DAcostRev(df_resultsM1_2020,df_resultsM1_2021):
     DA_Cost2020,DA_Rev_2020,DA_Profit_2020 = DACostRevProf(df_resultsM1_2020)
     DA_Cost2021,DA_Rev_2021,DA_Profit_2021 = DACostRevProf(df_resultsM1_2021)
 
 
     x = ['2020','2021']
-    fig , (ax1,ax2) = plt.subplots(nrows=1,ncols=2,sharex=True)
+    fig , (ax1,ax2) = plt.subplots(nrows=1,ncols=2,sharex=True,gridspec_kw={'width_ratios': [1.3, 1]})
 
     ax1.bar(x, [DA_Rev_2020,DA_Rev_2021], color='darkgreen',linestyle = 'solid', label ='DA Revenue',width=0.75)
 
     ax1.bar(x , [-DA_Cost2020,-DA_Cost2021], color='maroon',linestyle = '-', label ='DA Cost',width=0.75)
     ax1.plot(x, [DA_Profit_2020,DA_Profit_2021], color='navy', label='Profit',linestyle='dashed', marker='o')
 
-    ax2.bar(x, [df_resultsM1_2020['P_grid'].sum(),df_resultsM1_2021['P_grid'].sum()], color ='steelblue', label = 'Net Power import' )
+    ax2.bar(x, [df_resultsM1_2020['P_grid'].sum(),df_resultsM1_2021['P_grid'].sum()], color ='steelblue', label = 'Net import' )
     
     ax1.set_ylabel('mio €')
-    ax1.legend(loc='upper left')
+    ax1.legend(loc='upper left',bbox_to_anchor=(1.05, 1))
 
 
     ax2.set_ylabel('MWh')
     ax2.legend(loc='upper left')
-
+    ax2.set_ylim([0,75000])
 
     ax1.tick_params(axis='x', rotation=45)
     ax2.tick_params(axis='x', rotation=45)
 
     plt.tight_layout()
     plt.show()  
-
+DAcostRev(df_resultsM1_2020,df_resultsM1_2021)
 
 ## DA price with tariff vs Pem, grid and PV
 def DAtariffvsPower(df_resultsM1_2020):
@@ -135,9 +135,9 @@ def DAtariffvsPower(df_resultsM1_2020):
 
     x = df_resultsM1_2020['HourDK']
 
-    ax1.plot(x, df_resultsM1_2020['DA'], color='navy',linestyle = '-', label ='DA excl. tariff')
-    ax1.plot(x, df_resultsM1_2020['DA incl PT'], color='g',linestyle = '-', label ='DA incl. PT')
-    ax1.plot(x, df_resultsM1_2020['DA incl CT'], color='r',linestyle = '-', label ='DA incl. CT')
+    ax1.plot(x, df_resultsM1_2020['DA'], color='navy',linestyle = '-', label ='Day-ahead Price')
+    ax1.plot(x, df_resultsM1_2020['DA incl PT'], color='g',linestyle = '-', label ='Selling Price')
+    ax1.plot(x, df_resultsM1_2020['DA incl CT'], color='r',linestyle = '-', label ='Purchase Price')
 
     ax2.plot(x, df_resultsM1_2020['P_PV'], color='r',linestyle = '-', label ='PV')
     ax2.plot(x, df_resultsM1_2020['P_PEM'], color='b',linestyle = '-', label ='PEM')
@@ -204,3 +204,4 @@ def PowerCon(df_resultsM1_2020,df_resultsM1_2021):
     #ax.title('')
     plt.tight_layout()
     plt.show()
+PowerCon(df_resultsM1_2020,df_resultsM1_2021)
