@@ -6,8 +6,9 @@ from pyomo.core import *
 import pandas as pd 
 import numpy as np
 from Opt_Constants import *
-from Data_process import Φ, Start_date,End_date, P_PV_max, DA, c_DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, π_r, π_DA, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω, DateRange, pem_setpoint, hydrogen_mass_flow
+from Data_process import Φ, Start_date,End_date, P_PV_max, DA, c_DA, Demand,π_DA, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, DateRange, pem_setpoint, hydrogen_mass_flow
 from Settings import sEfficiency
+from Scenario import π_r, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω
 
 
 #____________________________________________
@@ -30,7 +31,8 @@ model.c_aFRR_up = pe.Param(model.Ω, model.T, initialize = c_aFRR_ups)
 model.c_aFRR_down = pe.Param(model.Ω, model.T, initialize = c_aFRR_downs)
 model.c_mFRR_up = pe.Param(model.Ω, model.T, initialize = c_mFRR_ups)
 model.π_r = pe.Param(model.Ω, initialize = π_r)
-model.π_DA = pe.Param(model.Ω, initialize = π_DA)
+#model.π_DA = pe.Param(model.Ω, initialize = π_DA)
+model.π_DA = pe.Param(model.Φ, initialize = π_DA)
 
 model.P_pem_cap = P_pem_cap 
 model.P_pem_min = P_pem_min
@@ -297,6 +299,11 @@ for t in model.T_block:
     model.c19_4.add(model.b_FCR[t+2] == model.b_FCR[t])
     model.c19_4.add(model.b_FCR[t+3] == model.b_FCR[t]) 
 
+model.c19_5 = pe.ConstraintList()
+for t in model.T_block:
+    model.c19_5.add(model.β_FCR[t+1] == model.β_FCR[t])
+    model.c19_5.add(model.β_FCR[t+2] == model.β_FCR[t])
+    model.c19_5.add(model.β_FCR[t+3] == model.β_FCR[t]) 
 
 model.c22_1 = pe.ConstraintList()
 for t in model.T:
@@ -358,8 +365,8 @@ for ω in model.Ω:
 
 model.c22 = pe.ConstraintList()
 for t in model.T:
-  model.c22.add(model.b_FCR[t]*2 + model.b_aFRR_up[t] + model.b_mFRR_up[t] <= model.P_pem_cap - model.P_pem_min)
-  model.c22.add(model.b_FCR[t]*2 + model.b_aFRR_down[t] <= model.P_pem_cap - model.P_pem_min)
+  model.c22.add(model.b_FCR[t]*2 + model.b_aFRR_up[t] + model.b_aFRR_down[t] + model.b_mFRR_up[t] <= model.P_pem_cap - model.P_pem_min)
+  #model.c22.add(model.b_FCR[t]*2 + model.b_aFRR_down[t] <= model.P_pem_cap - model.P_pem_min)
 
 ###############SOLVE THE MODEL########################
 
@@ -467,6 +474,13 @@ s_pu2 = [instance.s_Pu[2,i].value for i in range(1,T+1)]
 #sRaw2 = [instance.s_raw[2,i].value for i in range(1,T+1)]  
 #sPu1 = [instance.s_Pu[1,i].value for i in range(1,T+1)]  
 #sPu2 = [instance.s_Pu[2,i].value for i in range(1,T+1)]  
+""" print(len(P_PV1))
+x = list(c_FCRs.values())[0:168]
+print(len(x))
+x = list(c_FCRs.values())[169:337]
+print(len(x))
+x = list(Demand.values())
+print(len(x)) """
 
 #Creating result DataFrame
 df_results = pd.DataFrame({#Col name : Value(list)
@@ -476,28 +490,28 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'P_PV2' : P_PV2,
                           'bidVol_FCR': b_FCR,
                           'bidPrice_FCR': β_FCR,
-                          'c_FCR1' : list(c_FCRs.values())[0:168],
-                          'c_FCR2' : list(c_FCRs.values())[168:337],
+                          #'c_FCR1' : list(c_FCRs.values())[0:168],
+                          #'c_FCR2' : list(c_FCRs.values())[168:337],
                           'FCR_1' : R_FCR1, 
                           'FCR_2' : R_FCR2,
                           'bidVol_mFRR_up': b_mFRRup,
                           'bidPrice_mFRR_up': β_mFRRup,
-                          'c_mFRRup1' : list(c_mFRR_ups.values())[0:168],
-                          'c_mFRRup2' : list(c_mFRR_ups.values())[168:336],
+                          #'c_mFRRup1' : list(c_mFRR_ups.values())[0:168],
+                          #'c_mFRRup2' : list(c_mFRR_ups.values())[168:337],
                           'mFRR_up1': R_mFRRup1,
                           'mFRR_up2': R_mFRRup2,
                           'bidVol_aFRR_up': b_aFRRup,
                           'bidPrice_aFRR_up': β_aFRRup,
-                          'c_aFRRup1' : list(c_aFRR_ups.values())[0:168],
-                          'c_aFRRup2' : list(c_aFRR_ups.values())[168:337],
+                          #'c_aFRRup1' : list(c_aFRR_ups.values())[0:168],
+                          #'c_aFRRup2' : list(c_aFRR_ups.values())[168:337],
                           'aFRR_up1': R_aFRRup1,
                           'aFRR_up2': R_aFRRup2,
                           'bidVol_aFRR_down': b_aFRRdown,
                           'bidPrice_aFRR_down': β_aFRRdown,
                           'aFRR_down1': R_aFRRdown1,
                           'aFRR_down2': R_aFRRdown2,
-                          'c_aFRRdown1' : list(c_aFRR_downs.values())[0:168],
-                          'c_aFRRdown2' : list(c_aFRR_downs.values())[168:336],
+                          #'c_aFRRdown1' : list(c_aFRR_downs.values())[0:168],
+                          #'c_aFRRdown2' : list(c_aFRR_downs.values())[168:337],
                           'Raw Storage1' : s_raw1,
                           'Raw Storage2' : s_raw2,
                           'Pure Storage1' : s_pu1,
@@ -515,11 +529,11 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'Pure_In1': m_pu1,
                           'Pure_In2': m_pu2,
                           'z_grid1' : z_grid1,
-                          'z_grid2' : z_grid2,
-                          'DA1' : list(c_DA())[0:168],
-                          'DA2' : list(c_DA())[168:336],
-                          'Demand1' : list(Demand.values()),
-                          'Demand2' : list(Demand.values())
+                          'z_grid2' : z_grid2
+                          #'DA1' : list(c_DA.values())[0:168],
+                          #'DA2' : list(c_DA.values())[168:337],
+                          #'Demand1' : list(Demand.values()),
+                          #'Demand2' : list(Demand.values())
                           }, index=DateRange,
                           )
 
@@ -529,4 +543,3 @@ df_results = pd.DataFrame({#Col name : Value(list)
 #save to Excel 
 #df_results.to_excel("Result_files/Model3_TestResults.xlsx")
 df_results.to_excel("Result_files/Model3_"+Start_date+"_"+End_date+".xlsx")
-
