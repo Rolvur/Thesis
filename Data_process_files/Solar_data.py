@@ -59,6 +59,11 @@ df_avg_results = df_avg_results[:-1]
 file_to_open = Path("Data/") / "DTU_solar_data.xlsx"
 df_solar = pd.read_excel(file_to_open)
 
+#len(df_solar)
+#df_avg_results_day = df_solar.groupby(pd.PeriodIndex(df_solar['Unnamed: 0'], freq='d'))['Irradiance'].mean()
+
+#df_avg_results_day/7
+
 
 ## Number of solar panels
 n_pv = 300*10**6/600 

@@ -1,7 +1,7 @@
 import datetime
 import numpy as np
 import pandas as pd 
-from Settings import Start_date, End_date, Demand_pattern
+from Settings import Start_date, End_date, Demand_pattern,Start_date_scen,End_date_scen
 from Opt_Constants import k_d
 #from pyparsing import line
 import warnings
@@ -16,7 +16,11 @@ df_solar_prod = pd.read_excel(file_to_open)
 
 
 TimeRangePV = (df_solar_prod['Hour UTC'] >= Start_date) & (df_solar_prod['Hour UTC']  <= End_date)
+TimeRangePV_scen = (df_solar_prod['Hour UTC'] >= Start_date_scen) & (df_solar_prod['Hour UTC']  <= End_date_scen)
+
 df_solar_prod_time = df_solar_prod[TimeRangePV]
+PV_scen = df_solar_prod[TimeRangePV_scen]
+
 
 PV = df_solar_prod_time['Power [MW]'].tolist() #Convert from pandas data series to list
 
@@ -33,10 +37,15 @@ df_DKDA_raw[['HourUTC','HourDK']] = df_DKDA_raw[['HourUTC','HourDK']].apply(pd.t
 
 
 #Input for model
-#Using year 2020
 TimeRange2020DA = (df_DKDA_raw['HourDK'] >= Start_date) & (df_DKDA_raw['HourDK']  <= End_date)
+TimeRangeScenarioDA = (df_DKDA_raw['HourDK'] >= Start_date_scen) & (df_DKDA_raw['HourDK']  <= End_date_scen)
+
 df_DKDA_raw2020 = df_DKDA_raw[TimeRange2020DA]
+df_DKDA_rawScen = df_DKDA_raw[TimeRangeScenarioDA]
+
 DA_list = df_DKDA_raw2020['SpotPriceEUR,,'].tolist()
+DA_list_scen = df_DKDA_rawScen['SpotPriceEUR,,'].tolist()
+
 
 DA = dict(zip(np.arange(1,len(DA_list)+1),DA_list))
 #print(DA,Start_date,End_date)
@@ -53,7 +62,10 @@ df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'] = df_FCR_DE['DE_SETTLEMENTCAPA
 
 #Input for model
 TimeRange_FCR = (df_FCR_DE['DATE_FROM'] >= Start_date) & (df_FCR_DE['DATE_FROM']  <= End_date)
+TimeRangeFCR_Scen = (df_FCR_DE['DATE_FROM'] >= Start_date_scen) & (df_FCR_DE['DATE_FROM']  <= End_date_scen)
+
 df_FCR_DE = df_FCR_DE[TimeRange_FCR]
+df_FCR_DE_scen = df_FCR_DE[TimeRangeFCR_Scen]
 
 
 #Convert from pandas data series to list
@@ -74,7 +86,11 @@ sum(df_mFRR['mFRR_UpPriceEUR'])
 
 
 TimeRange_mFRR = (df_mFRR['HourDK'] >= Start_date) & (df_mFRR['HourDK']  <= End_date)
+TimeRange_mFRR_Scen = (df_mFRR['HourDK'] >= Start_date_scen) & (df_mFRR['HourDK']  <= End_date_scen)
+
 df_mFRR = df_mFRR[TimeRange_mFRR]
+df_mFRR_scen = df_mFRR[TimeRange_mFRR_Scen]
+
 #convert to list
 list_mFRR_up = df_mFRR['mFRR_UpPriceEUR'].tolist() #Convert from pandas data series to list
 
@@ -91,7 +107,10 @@ df_aFRR = pd.read_excel(file_to_open)
 
 #reduce data point to the chosen time period
 TimeRange_aFRR = (df_aFRR['Period'] >= Start_date) & (df_aFRR['Period']  <= End_date)
+TimeRange_aFRR_Scen = (df_aFRR['Period'] >= Start_date_scen) & (df_aFRR['Period']  <= End_date_scen)
+
 df_aFRR = df_aFRR[TimeRange_aFRR]
+df_aFRR_scen = df_aFRR[TimeRange_aFRR_Scen]
 #convert to list
 list_aFRR_up = df_aFRR['aFRR Upp Pris (EUR/MW)'].tolist() #Convert from pandas data series to list
 list_aFRR_down = df_aFRR['aFRR Ned Pris (EUR/MW)'].tolist() #Convert from pandas data series to list

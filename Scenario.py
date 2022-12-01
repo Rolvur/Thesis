@@ -3,29 +3,44 @@ import pandas as pd
 import random
 from Settings import*
 from sklearn_extra.cluster import KMedoids
-from Data_process import df_aFRR,df_mFRR,df_FCR_DE,DA_list
+from Data_process import PV_scen,df_aFRR_scen,df_mFRR_scen,df_FCR_DE_scen,DA_list_scen
 import matplotlib.pyplot as plt
 random.seed(123)
 
 #Input data   Set period in Settings.py
-DA = DA_list
-aFRR_up = df_aFRR['aFRR Upp Pris (EUR/MW)'].tolist()
-aFRR_down = df_aFRR['aFRR Ned Pris (EUR/MW)'].tolist()
-mFRR = df_mFRR['mFRR_UpPriceEUR'].tolist()
-FCR = df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+PV = PV_scen['Power [MW]'].tolist()
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+########################################################
+DA = DA_list_scen
+aFRR_up = df_aFRR_scen['aFRR Upp Pris (EUR/MW)'].tolist()
+aFRR_down = df_aFRR_scen['aFRR Ned Pris (EUR/MW)'].tolist()
+mFRR = df_mFRR_scen['mFRR_UpPriceEUR'].tolist()
+FCR = df_FCR_DE_scen['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
 
 Data = [DA,FCR,aFRR_up,aFRR_down,mFRR]
 Data_names = ['DA','FCR','aFRR Up','aFRR Down','mFRR']
 
 ## Scenario generation ## 
 
-Type = 'single'   # 'single' or 'combined'
+#Type = 'single'   # 'single' or 'combined'
 
-n_samples = 10000 #Number of samples to be made  
+#n_samples = 10000 #Number of samples to be made  
 
-blocksize = 24 # 7days = 168 hours
-sample_length = blocksize*7 # sampling 52 weeks blocks 
+#blocksize = 24 # 7days = 168 hours
+#sample_length = blocksize*7 # sampling 52 weeks blocks 
 
 def Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length):
 
@@ -116,10 +131,6 @@ def Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length):
     if Type == 'combined': 
         return Combined_blocks
 
-scenarios = Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length)
-
-## Generate Average Price for all markets for each time (Only for "Combined scenario generation"!!) ##
- 
 def GenAverage(scenarios,n_samples,sample_length):
     Avg_scenarios = np.zeros((n_samples,sample_length))
 
@@ -128,50 +139,6 @@ def GenAverage(scenarios,n_samples,sample_length):
             Avg_scenarios[i][j] = scenarios[i][j].mean()
     return Avg_scenarios
 
-Avg_scenarios = GenAverage(scenarios,n_samples,sample_length)
-            
-## Scenario reduction ## 
-
-## Scenario reduction (Single!!!) ## 
-#Specify number of clusters(scenarios)
-n_clusters = 10
-def K_Medoids(scenarios,n_clusters):
-
-    Red_Scen = []   ## Red_Scen[0] = DA scenarios, Red_Scen[1] = FCR scenarios, Red_Scen[2] = aFRR_up scenarios, Red_Scen[3] = aFRR_Down scenarios, Red_Scen[4] = mFRR scenarios 
-
-    Prob = np.zeros((n_clusters,len(scenarios))) # Prob scenario 1 in DA = Prob[0,0], Prob scenario 2 in DA = Prob[1,0] osv... Prob scenario 1 FCR = Prob[0,1] .....   
-
-
-
-    for i in range(0,len(scenarios)):
-
-        kmedoids = KMedoids(n_clusters=n_clusters,metric='euclidean').fit(scenarios[i])
-
-
-        ## Calculating scenario probability ## 
-
-        Red_Scen.append(kmedoids.cluster_centers_) 
-
-        for j in range(0,n_clusters):
-            Prob[j,i] = np.count_nonzero(kmedoids.labels_ == j)/len(kmedoids.labels_)
-
-
-        
-
-    return Red_Scen,Prob 
-
-Rep_scen,Prob = K_Medoids(scenarios,n_clusters)     
-
-# Rep_scen[0] = DA scenarios, Rep_scen[1] = FCR scenarios, Rep_scen[2] = aFRR_up scenarios, Rep_scen[3] = aFRR_Down scenarios, Rep_scen[4] = mFRR scenarios 
-#Rep_scen[1][0][0]   #Market , Omega, time 
-
-#Prob # Prob scenario 1 in DA = Prob[0,0], Prob scenario 2 in DA = Prob[1,0] osv... Prob scenario 1 FCR = Prob[0,1] ..... 
-
-
-
-## Scenario reduction (Combined!!!) ##
-#Specify number of clusters(scenarios)
-n_clusters = 3
 def AvgKmedReduction(Avg_scenarios,scenarios,n_clusters,n_samples,sample_length):
 
     Red_Scen = []   ## Red_Scen[0] = DA scenarios, Red_Scen[1] = FCR scenarios, Red_Scen[2] = aFRR_up scenarios, Red_Scen[3] = aFRR_Down scenarios, Red_Scen[4] = mFRR scenarios 
@@ -252,63 +219,89 @@ def AvgKmedReduction(Avg_scenarios,scenarios,n_clusters,n_samples,sample_length)
             
     return Rep_scen1, Prob
 
+def K_Medoids(scenarios,n_clusters):
 
-Rep_scen_comb, Prob_comb = AvgKmedReduction(Avg_scenarios,scenarios,n_clusters,n_samples,sample_length) 
-#Rep_scen_comb[market][scenario][hour]
+    Red_Scen = []   ## Red_Scen[0] = DA scenarios, Red_Scen[1] = FCR scenarios, Red_Scen[2] = aFRR_up scenarios, Red_Scen[3] = aFRR_Down scenarios, Red_Scen[4] = mFRR scenarios 
 
-
-
-
+    Prob = np.zeros((n_clusters,len(scenarios))) # Prob scenario 1 in DA = Prob[0,0], Prob scenario 2 in DA = Prob[1,0] osv... Prob scenario 1 FCR = Prob[0,1] .....   
 
 
-### Model Input ### 
 
-#Rep_scen_comb[market][scenario][hour]
+    for i in range(0,len(scenarios)):
 
-# Rep_scen[0] = DA scenarios, Rep_scen[1] = FCR scenarios, Rep_scen[2] = aFRR_up scenarios, Rep_scen[3] = aFRR_Down scenarios, Rep_scen[4] = mFRR scenarios 
-#Rep_scen[1][0][0]   #Market , Omega, time 
+        kmedoids = KMedoids(n_clusters=n_clusters,metric='euclidean').fit(scenarios[i])
 
-#Prob # Prob scenario 1 in DA = Prob[0,0], Prob scenario 2 in DA = Prob[1,0] osv... Prob scenario 1 FCR = Prob[0,1] ..... 
 
-len(Rep_scen[1][1])
+        ## Calculating scenario probability ## 
 
-Rep_scen[0][0][0]
+        Red_Scen.append(kmedoids.cluster_centers_) 
 
-x = len(Rep_scen[0])
-hours = len(Rep_scen[0][0])
-Ω = x**x
-c_FCRs = {}
-c_aFRR_ups = {}
-c_aFRR_downs = {}
-c_mFRR_ups = {}
-π_r = {}
+        for j in range(0,n_clusters):
+            Prob[j,i] = np.count_nonzero(kmedoids.labels_ == j)/len(kmedoids.labels_)
 
-for a in range(1,x+1):
-    for b in range(1,x+1):
-        for c in range(1,x+1):
-            for d in range(1,x+1):
-               
-                w = (a-1)*x**3 + (b-1)*x**2 + (c-1)*x + d
-                π_r[w] = Prob[a-1,1] * Prob[b-1,2] * Prob[c-1,3] * Prob[d-1,4] 
+
+        
+
+    return Red_Scen,Prob 
+
+def SingleInputData(Rep_scen,Prob):
+
+    x = len(Rep_scen[0])
+    hours = len(Rep_scen[0][0])
+    Ω = x**x
+    c_FCRs = {}
+    c_aFRR_ups = {}
+    c_aFRR_downs = {}
+    c_mFRR_ups = {}
+    π_r = {}
+
+    for a in range(1,x+1):
+        for b in range(1,x+1):
+            for c in range(1,x+1):
+                for d in range(1,x+1):
                 
-                for t in range(1,hours+1):
+                    w = (a-1)*x**3 + (b-1)*x**2 + (c-1)*x + d
+                    π_r[w] = Prob[a-1,1] * Prob[b-1,2] * Prob[c-1,3] * Prob[d-1,4] 
+                    
+                    for t in range(1,hours+1):
 
-                    c_FCRs[(w,t)] = Rep_scen[1][a-1][t-1]
-                    c_aFRR_ups[(w,t)] = Rep_scen[2][b-1][t-1]
-                    c_aFRR_downs[(w,t)] = Rep_scen[3][c-1][t-1]
-                    c_mFRR_ups[(w,t)] = Rep_scen[4][d-1][t-1]
+                        c_FCRs[(w,t)] = Rep_scen[1][a-1][t-1]
+                        c_aFRR_ups[(w,t)] = Rep_scen[2][b-1][t-1]
+                        c_aFRR_downs[(w,t)] = Rep_scen[3][c-1][t-1]
+                        c_mFRR_ups[(w,t)] = Rep_scen[4][d-1][t-1]
+    
+
+    c_DAs = {}
+    π_DA = {}
+    for i in range(1,x+1):
+        π_DA[(i)] = Prob[i,0] 
+        for t in range(1,hours+1):
+            c_DAs[(i,t)] = Rep_scen[0][i-1][t-1]
 
 
 
 
 
-#[(sen,hour)]
+    return Ω,c_FCRs,c_aFRR_ups,c_aFRR_downs,c_mFRR_ups,c_DAs,π_r,π_DA
+
+def PV_Blocks(PV,weeks,blocksize_PV):
+
+    weeks = 13
+    #Sample length
+    n = weeks*blocksize_PV
+
+    #Split PV in blocks of length blocksize
+
+    PV_blocks = [PV[i:i + blocksize_PV ] for i in range (0,n,blocksize_PV)]
+
+    #Delete last block if length differs from blocksize 
+    if len(PV_blocks[-1]) != blocksize_PV:
+        del PV_blocks[-1]
+
+    return PV_blocks
 
 
-
-
-
-
+## Plot functions 
 
 
 ### Plot ### 
@@ -337,7 +330,125 @@ def ScenariosPlots(Rep_scen,scenarios,sample_length,n_samples):
     plt.tight_layout()
     plt.show()
 
+def PlotPV_Rep(PV_block,PV_rep):
+
+    x = np.arange(0,len(PV_block[0]))
+
+    fig, ax = plt.subplots(nrows=1,ncols=1)
+
+    #ax.bar(x, df_Data_plot['SpotPriceEUR,,'], color='b',linestyle = 'solid', label ='Day-Ahead Price')
+    for i in range(0,len(PV_block)):
+        ax.plot(x, PV_block[i], color='lightgrey',linestyle = '-', linewidth=1)
+
+        
+
+    ax.plot(x, PV_rep[0],linestyle = '-',color='red' ,label =f"PV Representation", linewidth=2)    
+
+        
+    ax.set_ylabel('MW')
+    ax.set_xlabel('Hours')
+    #ax.set_ylim([-60, 170])
+    ax.legend(loc='upper left')
+    #ax.set_title('Day-Ahead Price')
+    ax.tick_params(axis='x', rotation=0)
+    plt.tight_layout()
+    plt.show()
+
+
+
+if Type == 'single':
+    scenarios = Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length)
+    Rep_scen,Prob = K_Medoids(scenarios,n_clusters)   
+    Ω,c_FCRs,c_aFRR_ups,c_aFRR_downs,c_mFRR_ups,c_DAs,π_r,π_DA = SingleInputData(Rep_scen,Prob)
+
+
+
+
+if Type == 'combined':
+## Generate Average Price for all markets for each time (Only for "Combined scenario generation"!!) ##
+    scenarios = Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length)
+    Avg_scenarios = GenAverage(scenarios,n_samples,sample_length)
+    Rep_scen_comb, Prob_comb = AvgKmedReduction(Avg_scenarios,scenarios,n_clusters,n_samples,sample_length) 
+
+
 ScenariosPlots(Rep_scen,scenarios,sample_length,n_samples)
+
+if PV_Cluster == 'True': 
+
+    PV_block = PV_Blocks(PV,weeks,blocksize_PV)
+    kmedoids = KMedoids(n_clusters=n_clusters_PV,metric='euclidean').fit(PV_block)
+    PV_rep = kmedoids.cluster_centers_
+    
+
+
+    #Model input
+    P_PV_max = {}
+    
+    
+    for t in range(1,len(PV_rep[0])+1):
+        P_PV_max[t] = PV_rep[0][t-1]
+
+
+
+
+
+PlotPV_Rep(PV_block,PV_rep)
+
+
+## Scenario reduction ## 
+
+## Scenario reduction (Single!!!) ## 
+#Specify number of clusters(scenarios)
+
+
+
+
+# Rep_scen[0] = DA scenarios, Rep_scen[1] = FCR scenarios, Rep_scen[2] = aFRR_up scenarios, Rep_scen[3] = aFRR_Down scenarios, Rep_scen[4] = mFRR scenarios 
+#Rep_scen[1][0][0]   #Market , Omega, time 
+
+#Prob # Prob scenario 1 in DA = Prob[0,0], Prob scenario 2 in DA = Prob[1,0] osv... Prob scenario 1 FCR = Prob[0,1] ..... 
+
+
+
+## Scenario reduction (Combined!!!) ##
+#Specify number of clusters(scenarios)
+
+
+
+#Rep_scen_comb[market][scenario][hour]
+
+
+
+
+
+
+### Model Input ### 
+
+#Rep_scen_comb[market][scenario][hour]
+
+# Rep_scen[0] = DA scenarios, Rep_scen[1] = FCR scenarios, Rep_scen[2] = aFRR_up scenarios, Rep_scen[3] = aFRR_Down scenarios, Rep_scen[4] = mFRR scenarios 
+#Rep_scen[1][0][0]   #Market , Omega, time 
+
+#Prob # Prob scenario 1 in DA = Prob[0,0], Prob scenario 2 in DA = Prob[1,0] osv... Prob scenario 1 FCR = Prob[0,1] ..... 
+
+#len(Rep_scen[1][1])
+
+#Rep_scen[0][0][0]
+
+
+
+
+
+
+#Rep_scen[0]
+#hours = len(Rep_scen[0][0])
+
+
+
+
+
+
+
 
 
 
