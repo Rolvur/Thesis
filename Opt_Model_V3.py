@@ -6,9 +6,9 @@ from pyomo.core import *
 import pandas as pd 
 import numpy as np
 from Opt_Constants import *
-from Data_process import Φ, Start_date,End_date, P_PV_max, DA, c_DA, Demand,π_DA, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, DateRange, pem_setpoint, hydrogen_mass_flow
+from Data_process import Start_date,End_date, Demand, DateRange, pem_setpoint, hydrogen_mass_flow
 from Settings import sEfficiency
-from Scenario import π_r, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω
+from Scenario import π_r, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω, c_DAs, Φ, π_DA, P_PV_max
 
 
 #____________________________________________
@@ -21,15 +21,16 @@ model.T = pe.RangeSet(1,T)
 model.Ω = pe.RangeSet(1,Ω)
 model.Φ = pe.RangeSet(1,Φ)
 model.T_block = pe.RangeSet(1,T,4)
-
+#print(c_DAs)
+#print(c_FCRs)
 #initializing parameters
 model.P_PV_max = pe.Param(model.T, initialize=P_PV_max)
-model.c_DA = pe.Param(model.Φ, model.T, initialize=c_DA)
+model.c_DA = pe.Param(model.Φ, model.T, initialize=c_DAs)
 model.m_demand = pe.Param(model.T, initialize = Demand)
-model.c_FCR = pe.Param(model.Ω,model.T,initialize = c_FCRs)
 model.c_aFRR_up = pe.Param(model.Ω, model.T, initialize = c_aFRR_ups)
 model.c_aFRR_down = pe.Param(model.Ω, model.T, initialize = c_aFRR_downs)
 model.c_mFRR_up = pe.Param(model.Ω, model.T, initialize = c_mFRR_ups)
+model.c_FCR = pe.Param(model.Ω,model.T, initialize = c_FCRs)
 model.π_r = pe.Param(model.Ω, initialize = π_r)
 #model.π_DA = pe.Param(model.Ω, initialize = π_DA)
 model.π_DA = pe.Param(model.Φ, initialize = π_DA)

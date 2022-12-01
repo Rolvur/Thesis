@@ -235,7 +235,8 @@ def SingleInputData(Rep_scen,Prob):
 
     x = len(Rep_scen[0])
     hours = len(Rep_scen[0][0])
-    Ω = x**x
+    Ω = x**4
+    Φ = x
     c_FCRs = {}
     c_aFRR_ups = {}
     c_aFRR_downs = {}
@@ -261,7 +262,7 @@ def SingleInputData(Rep_scen,Prob):
     c_DAs = {}
     π_DA = {}
     for i in range(1,x+1):
-        π_DA[(i)] = Prob[i,0] 
+        π_DA[(i)] = Prob[i-1,0] 
         for t in range(1,hours+1):
             c_DAs[(i,t)] = Rep_scen[0][i-1][t-1]
 
@@ -269,13 +270,14 @@ def SingleInputData(Rep_scen,Prob):
 
 
 
-    return Ω,c_FCRs,c_aFRR_ups,c_aFRR_downs,c_mFRR_ups,c_DAs,π_r,π_DA
+    return Φ, Ω,c_FCRs,c_aFRR_ups,c_aFRR_downs,c_mFRR_ups,c_DAs,π_r,π_DA
 
 def CombInputData(Rep_scen_comb,Prob_comb):
 
     x = len(Rep_scen_comb[0])
     hours = len(Rep_scen_comb[0][0])
-    Ω = x**x
+    Ω = x**4
+    Φ = x
     c_FCRs = {}
     c_aFRR_ups = {}
     c_aFRR_downs = {}
@@ -306,7 +308,7 @@ def CombInputData(Rep_scen_comb,Prob_comb):
             c_DAs[(i,t)] = Rep_scen_comb[0][i-1][t-1]
 
 
-    return Ω,c_FCRs,c_aFRR_ups,c_aFRR_downs,c_mFRR_ups,c_DAs,π_r,π_DA
+    return Φ, Ω,c_FCRs,c_aFRR_ups,c_aFRR_downs,c_mFRR_ups,c_DAs,π_r,π_DA
 
 def PV_Blocks(PV,weeks,blocksize_PV):
 
@@ -380,7 +382,7 @@ def PlotPV_Rep(PV_block,PV_rep):
 if Type == 'single':
     scenarios = Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length)
     Rep_scen,Prob = K_Medoids(scenarios,n_clusters)   
-    Ω,c_FCRs,c_aFRR_ups,c_aFRR_downs,c_mFRR_ups,c_DAs,π_r,π_DA = SingleInputData(Rep_scen,Prob)
+    Φ, Ω,c_FCRs,c_aFRR_ups,c_aFRR_downs,c_mFRR_ups,c_DAs,π_r,π_DA = SingleInputData(Rep_scen,Prob)
 
 
 
@@ -390,9 +392,7 @@ if Type == 'combined':
     scenarios = Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length)
     Avg_scenarios = GenAverage(scenarios,n_samples,sample_length)
     Rep_scen_comb, Prob_comb = AvgKmedReduction(Avg_scenarios,scenarios,n_clusters,n_samples,sample_length) 
-    
-
-Ω,c_FCRs,c_aFRR_ups,c_aFRR_downs,c_mFRR_ups,c_DAs,π_r,π_DA = SingleInputData(Rep_scen_comb,Prob_comb)
+    Φ, Ω,c_FCRs,c_aFRR_ups,c_aFRR_downs,c_mFRR_ups,c_DAs,π_r,π_DA = SingleInputData(Rep_scen_comb,Prob_comb)
 
 #Rep_scen_comb[0]   ### markets , scenario , time 
 
@@ -415,8 +415,8 @@ if PV_Cluster == 'True':
 
 
 
-ScenariosPlots(Rep_scen,scenarios,sample_length,n_samples)
-PlotPV_Rep(PV_block,PV_rep)
+#ScenariosPlots(Rep_scen,scenarios,sample_length,n_samples)
+#PlotPV_Rep(PV_block,PV_rep)
 
 
 ## Scenario reduction ## 
