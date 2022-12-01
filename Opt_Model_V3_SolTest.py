@@ -4,7 +4,7 @@ from pyomo.core import *
 import pandas as pd 
 import numpy as np
 from Opt_Constants import *
-from Data_process import Start_date,End_date, P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, π, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω, DateRange, pem_setpoint, hydrogen_mass_flow
+from Data_process import Start_date,End_date, P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, π, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω, Φ, DateRange, pem_setpoint, hydrogen_mass_flow
 from Settings import sEfficiency
 
 def ReadResults(Start_date, End_date):
@@ -33,4 +33,10 @@ def ReadResults(Start_date, End_date):
 
 b_FCR, b_aFRR_up, b_aFRR_down, b_mFRR_up, β_FCR, β_aFRR_up, β_aFRR_down, β_mFRR_up = ReadResults(Start_date, End_date);
 
+solver = po.SolverFactory('gurobi')
+SolChecker = pe.ConcreteModel()
 
+T = len(P_PV_max)
+SolChecker.T = pe.RangeSet(1,T)
+SolChecker.Φ = pe.RangeSet(1,Φ)
+SolChecker.T_block = pe.RangeSet(1,T,4)

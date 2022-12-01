@@ -140,16 +140,21 @@ Demand = dict(zip(np.arange(1,len(Demand)+1),Demand))
 
 ######Creating test scenarios for reserve market variables#######
 Ω = 2
+Φ = 2
+c_DA = {}
 c_FCRs = {}
 c_aFRR_ups = {}
 c_aFRR_downs = {}
 c_mFRR_ups = {}
-π = {}
+π_r = {}
+π_DA = {}
 for i in range(1,Ω+1):
-    π[i] = 0.5
+    π_r[i] = 0.5
+    π_DA[i] = 0.5
     for j in range(1,len(c_FCR)+1):
         c_FCRs[(i,j)] = c_FCR[j]*i
         c_aFRR_ups[(i,j)] = c_aFRR_up[j]*(1-0.5*(i-1))
         c_aFRR_downs[(i,j)] = c_aFRR_down[j]*i
         c_mFRR_ups[(i,j)] = c_mFRR_up[j]*i
+        c_DA[(i,j)] = DA[j]*i
 

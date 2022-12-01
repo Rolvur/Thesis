@@ -6,7 +6,7 @@ from pyomo.core import *
 import pandas as pd 
 import numpy as np
 from Opt_Constants import *
-from Data_process import Start_date,End_date, P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, π, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω, DateRange, pem_setpoint, hydrogen_mass_flow
+from Data_process import Φ, Start_date,End_date, P_PV_max, DA, c_DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, π_r, π_DA, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω, DateRange, pem_setpoint, hydrogen_mass_flow
 from Settings import sEfficiency
 
 
@@ -14,22 +14,23 @@ from Settings import sEfficiency
 solver = po.SolverFactory('gurobi')
 model = pe.ConcreteModel()
 
-
 #set t in T
 T = len(P_PV_max)
 model.T = pe.RangeSet(1,T)
 model.Ω = pe.RangeSet(1,Ω)
+model.Φ = pe.RangeSet(1,Φ)
 model.T_block = pe.RangeSet(1,T,4)
 
 #initializing parameters
 model.P_PV_max = pe.Param(model.T, initialize=P_PV_max)
-model.DA = pe.Param(model.T, initialize=DA)
+model.c_DA = pe.Param(model.Φ, model.T, initialize=c_DA)
 model.m_demand = pe.Param(model.T, initialize = Demand)
 model.c_FCR = pe.Param(model.Ω,model.T,initialize = c_FCRs)
 model.c_aFRR_up = pe.Param(model.Ω, model.T, initialize = c_aFRR_ups)
 model.c_aFRR_down = pe.Param(model.Ω, model.T, initialize = c_aFRR_downs)
 model.c_mFRR_up = pe.Param(model.Ω, model.T, initialize = c_mFRR_ups)
-model.π = pe.Param(model.Ω, initialize = π)
+model.π_r = pe.Param(model.Ω, initialize = π_r)
+model.π_DA = pe.Param(model.Ω, initialize = π_DA)
 
 model.P_pem_cap = P_pem_cap 
 model.P_pem_min = P_pem_min
@@ -104,7 +105,7 @@ model.r_mFRR_up = pe.Var(model.Ω, model.T, domain = pe.NonNegativeReals)
 
 
 #Objective
-expr = sum(sum(model.π[ω]*(-(model.c_FCR[ω,t]*model.r_FCR[ω,t] + model.c_aFRR_up[ω,t]*model.r_aFRR_up[ω,t] + model.c_aFRR_down[ω,t]*model.r_aFRR_down[ω,t] + model.c_mFRR_up[ω,t]*model.r_mFRR_up[ω,t]) + (model.DA[t]+model.CT)*model.p_import[ω,t] - (model.DA[t]-model.PT)*model.p_export[ω,t]) for ω in model.Ω) for t in model.T)
+expr = sum(sum(model.π_r[ω]*(-(model.c_FCR[ω,t]*model.r_FCR[ω,t] + model.c_aFRR_up[ω,t]*model.r_aFRR_up[ω,t] + model.c_aFRR_down[ω,t]*model.r_aFRR_down[ω,t] + model.c_mFRR_up[ω,t]*model.r_mFRR_up[ω,t]) + sum(π_DA[φ]*((model.c_DA[φ,t]+model.CT)*model.p_import[ω,t] - (model.c_DA[φ,t]-model.PT)*model.p_export[ω,t]) for φ in model.Φ)) for ω in model.Ω) for t in model.T)
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 
 model.c_a = pe.ConstraintList()
@@ -515,8 +516,8 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'Pure_In2': m_pu2,
                           'z_grid1' : z_grid1,
                           'z_grid2' : z_grid2,
-                          'DA1' : list(DA.values()),
-                          'DA1' : list(DA.values()),
+                          'DA1' : list(c_DA())[0:168],
+                          'DA2' : list(c_DA())[168:336],
                           'Demand1' : list(Demand.values()),
                           'Demand2' : list(Demand.values())
                           }, index=DateRange,
