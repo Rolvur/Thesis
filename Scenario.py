@@ -22,10 +22,10 @@ Data_names = ['DA','FCR','aFRR Up','aFRR Down','mFRR']
 
 Type = 'single'   # 'single' or 'combined'
 
-n_samples = 1000 #Number of samples to be made  
+n_samples = 10000 #Number of samples to be made  
 
 blocksize = 24 # 7days = 168 hours
-sample_length = blocksize*3 # sampling 52 weeks blocks 
+sample_length = blocksize*7 # sampling 52 weeks blocks 
 
 def Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length):
 
@@ -134,7 +134,7 @@ Avg_scenarios = GenAverage(scenarios,n_samples,sample_length)
 
 ## Scenario reduction (Single!!!) ## 
 #Specify number of clusters(scenarios)
-n_clusters = 4
+n_clusters = 10
 def K_Medoids(scenarios,n_clusters):
 
     Red_Scen = []   ## Red_Scen[0] = DA scenarios, Red_Scen[1] = FCR scenarios, Red_Scen[2] = aFRR_up scenarios, Red_Scen[3] = aFRR_Down scenarios, Red_Scen[4] = mFRR scenarios 
@@ -270,30 +270,35 @@ Rep_scen_comb, Prob_comb = AvgKmedReduction(Avg_scenarios,scenarios,n_clusters,n
 
 #Prob # Prob scenario 1 in DA = Prob[0,0], Prob scenario 2 in DA = Prob[1,0] osv... Prob scenario 1 FCR = Prob[0,1] ..... 
 
-sum(Prob[:,0])
+len(Rep_scen[1][1])
 
-Hours = len(Rep_scen[1][1])
-Ω = len(Rep_scen[0])
+Rep_scen[0][0][0]
+
+x = len(Rep_scen[0])
+hours = len(Rep_scen[0][0])
+Ω = x**x
 c_FCRs = {}
 c_aFRR_ups = {}
 c_aFRR_downs = {}
 c_mFRR_ups = {}
-#π = {}
-π_FCR = {}
-π_aFRR_up = {}
-π_aFRR_down = {}
-π_mFRR = {}
+π_r = {}
 
-for i in range(1,Ω+1):
-    π_FCR[i] = Prob[i-1,1]
-    π_aFRR_up[i] = Prob[i-1,2]
-    π_aFRR_down[i] = Prob[i-1,3]
-    π_mFRR[i] = Prob[i-1,4]
-    for j in range(1,Hours+1):
-        c_FCRs[(i,j)] = Rep_scen[1][i-1][j-1]
-        c_aFRR_ups[(i,j)] = Rep_scen[2][i-1][j-1]
-        c_aFRR_downs[(i,j)] = Rep_scen[3][i-1][j-1]
-        c_mFRR_ups[(i,j)] = Rep_scen[4][i-1][j-1]
+for a in range(1,x+1):
+    for b in range(1,x+1):
+        for c in range(1,x+1):
+            for d in range(1,x+1):
+               
+                w = (a-1)*x**3 + (b-1)*x**2 + (c-1)*x + d
+                π_r[w] = Prob[a-1,1] * Prob[b-1,2] * Prob[c-1,3] * Prob[d-1,4] 
+                
+                for t in range(1,hours+1):
+
+                    c_FCRs[(w,t)] = Rep_scen[1][a-1][t-1]
+                    c_aFRR_ups[(w,t)] = Rep_scen[2][b-1][t-1]
+                    c_aFRR_downs[(w,t)] = Rep_scen[3][c-1][t-1]
+                    c_mFRR_ups[(w,t)] = Rep_scen[4][d-1][t-1]
+
+
 
 
 
@@ -339,9 +344,10 @@ ScenariosPlots(Rep_scen,scenarios,sample_length,n_samples)
 
 
 
+a = np.array([10,20,30,40,50])
+b = np.array([1,2,3,4,5])
 
-
-
+a - b
 
 
 
