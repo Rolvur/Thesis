@@ -16,7 +16,11 @@ df_solar_prod = pd.read_excel(file_to_open)
 
 
 TimeRangePV = (df_solar_prod['Hour UTC'] >= Start_date) & (df_solar_prod['Hour UTC']  <= End_date)
+TimeRangePV_scen = (df_solar_prod['Hour UTC'] >= Start_date_scen) & (df_solar_prod['Hour UTC']  <= End_date_scen)
+
 df_solar_prod_time = df_solar_prod[TimeRangePV]
+PV_scen = df_solar_prod[TimeRangePV_scen]
+
 
 PV = df_solar_prod_time['Power [MW]'].tolist() #Convert from pandas data series to list
 
