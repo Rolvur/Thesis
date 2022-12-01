@@ -60,6 +60,7 @@ file_to_open = Path("Data/") / "df_FCR_DE.csv"
 df_FCR_DE = pd.read_csv(file_to_open,sep=',',low_memory=False)
 df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'] = df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].astype(float)
 
+
 #Input for model
 TimeRange_FCR = (df_FCR_DE['DATE_FROM'] >= Start_date) & (df_FCR_DE['DATE_FROM']  <= End_date)
 TimeRangeFCR_Scen = (df_FCR_DE['DATE_FROM'] >= Start_date_scen) & (df_FCR_DE['DATE_FROM']  <= End_date_scen)
