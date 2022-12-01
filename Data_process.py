@@ -137,7 +137,7 @@ if Demand_pattern == 'Weekly':
 Demand = dict(zip(np.arange(1,len(Demand)+1),Demand))
 
 
-""" 
+
 ######Creating test scenarios for reserve market variables#######
 Ω = 2
 c_FCRs = {}
@@ -153,4 +153,3 @@ for i in range(1,Ω+1):
         c_aFRR_downs[(i,j)] = c_aFRR_down[j]*i
         c_mFRR_ups[(i,j)] = c_mFRR_up[j]*i
 
- """
