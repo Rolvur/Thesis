@@ -9,21 +9,6 @@ random.seed(123)
 
 #Input data   Set period in Settings.py
 PV = PV_scen['Power [MW]'].tolist()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-########################################################
 DA = DA_list_scen
 aFRR_up = df_aFRR_scen['aFRR Upp Pris (EUR/MW)'].tolist()
 aFRR_down = df_aFRR_scen['aFRR Ned Pris (EUR/MW)'].tolist()
@@ -42,6 +27,8 @@ Data_names = ['DA','FCR','aFRR Up','aFRR Down','mFRR']
 #blocksize = 24 # 7days = 168 hours
 #sample_length = blocksize*7 # sampling 52 weeks blocks 
 
+
+#Defining functions
 def Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length):
 
 
@@ -284,6 +271,43 @@ def SingleInputData(Rep_scen,Prob):
 
     return Ω,c_FCRs,c_aFRR_ups,c_aFRR_downs,c_mFRR_ups,c_DAs,π_r,π_DA
 
+def CombInputData(Rep_scen_comb,Prob_comb):
+
+    x = len(Rep_scen_comb[0])
+    hours = len(Rep_scen_comb[0][0])
+    Ω = x**x
+    c_FCRs = {}
+    c_aFRR_ups = {}
+    c_aFRR_downs = {}
+    c_mFRR_ups = {}
+    π_r = {}
+
+    for a in range(1,x+1):
+        for b in range(1,x+1):
+            for c in range(1,x+1):
+                for d in range(1,x+1):
+                
+                    w = (a-1)*x**3 + (b-1)*x**2 + (c-1)*x + d
+                    π_r[w] = Prob_comb[a-1]*Prob_comb[b-1]*Prob_comb[c-1]*Prob_comb[d-1]
+                    
+                    for t in range(1,hours+1):
+
+                        c_FCRs[(w,t)] = Rep_scen_comb[1][a-1][t-1]
+                        c_aFRR_ups[(w,t)] = Rep_scen_comb[2][b-1][t-1]
+                        c_aFRR_downs[(w,t)] = Rep_scen_comb[3][c-1][t-1]
+                        c_mFRR_ups[(w,t)] = Rep_scen_comb[4][d-1][t-1]
+
+
+    c_DAs = {}
+    π_DA = {}
+    for i in range(1,x+1):
+        π_DA[(i)] = Prob_comb[i-1] 
+        for t in range(1,hours+1):
+            c_DAs[(i,t)] = Rep_scen_comb[0][i-1][t-1]
+
+
+    return Ω,c_FCRs,c_aFRR_ups,c_aFRR_downs,c_mFRR_ups,c_DAs,π_r,π_DA
+
 def PV_Blocks(PV,weeks,blocksize_PV):
 
     weeks = 13
@@ -301,10 +325,7 @@ def PV_Blocks(PV,weeks,blocksize_PV):
     return PV_blocks
 
 
-## Plot functions 
-
-
-### Plot ### 
+## Plot functions  
 def ScenariosPlots(Rep_scen,scenarios,sample_length,n_samples):
 
 
@@ -365,13 +386,16 @@ if Type == 'single':
 
 
 if Type == 'combined':
-## Generate Average Price for all markets for each time (Only for "Combined scenario generation"!!) ##
+    ## Generate Average Price for all markets for each time (Only for "Combined scenario generation"!!) ##
     scenarios = Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length)
     Avg_scenarios = GenAverage(scenarios,n_samples,sample_length)
     Rep_scen_comb, Prob_comb = AvgKmedReduction(Avg_scenarios,scenarios,n_clusters,n_samples,sample_length) 
+    
 
+Ω,c_FCRs,c_aFRR_ups,c_aFRR_downs,c_mFRR_ups,c_DAs,π_r,π_DA = SingleInputData(Rep_scen_comb,Prob_comb)
 
-ScenariosPlots(Rep_scen,scenarios,sample_length,n_samples)
+#Rep_scen_comb[0]   ### markets , scenario , time 
+
 
 if PV_Cluster == 'True': 
 
@@ -391,7 +415,7 @@ if PV_Cluster == 'True':
 
 
 
-
+ScenariosPlots(Rep_scen,scenarios,sample_length,n_samples)
 PlotPV_Rep(PV_block,PV_rep)
 
 
