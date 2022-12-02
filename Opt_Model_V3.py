@@ -32,7 +32,6 @@ model.c_aFRR_down = pe.Param(model.Ω, model.T, initialize = c_aFRR_downs)
 model.c_mFRR_up = pe.Param(model.Ω, model.T, initialize = c_mFRR_ups)
 model.c_FCR = pe.Param(model.Ω,model.T, initialize = c_FCRs)
 model.π_r = pe.Param(model.Ω, initialize = π_r)
-#model.π_DA = pe.Param(model.Ω, initialize = π_DA)
 model.π_DA = pe.Param(model.Φ, initialize = π_DA)
 
 model.P_pem_cap = P_pem_cap 
@@ -112,10 +111,10 @@ expr = sum(sum(model.π_r[ω]*(-(model.c_FCR[ω,t]*model.r_FCR[ω,t] + model.c_a
 model.objective = pe.Objective(sense = pe.minimize, expr=expr)
 
 model.c_a = pe.ConstraintList()
-M_FCR = 3000 #
-M_aFRR_up = 3000 #
-M_aFRR_down = 3000 #
-M_mFRR_up = 3000 #
+M_FCR = 491.53 # max value in 2020-2021
+M_aFRR_up = 154.59 # max value in 2020-2021
+M_aFRR_down = 136.681 # max value in 2020-2021
+M_mFRR_up = 698.31 # max value in 2020-2021
 for ω in model.Ω:
   for t in model.T:
     model.c_a.add(model.c_FCR[ω,t] - model.β_FCR[t] <= M_FCR*model.δ_FCR[ω,t])
@@ -375,64 +374,11 @@ for t in model.T:
 instance = model.create_instance()
 results = solver.solve(instance)
 print(results)
-#instance.display()
 
-#print("Print values for each variable explicitly")
-#for i in instance.p_grid:
-#  print(str(instance.p_grid[i]), instance.p_grid[i].value)
-#  print(str(instance.zT[i]), instance.zT[i].value)
-#  print(str(instance.cT[i]), instance.cT[i].value)
-
-#for i in instance.p_PV:
-#  print(str(instance.p_PV[i]), instance.p_PV[i].value)
-#for i in instance.p_pem:
-#  print(str(instance.p_pem[i]), instance.p_pem[i].value)
-#for i in instance.r_FCR:
-#  print(str(instance.r_FCR[i]), instance.r_FCR[i].value)
-#for i in instance.rx_aFRR_up:
-#  print(str(instance.rx_aFRR_up[i]), instance.rx_aFRR_up[i].value)
-#for i in instance.r_aFRR_up:
-#  print(str(instance.r_aFRR_up[i]), instance.r_aFRR_up[i].value)
-#for i in instance.zaFRRup:
-#  print(str(instance.zaFRRup[i]), instance.zaFRRup[i].value)
-#for i in instance.r_aFRR_down:
-#  print(str(instance.r_aFRR_down[i]), instance.r_aFRR_down[i].value)
-#for i in instance.zaFRRdown:
-#  print(str(instance.zaFRRdown[i]), instance.zaFRRdown[i].value)
-#for i in instance.r_mFRR_up:
-#  print(str(instance.r_mFRR_up[i]), instance.r_mFRR_up[i].value)
-#for i in instance.zmFRRup:
-#  print(str(instance.zmFRRup[i]), instance.zmFRRup[i].value)
-
-
-#for i in instance.m_H2:
-#  print(str(instance.m_H2[i]), instance.m_H2[i].value)
-#for i in instance.m_CO2:
-#  print(str(instance.m_CO2[i]), instance.m_CO2[i].value)
-#CO2Mass = sum(instance.m_CO2)
-#print(CO2Mass)
-#for i in instance.m_Ri:
-#  print(str(instance.m_Ri[i]), instance.m_Ri[i].value)
-#for i in instance.m_Ro:
-#  print(str(instance.m_Ro[i]), instance.m_Ro[i].value)
-#for i in instance.m_H2O:
-#  print(str(instance.m_H2O[i]), instance.m_H2O[i].value)
-#for i in instance.m_Pu:
-#  print(str(instance.m_Pu[i]), instance.m_Pu[i].value)
-#for i in instance.m_Pu:
-#  print(str(instance.m_Pu[i]), instance.m_Pu[i].value)
-
-#for i in instance.s_raw:
-#  print(str(instance.s_raw[i]), instance.s_raw[i].value)
-#for i in instance.s_Pu:
-#  print(str(instance.s_Pu[i]), instance.s_Pu[i].value)
-
-
-#for i in instance.r_FCR:
- # print(str(instance.r_FCR[i]), instance.r_FCR[i].value)
-
-
-#Converting Pyomo resulst to list
+c_DA = {}
+for x in range(1, Φ+1):
+    c_DA[x] = [instance.c_DA[x,i] for i in range(1,T+1)]
+#Converting Pyomo results to list
 P_PV1 = [instance.p_PV[1,i].value for i in range(1,T+1)]
 P_PV2 = [instance.p_PV[2,i].value for i in range(1,T+1)]
 P_import1 = [instance.p_import[1,i].value for i in range(1,T+1)]
@@ -471,18 +417,13 @@ s_raw1 = [instance.s_raw[1,i].value for i in range(1,T+1)]
 s_raw2 = [instance.s_raw[2,i].value for i in range(1,T+1)]
 s_pu1 = [instance.s_Pu[1,i].value for i in range(1,T+1)]
 s_pu2 = [instance.s_Pu[2,i].value for i in range(1,T+1)]
-#sRaw1 = [instance.s_raw[1,i].value for i in range(1,T+1)]
-#sRaw2 = [instance.s_raw[2,i].value for i in range(1,T+1)]  
-#sPu1 = [instance.s_Pu[1,i].value for i in range(1,T+1)]  
-#sPu2 = [instance.s_Pu[2,i].value for i in range(1,T+1)]  
-""" print(len(P_PV1))
-x = list(c_FCRs.values())[0:168]
-print(len(x))
-x = list(c_FCRs.values())[169:337]
-print(len(x))
-x = list(Demand.values())
-print(len(x)) """
 
+pi_DA = []
+pi_DA_i = []
+for x in range(1, Φ+1):
+  for i in range(1, T+1):
+    pi_DA_i[i] = instance.π_DA[x]
+  pi_DA.append(pi_DA_i)
 #Creating result DataFrame
 df_results = pd.DataFrame({#Col name : Value(list)
                           'P_PEM1' : P_PEM1,
@@ -537,10 +478,11 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           #'Demand2' : list(Demand.values())
                           }, index=DateRange,
                           )
-
-
+for i in range(1,Φ+1):
+  df_results['c_DA'+str(i)] = c_DA[i]
 
 
 #save to Excel 
 #df_results.to_excel("Result_files/Model3_TestResults.xlsx")
-df_results.to_excel("Result_files/Model3_"+Start_date+"_"+End_date+".xlsx")
+#df_results.to_excel("Result_files/Model3_"+Start_date+"_"+End_date+".xlsx")
+df_results.to_excel("Result_files/Model3_"+Start_date+".xlsx")

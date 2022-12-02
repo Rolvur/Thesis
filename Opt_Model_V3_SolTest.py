@@ -4,11 +4,13 @@ from pyomo.core import *
 import pandas as pd 
 import numpy as np
 from Opt_Constants import *
-from Data_process import Start_date,End_date, P_PV_max, c_DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, Φ, π_DA, DateRange, pem_setpoint, hydrogen_mass_flow
+from Data_process import Start_date,End_date, P_PV_max, c_DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, π_DA, DateRange, pem_setpoint, hydrogen_mass_flow
 from Settings import sEfficiency
 
-def ReadResults(Start_date, End_date):
-    df_results = pd.read_excel("Result_files/Model3_"+Start_date+"_"+End_date+".xlsx")    
+#def ReadResults(Start_date, End_date):
+def ReadResults(Start_date):
+#    df_results = pd.read_excel("Result_files/Model3_"+Start_date+"_"+End_date+".xlsx")    
+    df_results = pd.read_excel("Result_files/Model3_"+Start_date+".xlsx")    
 
     list_b_FCR = df_results["bidVol_FCR"].tolist();
     list_β_FCR = df_results["bidPrice_FCR"].tolist();
@@ -29,15 +31,18 @@ def ReadResults(Start_date, End_date):
     list_β_mFRR_up = df_results["bidPrice_mFRR_up"].tolist();
     b_mFRR_up = dict(zip(np.arange(1,len(list_b_mFRR_up)+1),list_b_mFRR_up));
     β_mFRR_up = dict(zip(np.arange(1,len(list_β_mFRR_up)+1),list_β_mFRR_up));
-    return b_FCR, b_aFRR_up, b_aFRR_down, b_mFRR_up, β_FCR, β_aFRR_up, β_aFRR_down, β_mFRR_up;
 
-b_FCR, b_aFRR_up, b_aFRR_down, b_mFRR_up, β_FCR, β_aFRR_up, β_aFRR_down, β_mFRR_up = ReadResults(Start_date, End_date);
+    Φ=len(df_results.columns[df_results.columns.str.startswith('c_DA')])
 
-for i in range(1,169):
-    x = b_FCR[i]+b_aFRR_up[i]+b_mFRR_up[i]
-    y = b_FCR[i]+b_aFRR_down[i]
-    z = x+y
-    print(z)
+    return Φ,b_FCR, b_aFRR_up, b_aFRR_down, b_mFRR_up, β_FCR, β_aFRR_up, β_aFRR_down, β_mFRR_up;
+
+Φ,b_FCR, b_aFRR_up, b_aFRR_down, b_mFRR_up, β_FCR, β_aFRR_up, β_aFRR_down, β_mFRR_up = ReadResults(Start_date, End_date);
+
+#for i in range(1,169):
+#    x = b_FCR[i]+b_aFRR_up[i]+b_mFRR_up[i]
+#    y = b_FCR[i]+b_aFRR_down[i]
+#    z = x+y
+#    print(z)
     
 
 solver = po.SolverFactory('gurobi')
@@ -267,6 +272,36 @@ for t in SolX.T:
 ###############SOLVE THE MODEL########################
 
 #model.dual = pe.Suffix(direction=pe.Suffix.IMPORT)
-instance = SolX.create_instance()
-Xresults = solver.solve(instance)
+Xinstance = SolX.create_instance()
+Xresults = solver.solve(Xinstance)
 print(Xresults)
+
+
+#Converting Pyomo resulst to list
+P_PV = [Xinstance.p_PV[i].value for i in range(1,T+1)]
+P_import = [Xinstance.p_import[i].value for i in range(1,T+1)]
+P_export = [Xinstance.p_export[i].value for i in range(1,T+1)]
+P_grid = [P_import[i] - P_export[i] for i in range(0,len(P_import)) ]
+m_ri = [Xinstance.m_Ri[i].value for i in range(1,T+1)]
+m_ro = [Xinstance.m_Pu[i].value for i in range(1,T+1)]
+m_pu = [Xinstance.m_Pu[i].value for i in range(1,T+1)]
+P_PEM = [Xinstance.p_pem[i].value for i in range(1,T+1)]  
+b_FCR = [Xinstance.b_FCR[i].value for i in range(1,T+1)]
+R_FCR = [Xinstance.r_FCR[i].value for i in range(1,T+1)]
+b_mFRRup = [Xinstance.b_mFRR_up[i].value for i in range(1,T+1)]
+β_mFRRup = [Xinstance.β_mFRR_up[i].value for i in range(1,T+1)]
+R_mFRRup = [Xinstance.r_mFRR_up[i].value for i in range(1,T+1)]
+β_aFRRup = [Xinstance.β_aFRR_up[i].value for i in range(1,T+1)]
+b_aFRRup = [Xinstance.b_aFRR_up[i].value for i in range(1,T+1)]
+R_aFRRup = [Xinstance.r_aFRR_up[i].value for i in range(1,T+1)]
+b_aFRRdown = [Xinstance.b_aFRR_down[i].value for i in range(1,T+1)]
+β_aFRRdown = [Xinstance.β_aFRR_down[i].value for i in range(1,T+1)]
+R_aFRRdown = [Xinstance.r_aFRR_down[i].value for i in range(1,T+1)]
+z_grid = [Xinstance.z_grid[i].value for i in range(1,T+1)]
+s_raw = [Xinstance.s_raw[i].value for i in range(1,T+1)]
+s_pu = [Xinstance.s_Pu[i].value for i in range(1,T+1)]
+c_FCR = [Xinstance.c_FCR[i].value for i in range(1,T+1)]
+c_aFRRup = [Xinstance.c_aFRR_up[i].value for i in range(1,T+1)]
+c_aFRRdown = [Xinstance.c_aFRR_down[i].value for i in range(1,T+1)]
+c_mFRRup = [Xinstance.c_mFRR_up[i].value for i in range(1,T+1)]
+c_DA = [Xinstance.c_mFRR_up[i].value for i in range(1,T+1)]
