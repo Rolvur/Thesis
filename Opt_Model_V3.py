@@ -10,7 +10,6 @@ from Data_process import Start_date, Demand, DateRange, pem_setpoint, hydrogen_m
 from Settings import sEfficiency
 from Scenario import π_r, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω, c_DAs, Φ, π_DA, P_PV_max
 
-
 #____________________________________________
 solver = po.SolverFactory('gurobi')
 model = pe.ConcreteModel()
@@ -334,12 +333,14 @@ s_raw2 = [instance.s_raw[2,i].value for i in range(1,T+1)]
 s_pu1 = [instance.s_Pu[1,i].value for i in range(1,T+1)]
 s_pu2 = [instance.s_Pu[2,i].value for i in range(1,T+1)]
 
-""" pi_DA = []
-pi_DA_i = []
+pi_DA = {}
+pi_DA_i = {}
 for x in range(1, Φ+1):
   for i in range(1, T+1):
-    pi_DA_i[i] = instance.π_DA[x]
-  pi_DA.append(pi_DA_i) """
+    pi_DA_i[i] = instance.π_DA[x]  
+  #pi_DA.append(list(pi_DA_i.values()))
+  pi_DA[x] = (list(pi_DA_i.values()))
+
 #Creating result DataFrame
 df_results = pd.DataFrame({#Col name : Value(list)
                           'P_PEM1' : P_PEM1,
@@ -396,7 +397,8 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           )
 for i in range(1,Φ+1):
   df_results['c_DA'+str(i)] = c_DA[i]
-
+  df_results['pi_DA'+str(i)] = pi_DA[i]
+  
 
 #save to Excel 
 #df_results.to_excel("Result_files/Model3_TestResults.xlsx")
