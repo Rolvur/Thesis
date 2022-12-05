@@ -14,13 +14,13 @@ Start_date_scen = '2020-01-01 00:00'
 End_date_scen = '2020-03-31 23:59'
 
 ## Scenario Generation ## 
-Type = 'single' # single or combined # 
+Type = 'combined' # single or combined # 
 n_samples = 1000 #Number of samples to be made  
 blocksize = 24 # 7days = 168 hours
 sample_length = blocksize*7 # sampling 52 weeks blocks 
 
 ## Scenario Reduction ## 
-n_clusters = 3
+n_clusters = 5
 
 # For PV # 
 PV_Cluster = 'True' ## Set 'True' to cluster weeks 

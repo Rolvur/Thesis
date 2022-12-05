@@ -1,5 +1,5 @@
 from turtle import width
-from Data_process import df_SEafrr2021_raw,df_SEafrr2020_raw,df_SEafrr2022_raw
+from Data_process import df_SEafrr2021_raw,df_SEafrr2020_raw,df_SEafrr2022_raw, DA_list
 #from Opt_Model_V2 import df_results
 from Opt_Constants import *
 import scipy
@@ -243,30 +243,31 @@ plt.show()
 
 
 
+#Input data   Set period in Settings.py
+PV = PV_scen['Power [MW]'].tolist()
+DA = DA_list_scen
+aFRR_up = df_aFRR_scen['aFRR Upp Pris (EUR/MW)'].tolist()
+aFRR_down = df_aFRR_scen['aFRR Ned Pris (EUR/MW)'].tolist()
+mFRR = df_mFRR_scen['mFRR_UpPriceEUR'].tolist()
+FCR = df_FCR_DE_scen['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
 
-### Correlation between different markets ### 
-#Input data
-DA = DA_list
-aFRR_up = df_aFRR['aFRR Upp Pris (EUR/MW)'].tolist()
-aFRR_down = df_aFRR['aFRR Ned Pris (EUR/MW)'].tolist()
-mFRR = df_mFRR['mFRR_UpPriceEUR'].tolist()
-FCR = df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
+Data = [DA,FCR,aFRR_up,aFRR_down,mFRR,PV]
+Data_names = ['DA','FCR','aFRR Up','aFRR Down','mFRR', 'PV']
 
-Data = [DA,FCR,aFRR_up,aFRR_down,mFRR]
-Data_names = ['DA','FCR','aFRR Up','aFRR Down','mFRR']
-####### Correlation ########
-df_data = pd.DataFrame(index=pd.to_datetime(df_FCR_DE['DATE_FROM']))
-df_data.index.names = ['Time']
+
+
+df_data = pd.DataFrame()
 
 #Creating dataframe 
 for i in range(0,len(Data)):
     df_data[Data_names[i]] = Data[i]
 
 
-df_data.corr()    
+x = df_data.corr()    
 
-sn.heatmap(df_data() , annot=True)
+sn.heatmap(x , annot=True)
 sn.color_palette("husl", 8)
 plt.tight_layout()
 plt.show()
+
 
