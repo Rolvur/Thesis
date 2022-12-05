@@ -1,14 +1,14 @@
 import numpy as np
+import datetime
 import pandas as pd 
 import random
 from Settings import*
 from sklearn_extra.cluster import KMedoids
-from Data_process import PV_scen,df_aFRR_scen,df_mFRR_scen,df_FCR_DE_scen,DA_list_scen
+from Data_process import PV,df_aFRR_scen,df_mFRR_scen,df_FCR_DE_scen,DA_list_scen
 import matplotlib.pyplot as plt
 random.seed(123)
 
 #Input data   Set period in Settings.py
-PV = PV_scen['Power [MW]'].tolist()
 DA = DA_list_scen
 aFRR_up = df_aFRR_scen['aFRR Upp Pris (EUR/MW)'].tolist()
 aFRR_down = df_aFRR_scen['aFRR Ned Pris (EUR/MW)'].tolist()
@@ -18,14 +18,10 @@ FCR = df_FCR_DE_scen['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist()
 Data = [DA,FCR,aFRR_up,aFRR_down,mFRR]
 Data_names = ['DA','FCR','aFRR Up','aFRR Down','mFRR']
 
-## Scenario generation ## 
+Data_comb = [DA,aFRR_up,aFRR_down,mFRR]
+Data_comb_names = ['DA','aFRR Up','aFRR Down','mFRR']
 
-#Type = 'single'   # 'single' or 'combined'
 
-#n_samples = 10000 #Number of samples to be made  
-
-#blocksize = 24 # 7days = 168 hours
-#sample_length = blocksize*7 # sampling 52 weeks blocks 
 
 
 #Defining functions
@@ -33,6 +29,12 @@ def Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length):
 
 
     if Type == 'single':
+        DA_block = []
+        FCR_block = []
+        aFRR_up_block = []
+        aFRR_down_block = []
+        mFRR_block = []
+
 
         for x in range(0,len(Data)):
             #Sample length
@@ -40,7 +42,7 @@ def Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length):
 
             #Split sample in blocks of length blocksize
 
-            blocks = [Data[x][i:i + blocksize ] for i in range (0,n,blocksize)]
+            blocks = [Data[x][i:i + blocksize] for i in range (0,n,blocksize)]
 
             #Delete last block if length differs from blocksize 
             if len(blocks[-1]) != blocksize:
@@ -78,7 +80,7 @@ def Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length):
 
         ########## Multi Blocks ######## 
         ### Multi ### 
-        df = pd.DataFrame({'DA':  np.array(Data[0]), 'FCR':  np.array(Data[1]) , 'aFRR Up:':  np.array(Data[2]), 'aFRR Down': np.array(Data[3]), 'mFRR':  np.array(Data[4])})
+        df = pd.DataFrame({'DA':  np.array(Data[0]) , 'aFRR Up:':  np.array(Data[1]), 'aFRR Down': np.array(Data[2]), 'mFRR':  np.array(Data[3])})
 
         data = df.values.tolist() #Acces element by  data[0][0]
 
@@ -114,7 +116,17 @@ def Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length):
 
         
     if Type == 'single':
-        return  DA_block,FCR_block,aFRR_up_block,aFRR_down_block,mFRR_block
+        if len(DA_block) > 0: 
+            return  DA_block
+        if len(FCR_block) > 0: 
+            return  FCR_block
+        if len(aFRR_up_block) > 0: 
+            return  aFRR_up_block
+        if len(aFRR_down_block) > 0: 
+            return  aFRR_down_block
+        if len(mFRR_block) > 0: 
+            return  mFRR_block
+
     if Type == 'combined': 
         return Combined_blocks
 
@@ -312,7 +324,7 @@ def CombInputData(Rep_scen_comb,Prob_comb):
 
 def PV_Blocks(PV,weeks,blocksize_PV):
 
-    weeks = 13
+    weeks = weeks
     #Sample length
     n = weeks*blocksize_PV
 
@@ -386,13 +398,49 @@ if Type == 'single':
 
 
 
-
 if Type == 'combined':
     ## Generate Average Price for all markets for each time (Only for "Combined scenario generation"!!) ##
-    scenarios = Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length)
+
+    ## For DA, aFRR_up & down and mFRR 
+    scenarios = Bootsrap(Type,Data_comb,Data_comb_names,n_samples,blocksize,sample_length)
     Avg_scenarios = GenAverage(scenarios,n_samples,sample_length)
     Rep_scen_comb, Prob_comb = AvgKmedReduction(Avg_scenarios,scenarios,n_clusters,n_samples,sample_length) 
-    Φ, Ω,c_FCRs,c_aFRR_ups,c_aFRR_downs,c_mFRR_ups,c_DAs,π_r,π_DA = SingleInputData(Rep_scen_comb,Prob_comb)
+
+    Data_FCR = [FCR]
+    Data_names_FCR = ['FCR']
+    Type = 'single'
+    scenarios_DA = Bootsrap(Type,Data_FCR,Data_names_FCR,n_samples,blocksize,sample_length)
+    kmedoids = KMedoids(n_clusters=n_clusters,metric='euclidean').fit(scenarios_DA)
+
+    FCR_red_scen = kmedoids.cluster_centers_
+
+
+    Prob_FCR = np.zeros((n_clusters))
+
+    for j in range(0,n_clusters):
+                Prob_FCR[j] = np.count_nonzero(kmedoids.labels_ == j)/len(kmedoids.labels_)
+
+    #Rep_scen_comb[market][scen][time]
+
+    Rep_scen_combALL = np.zeros((5,n_clusters,len(Rep_scen_comb[0][0])))
+    Rep_scen_combALL[0] = Rep_scen_comb[0]  ## Day ahead 
+    Rep_scen_combALL[1] = FCR_red_scen  ## FCR
+    Rep_scen_combALL[2] = Rep_scen_comb[1]  ## aFRR up 
+    Rep_scen_combALL[3] = Rep_scen_comb[2]  ## aFRR down 
+    Rep_scen_combALL[4] = Rep_scen_comb[3]  ## mFRR  
+
+
+    Prob_comb_all = np.zeros((n_clusters,len(Rep_scen_combALL)))
+
+    for i in range(0,len(Rep_scen_combALL)):
+        for j in range(0,n_clusters):
+            if i != 1:
+                Prob_comb_all[j][i] = Prob_comb[j]
+            if i == 1:
+                Prob_comb_all[j][i] = Prob_FCR[j]
+
+
+        Φ, Ω,c_FCRs,c_aFRR_ups,c_aFRR_downs,c_mFRR_ups,c_DAs,π_r,π_DA = SingleInputData(Rep_scen_combALL,Prob_comb_all)
 
 #Rep_scen_comb[0]   ### markets , scenario , time 
 
@@ -411,6 +459,20 @@ if PV_Cluster == 'True':
     
     for t in range(1,len(PV_rep[0])+1):
         P_PV_max[t] = PV_rep[0][t-1]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
