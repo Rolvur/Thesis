@@ -57,16 +57,16 @@ DateRange = df_DKDA_raw2020['HourDK']
 #df_FCR_DE['DATE_FROM'] = df_FCR['DATE_FROM']
 file_to_open = Path("Data/") / "df_FCR_DE.csv"
 
-df_FCR_DE = pd.read_csv(file_to_open,sep=',',low_memory=False)
-df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'] = df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].astype(float)
+df_FCR_DE_raw = pd.read_csv(file_to_open,sep=',',low_memory=False)
+df_FCR_DE_raw['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'] = df_FCR_DE_raw['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].astype(float)
 
 
 #Input for model
-TimeRange_FCR = (df_FCR_DE['DATE_FROM'] >= Start_date) & (df_FCR_DE['DATE_FROM']  <= End_date)
-TimeRangeFCR_Scen = (df_FCR_DE['DATE_FROM'] >= Start_date_scen) & (df_FCR_DE['DATE_FROM']  <= End_date_scen)
+TimeRange_FCR = (df_FCR_DE_raw['DATE_FROM'] >= Start_date) & (df_FCR_DE_raw['DATE_FROM']  <= End_date)
+TimeRangeFCR_Scen = (df_FCR_DE_raw['DATE_FROM'] >= Start_date_scen) & (df_FCR_DE_raw['DATE_FROM']  <= End_date_scen)
 
-df_FCR_DE = df_FCR_DE[TimeRange_FCR]
-df_FCR_DE_scen = df_FCR_DE[TimeRangeFCR_Scen]
+df_FCR_DE = df_FCR_DE_raw[TimeRange_FCR]
+df_FCR_DE_scen = df_FCR_DE_raw[TimeRangeFCR_Scen]
 
 
 #Convert from pandas data series to list
@@ -82,15 +82,15 @@ df_DKmFRR_raw = pd.read_csv(file_to_open,sep=';', decimal=',')
 #Converting to datetime
 df_DKmFRR_raw[['HourUTC','HourDK']] =  df_DKmFRR_raw[['HourUTC','HourDK']].apply(pd.to_datetime)
 df_mFRR = df_DKmFRR_raw.iloc[0:24095,:]
-df_mFRR = df_mFRR[::-1]
+df_mFRR_raw = df_mFRR[::-1]
 sum(df_mFRR['mFRR_UpPriceEUR'])
 
 
-TimeRange_mFRR = (df_mFRR['HourDK'] >= Start_date) & (df_mFRR['HourDK']  <= End_date)
-TimeRange_mFRR_Scen = (df_mFRR['HourDK'] >= Start_date_scen) & (df_mFRR['HourDK']  <= End_date_scen)
+TimeRange_mFRR = (df_mFRR_raw['HourDK'] >= Start_date) & (df_mFRR_raw['HourDK']  <= End_date)
+TimeRange_mFRR_Scen = (df_mFRR_raw['HourDK'] >= Start_date_scen) & (df_mFRR_raw['HourDK']  <= End_date_scen)
 
-df_mFRR = df_mFRR[TimeRange_mFRR]
-df_mFRR_scen = df_mFRR[TimeRange_mFRR_Scen]
+df_mFRR = df_mFRR_raw[TimeRange_mFRR]
+df_mFRR_scen = df_mFRR_raw[TimeRange_mFRR_Scen]
 
 #convert to list
 list_mFRR_up = df_mFRR['mFRR_UpPriceEUR'].tolist() #Convert from pandas data series to list
@@ -104,14 +104,15 @@ c_mFRR_up = dict(zip(np.arange(1,len(list_mFRR_up)+1),list_mFRR_up))
 ##################### aFRR #######################
 
 file_to_open = Path("Data/") / "df_aFRR.xlsx"
-df_aFRR = pd.read_excel(file_to_open)
+df_aFRR_raw = pd.read_excel(file_to_open)
 
 #reduce data point to the chosen time period
-TimeRange_aFRR = (df_aFRR['Period'] >= Start_date) & (df_aFRR['Period']  <= End_date)
-TimeRange_aFRR_Scen = (df_aFRR['Period'] >= Start_date_scen) & (df_aFRR['Period']  <= End_date_scen)
+TimeRange_aFRR = (df_aFRR_raw['Period'] >= Start_date) & (df_aFRR_raw['Period']  <= End_date)
+TimeRange_aFRR_Scen = (df_aFRR_raw['Period'] >= Start_date_scen) & (df_aFRR_raw['Period']  <= End_date_scen)
 
-df_aFRR = df_aFRR[TimeRange_aFRR]
-df_aFRR_scen = df_aFRR[TimeRange_aFRR_Scen]
+df_aFRR = df_aFRR_raw[TimeRange_aFRR]
+df_aFRR_scen = df_aFRR_raw[TimeRange_aFRR_Scen]
+
 #convert to list
 list_aFRR_up = df_aFRR['aFRR Upp Pris (EUR/MW)'].tolist() #Convert from pandas data series to list
 list_aFRR_down = df_aFRR['aFRR Ned Pris (EUR/MW)'].tolist() #Convert from pandas data series to list
