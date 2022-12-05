@@ -4,11 +4,13 @@ from pyomo.core import *
 import pandas as pd 
 import numpy as np
 from Opt_Constants import *
-from Data_process import Start_date,End_date, P_PV_max, c_DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, Φ, π_DA, DateRange, pem_setpoint, hydrogen_mass_flow
+from Data_process import Start_date,End_date, P_PV_max, Demand, c_FCR, DA, c_aFRR_up, c_aFRR_down, c_mFRR_up, π_DA, DateRange, pem_setpoint, hydrogen_mass_flow
 from Settings import sEfficiency
 
-def ReadResults(Start_date, End_date):
-    df_results = pd.read_excel("Result_files/Model3_"+Start_date+"_"+End_date+".xlsx")    
+#def ReadResults(Start_date, End_date):
+def ReadResults(Start_date):
+#    df_results = pd.read_excel("Result_files/Model3_"+Start_date+"_"+End_date+".xlsx")    
+    df_results = pd.read_excel("Result_files/Model3_"+Start_date+".xlsx")    
 
     list_b_FCR = df_results["bidVol_FCR"].tolist();
     list_β_FCR = df_results["bidPrice_FCR"].tolist();
@@ -29,17 +31,25 @@ def ReadResults(Start_date, End_date):
     list_β_mFRR_up = df_results["bidPrice_mFRR_up"].tolist();
     b_mFRR_up = dict(zip(np.arange(1,len(list_b_mFRR_up)+1),list_b_mFRR_up));
     β_mFRR_up = dict(zip(np.arange(1,len(list_β_mFRR_up)+1),list_β_mFRR_up));
-    return b_FCR, b_aFRR_up, b_aFRR_down, b_mFRR_up, β_FCR, β_aFRR_up, β_aFRR_down, β_mFRR_up;
 
-b_FCR, b_aFRR_up, b_aFRR_down, b_mFRR_up, β_FCR, β_aFRR_up, β_aFRR_down, β_mFRR_up = ReadResults(Start_date, End_date);
-
-for i in range(1,169):
-    x = b_FCR[i]+b_aFRR_up[i]+b_mFRR_up[i]
-    y = b_FCR[i]+b_aFRR_down[i]
-    z = x+y
-    print(z)
+    Φ=len(df_results.columns[df_results.columns.str.startswith('c_DA')])
+    π_DA = {}
+    for i in range(1,Φ+1):
+        π_DA[i] = df_results['pi_DA'+str(i)].iloc[1]
     
+    c_DAs = {}
+    for i in range(1,Φ+1):
+        for t in range(1,len(df_results)+1):
+            c_DAs[(i,t)] =df_results['c_DA'+str(i)].iloc[t-1]
+        #c_DA[(1,1)] = df_results['c_DA'+str(1)].iloc[1]
+        #c_DA_i = {}
+        #c_DA[())] = print(df_results['c_DA'+str(i)])
 
+    return Φ, π_DA, c_DAs, b_FCR, b_aFRR_up, b_aFRR_down, b_mFRR_up, β_FCR, β_aFRR_up, β_aFRR_down, β_mFRR_up;
+
+Φ, π_DA, c_DAs, b_FCR, b_aFRR_up, b_aFRR_down, b_mFRR_up, β_FCR, β_aFRR_up, β_aFRR_down, β_mFRR_up = ReadResults(Start_date);
+
+    
 solver = po.SolverFactory('gurobi')
 SolX = pe.ConcreteModel()
 
@@ -51,7 +61,8 @@ SolX.T_block = pe.RangeSet(1,T,4)
 
 #initializing parameters
 SolX.P_PV_max = pe.Param(SolX.T, initialize=P_PV_max)
-SolX.c_DA = pe.Param(SolX.Φ, SolX.T, initialize=c_DA)
+SolX.c_DA = pe.Param(SolX.Φ, SolX.T, initialize=c_DAs)
+SolX.DA = pe.Param(SolX.T, initialize=DA) # REAL DA clearing price
 SolX.m_demand = pe.Param(SolX.T, initialize = Demand)
 SolX.c_FCR = pe.Param(SolX.T,initialize = c_FCR)                        #No longer scenario dependant
 SolX.c_aFRR_up = pe.Param(SolX.T, initialize = c_aFRR_up)    #No longer scenario dependant
@@ -131,10 +142,11 @@ SolX.r_aFRR_up = pe.Var(SolX.T, domain = pe.NonNegativeReals)
 SolX.r_aFRR_down = pe.Var(SolX.T, domain = pe.NonNegativeReals)
 SolX.r_mFRR_up = pe.Var(SolX.T, domain = pe.NonNegativeReals)
 
+SolX.vOPEX = pe.Var(SolX.T, domain = pe.Reals)
+
 #Objective---------------------------------------------------
 expr = sum((-(SolX.c_FCR[t]*SolX.r_FCR[t] + SolX.c_aFRR_up[t]*SolX.r_aFRR_up[t] + SolX.c_aFRR_down[t]*SolX.r_aFRR_down[t] + SolX.c_mFRR_up[t]*SolX.r_mFRR_up[t]) + sum(π_DA[φ]*((SolX.c_DA[φ,t]+SolX.CT)*SolX.p_import[t] - (SolX.c_DA[φ,t]-SolX.PT)*SolX.p_export[t]) for φ in SolX.Φ)) for t in SolX.T)
 SolX.objective = pe.Objective(sense = pe.minimize, expr=expr)
-
 #CONSTRAINTS---------------------------------------------------
 SolX.c53_c = pe.ConstraintList()
 for t in SolX.T:
@@ -264,9 +276,82 @@ SolX.c53_ad = pe.ConstraintList()
 for t in SolX.T:
     SolX.c53_ad.add(SolX.p_pem[t] - SolX.P_pem_min >= SolX.r_FCR[t] + SolX.r_aFRR_up[t] + SolX.r_mFRR_up[t])
 
+SolX.CalcvOpex = pe.ConstraintList()
+for t in SolX.T:
+    SolX.CalcvOpex.add(SolX.vOPEX[t] == -(SolX.c_FCR[t]*SolX.r_FCR[t] + SolX.c_aFRR_up[t]*SolX.r_aFRR_up[t] + SolX.c_aFRR_down[t]*SolX.r_aFRR_down[t] + SolX.c_mFRR_up[t]*SolX.r_mFRR_up[t]) +(SolX.DA[t]+SolX.CT)*SolX.p_import[t] - (SolX.DA[t]-SolX.PT)*SolX.p_export[t])
 ###############SOLVE THE MODEL########################
 
 #model.dual = pe.Suffix(direction=pe.Suffix.IMPORT)
-instance = SolX.create_instance()
-Xresults = solver.solve(instance)
+Xinstance = SolX.create_instance()
+Xresults = solver.solve(Xinstance)
 print(Xresults)
+
+
+#Converting Pyomo resulst to list
+P_PEM = [Xinstance.p_pem[i].value for i in range(1,T+1)]  
+P_import = [Xinstance.p_import[i].value for i in range(1,T+1)]
+P_export = [Xinstance.p_export[i].value for i in range(1,T+1)]
+P_grid = [P_import[i] - P_export[i] for i in range(0,len(P_import)) ]
+P_PV = [Xinstance.p_PV[i].value for i in range(1,T+1)]
+#b_FCR = [Xinstance.b_FCR[i].value for i in range(1,T+1)]
+r_FCR = [Xinstance.r_FCR[i].value for i in range(1,T+1)]
+#b_mFRRup = [Xinstance.b_mFRR_up[i].value for i in range(1,T+1)]
+#β_mFRRup = [Xinstance.β_mFRR_up[i].value for i in range(1,T+1)]
+r_mFRR_up = [Xinstance.r_mFRR_up[i].value for i in range(1,T+1)]
+#β_aFRRup = [Xinstance.β_aFRR_up[i].value for i in range(1,T+1)]
+#b_aFRRup = [Xinstance.b_aFRR_up[i].value for i in range(1,T+1)]
+r_aFRR_up = [Xinstance.r_aFRR_up[i].value for i in range(1,T+1)]
+#b_aFRRdown = [Xinstance.b_aFRR_down[i].value for i in range(1,T+1)]
+#β_aFRRdown = [Xinstance.β_aFRR_down[i].value for i in range(1,T+1)]
+r_aFRR_down = [Xinstance.r_aFRR_down[i].value for i in range(1,T+1)]
+z_grid = [Xinstance.z_grid[i].value for i in range(1,T+1)]
+s_raw = [Xinstance.s_raw[i].value for i in range(1,T+1)]
+s_pu = [Xinstance.s_Pu[i].value for i in range(1,T+1)]
+m_H2 = [Xinstance.m_H2[i].value for i in range(1,T+1)]
+m_CO2 = [Xinstance.m_CO2[i].value for i in range(1,T+1)]
+m_ri = [Xinstance.m_Ri[i].value for i in range(1,T+1)]
+#c_FCR = [Xinstance.c_FCR[i].value for i in range(1,T+1)]
+#c_aFRRup = [Xinstance.c_aFRR_up[i].value for i in range(1,T+1)]
+#c_aFRRdown = [Xinstance.c_aFRR_down[i].value for i in range(1,T+1)]
+#c_mFRRup = [Xinstance.c_mFRR_up[i].value for i in range(1,T+1)]
+#c_DA = [Xinstance.c_DA[i].value for i in range(1,T+1)]
+vOPEX = [Xinstance.vOPEX[i].value for i in range(1,T+1)]
+
+#Creating result DataFrame
+df_SolX = pd.DataFrame({#Col name : Value(list)
+                          'P_PEM' : P_PEM,
+                          'P_import1' : P_import,
+                          'P_export1' : P_export,
+                          'P_grid1' : P_grid,
+                          'z_grid' : z_grid,
+                          'P_PV' : P_PV,
+                          'b_FCR': list(b_FCR.values()),
+                          'beta_FCR': list(β_FCR.values()),
+                          'r_FCR' : r_FCR,
+                          'c_FCR' : list(c_FCR.values()),
+                          'b_mFRR_up': list(b_mFRR_up.values()),
+                          'beta_mFRR_up': list(β_mFRR_up.values()),
+                          'r_mFRR_up': r_mFRR_up,
+                          'c_mFRR_up' : list(c_mFRR_up.values()),
+                          'b_aFRR_up': list(b_aFRR_up.values()),
+                          'beta_aFRR_up': list(β_aFRR_up.values()),
+                          'r_aFRR_up': r_aFRR_up,
+                          'c_aFRR_up' : list(c_aFRR_up.values()),
+                          'b_aFRR_down': list(b_aFRR_down),
+                          'beta_aFRR_down': list(β_aFRR_down),
+                          'r_aFRR_down': r_aFRR_down,
+                          'c_aFRRdown1' : list(c_aFRR_down.values()),
+                          'Raw Storage1' : s_raw,
+                          'Pure Storage1' : s_pu,
+                          'm_Raw_In' : m_ri,
+                          'DA_clearing' : list(DA.values()),
+                          'vOPEX' : vOPEX
+                          }, index=DateRange,
+                          )
+#for i in range(1,Φ+1):
+#  df_SolX['c_DA'+str(i)] = c_DA[i]
+#  df_SolX['pi_DA'+str(i)] = π_DA[i]
+  #m_demand = 
+
+#save to Excel 
+df_SolX.to_excel("Result_files/SolX_"+Start_date+".xlsx")
