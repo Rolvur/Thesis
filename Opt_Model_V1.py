@@ -239,7 +239,7 @@ df_results = pd.DataFrame({#Col name : Value(list)
 
 
 #save to Excel 
-df_results.to_excel("Result_files/V1_"+Start_date[:10]+"_"+End_date[:10]+ ".xlsx")
+df_results.to_excel("Result_files/V1_"+Start_date[:10]+"_"+End_date[:10]+"_"+ sEfficiency +".xlsx")
 
 
 ## Parameter file ## 
@@ -264,7 +264,7 @@ a = [('P_pem_cap', model.P_pem_cap),
     ('Efficiency K', model.eff)]
 
 
-with open("Result_files/V1_Parameters_"+Start_date[:10]+"_"+End_date[:10]+ ".csv", 'w', newline='') as csvfile:
+with open("Result_files/V1_Parameters_"+Start_date[:10]+"_"+End_date[:10]+"_"+ sEfficiency+".csv", 'w', newline='') as csvfile:
     my_writer = csv.writer(csvfile,delimiter=',')
     my_writer.writerows(a)
 

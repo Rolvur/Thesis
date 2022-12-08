@@ -5,12 +5,13 @@ import pandas as pd
 import numpy as np
 from Opt_Constants import *
 from Data_process import Start_date,End_date, P_PV_max, Demand, c_FCR, DA, c_aFRR_up, c_aFRR_down, c_mFRR_up, π_DA, DateRange, pem_setpoint, hydrogen_mass_flow
-from Settings import sEfficiency
+from Settings import *
+import csv
 
 #def ReadResults(Start_date, End_date):
-def ReadResults(Start_date):
+def ReadResults(Start_date, End_date):
 #    df_results = pd.read_excel("Result_files/Model3_"+Start_date+"_"+End_date+".xlsx")    
-    df_results = pd.read_excel("Result_files/Model3_"+Start_date+".xlsx")    
+    df_results = pd.read_excel("Result_files/V3_Bids_"+Start_date[:10]+"_"+End_date[:10]+ ".xlsx")    
 
     list_b_FCR = df_results["bidVol_FCR"].tolist();
     list_β_FCR = df_results["bidPrice_FCR"].tolist();
@@ -47,7 +48,7 @@ def ReadResults(Start_date):
 
     return Φ, π_DA, c_DAs, b_FCR, b_aFRR_up, b_aFRR_down, b_mFRR_up, β_FCR, β_aFRR_up, β_aFRR_down, β_mFRR_up;
 
-Φ, π_DA, c_DAs, b_FCR, b_aFRR_up, b_aFRR_down, b_mFRR_up, β_FCR, β_aFRR_up, β_aFRR_down, β_mFRR_up = ReadResults(Start_date);
+Φ, π_DA, c_DAs, b_FCR, b_aFRR_up, b_aFRR_down, b_mFRR_up, β_FCR, β_aFRR_up, β_aFRR_down, β_mFRR_up = ReadResults(Start_date, End_date);
 
     
 solver = po.SolverFactory('gurobi')
@@ -293,16 +294,9 @@ P_import = [Xinstance.p_import[i].value for i in range(1,T+1)]
 P_export = [Xinstance.p_export[i].value for i in range(1,T+1)]
 P_grid = [P_import[i] - P_export[i] for i in range(0,len(P_import)) ]
 P_PV = [Xinstance.p_PV[i].value for i in range(1,T+1)]
-#b_FCR = [Xinstance.b_FCR[i].value for i in range(1,T+1)]
 r_FCR = [Xinstance.r_FCR[i].value for i in range(1,T+1)]
-#b_mFRRup = [Xinstance.b_mFRR_up[i].value for i in range(1,T+1)]
-#β_mFRRup = [Xinstance.β_mFRR_up[i].value for i in range(1,T+1)]
 r_mFRR_up = [Xinstance.r_mFRR_up[i].value for i in range(1,T+1)]
-#β_aFRRup = [Xinstance.β_aFRR_up[i].value for i in range(1,T+1)]
-#b_aFRRup = [Xinstance.b_aFRR_up[i].value for i in range(1,T+1)]
 r_aFRR_up = [Xinstance.r_aFRR_up[i].value for i in range(1,T+1)]
-#b_aFRRdown = [Xinstance.b_aFRR_down[i].value for i in range(1,T+1)]
-#β_aFRRdown = [Xinstance.β_aFRR_down[i].value for i in range(1,T+1)]
 r_aFRR_down = [Xinstance.r_aFRR_down[i].value for i in range(1,T+1)]
 z_grid = [Xinstance.z_grid[i].value for i in range(1,T+1)]
 s_raw = [Xinstance.s_raw[i].value for i in range(1,T+1)]
@@ -310,19 +304,14 @@ s_pu = [Xinstance.s_Pu[i].value for i in range(1,T+1)]
 m_H2 = [Xinstance.m_H2[i].value for i in range(1,T+1)]
 m_CO2 = [Xinstance.m_CO2[i].value for i in range(1,T+1)]
 m_ri = [Xinstance.m_Ri[i].value for i in range(1,T+1)]
-#c_FCR = [Xinstance.c_FCR[i].value for i in range(1,T+1)]
-#c_aFRRup = [Xinstance.c_aFRR_up[i].value for i in range(1,T+1)]
-#c_aFRRdown = [Xinstance.c_aFRR_down[i].value for i in range(1,T+1)]
-#c_mFRRup = [Xinstance.c_mFRR_up[i].value for i in range(1,T+1)]
-#c_DA = [Xinstance.c_DA[i].value for i in range(1,T+1)]
 vOPEX = [Xinstance.vOPEX[i].value for i in range(1,T+1)]
-print(sum(vOPEX))
+
 #Creating result DataFrame
 df_SolX = pd.DataFrame({#Col name : Value(list)
                           'P_PEM' : P_PEM,
-                          'P_import1' : P_import,
-                          'P_export1' : P_export,
-                          'P_grid1' : P_grid,
+                          'P_import' : P_import,
+                          'P_export' : P_export,
+                          'P_grid' : P_grid,
                           'z_grid' : z_grid,
                           'P_PV' : P_PV,
                           'b_FCR': list(b_FCR.values()),
@@ -340,18 +329,54 @@ df_SolX = pd.DataFrame({#Col name : Value(list)
                           'b_aFRR_down': list(b_aFRR_down.values()),
                           'beta_aFRR_down': list(β_aFRR_down.values()),
                           'r_aFRR_down': r_aFRR_down,
-                          'c_aFRRdown1' : list(c_aFRR_down.values()),
-                          'Raw Storage1' : s_raw,
-                          'Pure Storage1' : s_pu,
+                          'c_aFRRdown' : list(c_aFRR_down.values()),
+                          'Raw Storage' : s_raw,
+                          'Pure Storage' : s_pu,
                           'm_Raw_In' : m_ri,
                           'DA_clearing' : list(DA.values()),
                           'vOPEX' : vOPEX
                           }, index=DateRange,
                           )
-#for i in range(1,Φ+1):
-#  df_SolX['c_DA'+str(i)] = c_DA[i]
-#  df_SolX['pi_DA'+str(i)] = π_DA[i]
-  #m_demand = 
+
+
 
 #save to Excel 
-df_SolX.to_excel("Results_V3/SolX_"+Start_date+".xlsx")
+df_SolX.to_excel("Result_files/V3_SolX_"+Start_date[:10]+"_"+End_date[:10]+ ".xlsx")
+
+
+
+
+
+## Parameter file ## 
+
+a = [('P_pem_cap', SolX.P_pem_cap),
+    ('P_pem_min', SolX.P_pem_min),
+    ('P_com', SolX.P_com),
+    ('P_grid_cap', SolX.P_grid_cap),
+    ('r_in', SolX.r_in),
+    ('r_out', SolX.r_out),
+    ('k_d', SolX.k_d),
+    ('S_Pu_max', SolX.S_Pu_max),
+    ('S_raw_max', SolX.S_raw_max),
+    ('m_H2_max', SolX.m_H2_max),
+    ('ramp_pem', SolX.ramp_pem),
+    ('ramp_com', SolX.ramp_com),
+    ('P_PV_cap', SolX.P_PV_cap),
+    ('PT', SolX.PT),
+    ('CT', SolX.CT),
+    ('Demand Pattern', Demand_pattern),
+    ('Efficiency Type', sEfficiency),
+    ('R_FCR_max', SolX.R_FCR_max),
+    ('R_FCR_min', SolX.R_FCR_min),
+    ('R_aFRR_max', SolX.R_aFRR_max),
+    ('R_aFRR_min', SolX.R_aFRR_min),
+    ('bidres_aFRR', SolX.bidres_aFRR),
+    ('R_mFRR_max', SolX.R_mFRR_max),
+    ('R_mFRR_min', SolX.R_mFRR_min),
+    ('bidres_mFRR', SolX.bidres_mFRR)]
+
+
+with open("Result_files/V3_SolX_Parameters_"+Start_date[:10]+"_"+End_date[:10]+ ".csv", 'w', newline='') as csvfile:
+    my_writer = csv.writer(csvfile,delimiter=',')
+    my_writer.writerows(a)
+

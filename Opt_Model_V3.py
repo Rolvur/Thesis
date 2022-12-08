@@ -7,8 +7,9 @@ import pandas as pd
 import numpy as np
 from Opt_Constants import *
 from Data_process import Start_date,End_date, Demand, DateRange, pem_setpoint, hydrogen_mass_flow, P_PV_max
-from Settings import sEfficiency
+from Settings import *
 from Scenario import π_r, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω, c_DAs, Φ, π_DA
+import csv
 
 #____________________________________________
 solver = po.SolverFactory('gurobi')
@@ -292,7 +293,6 @@ for t in model.T:
 
 ###############SOLVE THE MODEL########################
 
-#model.dual = pe.Suffix(direction=pe.Suffix.IMPORT)
 instance = model.create_instance()
 results = solver.solve(instance)
 print(results)
@@ -310,6 +310,8 @@ b_aFRRup = [instance.b_aFRR_up[i].value for i in range(1,T+1)]
 b_aFRRdown = [instance.b_aFRR_down[i].value for i in range(1,T+1)]
 β_aFRRdown = [instance.β_aFRR_down[i].value for i in range(1,T+1)]
 Obj = [instance.c_obj[i].value for i in instance.c_obj]
+
+
 
 pi_DA = {}
 pi_DA_i = {}
@@ -338,4 +340,41 @@ for i in range(1,Φ+1):
   
 
 #save to Excel 
-df_results.to_excel("Result_files/V3_bids_"+Start_date[:10]+"_"+End_date[:10]+ ".xlsx")
+df_results.to_excel("Result_files/V3_Bids_"+Start_date[:10]+"_"+End_date[:10]+ ".xlsx")
+
+
+## Parameter file ## 
+
+a = [('P_pem_cap', model.P_pem_cap),
+    ('P_pem_min', model.P_pem_min),
+    ('P_com', model.P_com),
+    ('P_grid_cap', model.P_grid_cap),
+    ('r_in', model.r_in),
+    ('r_out', model.r_out),
+    ('k_d', model.k_d),
+    ('S_Pu_max', model.S_Pu_max),
+    ('S_raw_max', model.S_raw_max),
+    ('m_H2_max', model.m_H2_max),
+    ('ramp_pem', model.ramp_pem),
+    ('ramp_com', model.ramp_com),
+    ('P_PV_cap', model.P_PV_cap),
+    ('PT', model.PT),
+    ('CT', model.CT),
+    ('Demand Pattern', Demand_pattern),
+    ('Efficiency Type', sEfficiency),
+    ('R_FCR_max', model.R_FCR_max),
+    ('R_FCR_min', model.R_FCR_min),
+    ('R_aFRR_max', model.R_aFRR_max),
+    ('R_aFRR_min', model.R_aFRR_min),
+    ('bidres_aFRR', model.bidres_aFRR),
+    ('R_mFRR_max', model.R_mFRR_max),
+    ('R_mFRR_min', model.R_mFRR_min),
+    ('bidres_mFRR', model.bidres_mFRR)]
+
+
+with open("Result_files/V3_Bids_Parameters_"+Start_date[:10]+"_"+End_date[:10]+ ".csv", 'w', newline='') as csvfile:
+    my_writer = csv.writer(csvfile,delimiter=',')
+    my_writer.writerows(a)
+
+
+

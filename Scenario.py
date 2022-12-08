@@ -56,7 +56,7 @@ def Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length):
                 while t < sample_length:
 
                     r = random.randrange(0,len(blocks))
-                    #print(r)
+                   
 
                     for j in range(0,blocksize):
                         samples[i,t+j] = blocks[r][j]
@@ -104,7 +104,7 @@ def Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length):
             while t < sample_length:
 
                 r = random.randrange(0,len(blocks))
-                print(r)
+                
 
                 for j in range(0,blocksize):
                 
@@ -116,16 +116,8 @@ def Bootsrap(Type,Data,Data_names,n_samples,blocksize,sample_length):
 
         
     if Type == 'single':
-        if len(DA_block) > 0: 
-            return  DA_block
-        if len(FCR_block) > 0: 
-            return  FCR_block
-        if len(aFRR_up_block) > 0: 
-            return  aFRR_up_block
-        if len(aFRR_down_block) > 0: 
-            return  aFRR_down_block
-        if len(mFRR_block) > 0: 
-            return  mFRR_block
+        
+            return  DA_block,FCR_block,aFRR_up_block,aFRR_down_block,mFRR_block
 
     if Type == 'combined': 
         return Combined_blocks
