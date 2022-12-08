@@ -8,7 +8,7 @@ import numpy as np
 from Opt_Constants import *
 from Data_process import Start_date, Demand, DateRange, pem_setpoint, hydrogen_mass_flow
 from Settings import sEfficiency
-from Scenario import π_r, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω, c_DAs, Φ, π_DA, P_PV_max
+from Scenario import π_r, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω, c_DAs, Φ, π_DA
 
 #____________________________________________
 solver = po.SolverFactory('gurobi')

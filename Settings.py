@@ -10,8 +10,8 @@ sEfficiency = 'k' # 'k': constant OR 'pw': piecewise
 
 #--------------------------------------------------------------------------
 ### Scenarios ### 
-Start_date_scen = '2021-01-01 00:00'
-End_date_scen = '2021-03-31 23:59'
+Start_date_scen = '2020-01-01 00:00'
+End_date_scen = '2021-12-31 23:59'
 
 ## Scenario Generation ## 
 Type = 'combined' # single or combined # 

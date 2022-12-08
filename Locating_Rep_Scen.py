@@ -16,7 +16,6 @@ mFRR = df_mFRR_scen['mFRR_UpPriceEUR'].tolist()
 FCR = df_FCR_DE_scen['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
 
 
-
 ## Find Representive weeks for a year ## 
 
 
@@ -27,7 +26,6 @@ Data_names = ['DA','FCR','aFRR Up','aFRR Down','mFRR']
 blocksize = 24*7
 weeks = 52
 #Sample length
-
 
 
 ### Multi ### 
@@ -42,6 +40,7 @@ n = len(data)
 blocks = [data[i:i + blocksize ] for i in range (0,n,blocksize)]#Acces element by blocks[0][0][0]
 
 
+
 #Delete last block if length differs from blocksize 
 if len(blocks[-1]) != blocksize:
     del blocks[-1]
@@ -49,7 +48,7 @@ if len(blocks[-1]) != blocksize:
 
 ## Average ## 
 Avg_scenarios = np.zeros((weeks,blocksize))
-
+len(Avg_scenarios)
 for i in range(0,weeks):
     for j in range(0,blocksize):
         Avg_scenarios[i][j] = np.mean(blocks[i][j])
@@ -80,7 +79,7 @@ for j in range(0,n_clusters):
 
 #RedAvg_scenarios =[[19999.8, 22222. ,  2222.2,  4444.4,  2222.2,  4444.4, 11111. ,13333.2], [15555.4, 17777.6, 11111. , 13333.2, 15555.4, 17777.6,  6666.6,8888.8]]
 true = 0
-sample_length = len(Avg_scenarios[0])
+sample_length = len(Red_Scen[0][0])
 index = []
 
 
