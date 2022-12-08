@@ -230,13 +230,10 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'DA' : list(DA.values()),
                           'm_H2': m_H2,
                           'm_CO2' : m_CO2,
-                          'm_H2O' : m_H2O,
                           'Demand' : list(Demand.values()), 
                           'zT' : zT,
                           'Objective' : Obj
-                          }, index=DateRange,
-
-                          )
+                          }, index=DateRange,)
 
 
 

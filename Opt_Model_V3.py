@@ -6,7 +6,7 @@ from pyomo.core import *
 import pandas as pd 
 import numpy as np
 from Opt_Constants import *
-from Data_process import Start_date, Demand, DateRange, pem_setpoint, hydrogen_mass_flow, P_PV_max
+from Data_process import Start_date,End_date, Demand, DateRange, pem_setpoint, hydrogen_mass_flow, P_PV_max
 from Settings import sEfficiency
 from Scenario import π_r, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω, c_DAs, Φ, π_DA
 
@@ -35,12 +35,10 @@ model.P_pem_cap = P_pem_cap
 model.P_pem_min = P_pem_min
 model.P_com = P_com
 model.P_grid_cap = P_grid_cap
-model.k_CR = k_CR
 model.eff = eff
 model.r_in = r_in
 #model.r_out = r_out
 model.m_Ro = m_Ro
-#model.k_d = k_d
 model.m_Pu = m_Pu
 model.S_Pu_max = S_Pu_max
 model.S_raw_max = S_raw_max
@@ -104,6 +102,8 @@ model.r_FCR =pe.Var(model.Ω, model.T, domain = pe.NonNegativeReals) #Defining t
 model.r_aFRR_up = pe.Var(model.Ω, model.T, domain = pe.NonNegativeReals)
 model.r_aFRR_down = pe.Var(model.Ω, model.T, domain = pe.NonNegativeReals)
 model.r_mFRR_up = pe.Var(model.Ω, model.T, domain = pe.NonNegativeReals)
+model.c_obj = pe.Var(model.T, domain = pe.Reals)
+
 
 #Objective function - "Expected cost" for all scenarios
 expr = sum(sum(model.π_r[ω]*(-(model.c_FCR[ω,t]*model.r_FCR[ω,t] + model.c_aFRR_up[ω,t]*model.r_aFRR_up[ω,t] + model.c_aFRR_down[ω,t]*model.r_aFRR_down[ω,t] + model.c_mFRR_up[ω,t]*model.r_mFRR_up[ω,t]) + sum(π_DA[φ]*((model.c_DA[φ,t]+model.CT)*model.p_import[ω,t] - (model.c_DA[φ,t]-model.PT)*model.p_export[ω,t]) for φ in model.Φ)) for ω in model.Ω) for t in model.T)
@@ -283,6 +283,13 @@ model.c53_ad = pe.ConstraintList()
 for t in model.T:
   model.c53_ad.add(model.b_FCR[t]*2 + model.b_aFRR_up[t] + model.b_aFRR_down[t] + model.b_mFRR_up[t] <= model.P_pem_cap - model.P_pem_min)
 
+model.cObj = pe.ConstraintList()
+for t in model.T:
+  model.cObj.add(model.c_obj[t] == sum(model.π_r[ω]*(-(model.c_FCR[ω,t]*model.r_FCR[ω,t] + model.c_aFRR_up[ω,t]*model.r_aFRR_up[ω,t] + model.c_aFRR_down[ω,t]*model.r_aFRR_down[ω,t] + model.c_mFRR_up[ω,t]*model.r_mFRR_up[ω,t]) + sum(π_DA[φ]*((model.c_DA[φ,t]+model.CT)*model.p_import[ω,t] - (model.c_DA[φ,t]-model.PT)*model.p_export[ω,t]) for φ in model.Φ)) for ω in model.Ω))
+
+
+
+
 ###############SOLVE THE MODEL########################
 
 #model.dual = pe.Suffix(direction=pe.Suffix.IMPORT)
@@ -294,44 +301,15 @@ c_DA = {}
 for x in range(1, Φ+1):
     c_DA[x] = [instance.c_DA[x,i] for i in range(1,T+1)]
 #Converting Pyomo results to list
-P_PV1 = [instance.p_PV[1,i].value for i in range(1,T+1)]
-P_PV2 = [instance.p_PV[2,i].value for i in range(1,T+1)]
-P_import1 = [instance.p_import[1,i].value for i in range(1,T+1)]
-P_import2 = [instance.p_import[2,i].value for i in range(1,T+1)]
-P_export1 = [instance.p_export[1,i].value for i in range(1,T+1)]
-P_export2 = [instance.p_export[2,i].value for i in range(1,T+1)]
-P_grid1 = [P_import1[i] - P_export1[i] for i in range(0,len(P_import1)) ]
-P_grid2 = [P_import2[i] - P_export2[i] for i in range(0,len(P_import2)) ]
-m_ri1 = [instance.m_Ri[1,i].value for i in range(1,T+1)]
-m_ri2 = [instance.m_Ri[2,i].value for i in range(1,T+1)]
-#m_ro1 = [instance.m_Pu[1,i].value for i in range(1,T+1)]
-#m_ro2 = [instance.m_Pu[2,i].value for i in range(1,T+1)]  
-#m_pu1 = [instance.m_Pu[1,i].value for i in range(1,T+1)]
-#m_pu2 = [instance.m_Pu[2,i].value for i in range(1,T+1)] 
-P_PEM1 = [instance.p_pem[1,i].value for i in range(1,T+1)]  
-P_PEM2 = [instance.p_pem[2,i].value for i in range(1,T+1)]  
 b_FCR = [instance.b_FCR[i].value for i in range(1,T+1)]
 β_FCR = [instance.β_FCR[i].value for i in range(1,T+1)]
-R_FCR1 = [instance.r_FCR[1,i].value for i in range(1,T+1)]
-R_FCR2 = [instance.r_FCR[2,i].value for i in range(1,T+1)]
 b_mFRRup = [instance.b_mFRR_up[i].value for i in range(1,T+1)]
 β_mFRRup = [instance.β_mFRR_up[i].value for i in range(1,T+1)]
-R_mFRRup1 = [instance.r_mFRR_up[1,i].value for i in range(1,T+1)]
-R_mFRRup2= [instance.r_mFRR_up[2,i].value for i in range(1,T+1)]
 β_aFRRup = [instance.β_aFRR_up[i].value for i in range(1,T+1)]
 b_aFRRup = [instance.b_aFRR_up[i].value for i in range(1,T+1)]
-R_aFRRup1 = [instance.r_aFRR_up[1,i].value for i in range(1,T+1)]
-R_aFRRup2 = [instance.r_aFRR_up[2,i].value for i in range(1,T+1)]
 b_aFRRdown = [instance.b_aFRR_down[i].value for i in range(1,T+1)]
 β_aFRRdown = [instance.β_aFRR_down[i].value for i in range(1,T+1)]
-R_aFRRdown1 = [instance.r_aFRR_down[1,i].value for i in range(1,T+1)]
-R_aFRRdown2 = [instance.r_aFRR_down[2,i].value for i in range(1,T+1)]
-z_grid1 = [instance.z_grid[1,i].value for i in range(1,T+1)]
-z_grid2 = [instance.z_grid[2,i].value for i in range(1,T+1)]
-s_raw1 = [instance.s_raw[1,i].value for i in range(1,T+1)]
-s_raw2 = [instance.s_raw[2,i].value for i in range(1,T+1)]
-s_pu1 = [instance.s_Pu[1,i].value for i in range(1,T+1)]
-s_pu2 = [instance.s_Pu[2,i].value for i in range(1,T+1)]
+Obj = [instance.c_obj[i].value for i in instance.c_obj]
 
 pi_DA = {}
 pi_DA_i = {}
@@ -343,56 +321,15 @@ for x in range(1, Φ+1):
 
 #Creating result DataFrame
 df_results = pd.DataFrame({#Col name : Value(list)
-                          'P_PEM1' : P_PEM1,
-                          'P_PEM2' : P_PEM2,
-                          'P_PV1' : P_PV1,
-                          'P_PV2' : P_PV2,
                           'bidVol_FCR': b_FCR,
                           'bidPrice_FCR': β_FCR,
-                          #'c_FCR1' : list(c_FCRs.values())[0:168],
-                          #'c_FCR2' : list(c_FCRs.values())[168:337],
-                          'FCR_1' : R_FCR1, 
-                          'FCR_2' : R_FCR2,
                           'bidVol_mFRR_up': b_mFRRup,
                           'bidPrice_mFRR_up': β_mFRRup,
-                          #'c_mFRRup1' : list(c_mFRR_ups.values())[0:168],
-                          #'c_mFRRup2' : list(c_mFRR_ups.values())[168:337],
-                          'mFRR_up1': R_mFRRup1,
-                          'mFRR_up2': R_mFRRup2,
                           'bidVol_aFRR_up': b_aFRRup,
                           'bidPrice_aFRR_up': β_aFRRup,
-                          #'c_aFRRup1' : list(c_aFRR_ups.values())[0:168],
-                          #'c_aFRRup2' : list(c_aFRR_ups.values())[168:337],
-                          'aFRR_up1': R_aFRRup1,
-                          'aFRR_up2': R_aFRRup2,
                           'bidVol_aFRR_down': b_aFRRdown,
                           'bidPrice_aFRR_down': β_aFRRdown,
-                          'aFRR_down1': R_aFRRdown1,
-                          'aFRR_down2': R_aFRRdown2,
-                          #'c_aFRRdown1' : list(c_aFRR_downs.values())[0:168],
-                          #'c_aFRRdown2' : list(c_aFRR_downs.values())[168:337],
-                          'Raw Storage1' : s_raw1,
-                          'Raw Storage2' : s_raw2,
-                          'Pure Storage1' : s_pu1,
-                          'Pure Storage2' : s_pu2,
-                          'P_grid1' : P_grid1,
-                          'P_grid2' : P_grid2,
-                          'P_import1' : P_import1,
-                          'P_import2' : P_import2,
-                          'P_export1' : P_export1,
-                          'P_export2' : P_export2,
-                          'Raw_In1' : m_ri1,
-                          'Raw_In2' : m_ri2,
-                          #'Raw_Out1' : m_ro1,
-                          #'Raw_Out2' : m_ro2,
-                          #'Pure_In1': m_pu1,
-                          #'Pure_In2': m_pu2,
-                          'z_grid1' : z_grid1,
-                          'z_grid2' : z_grid2
-                          #'DA1' : list(c_DA.values())[0:168],
-                          #'DA2' : list(c_DA.values())[168:337],
-                          #'Demand1' : list(Demand.values()),
-                          #'Demand2' : list(Demand.values())
+                          'Objective': Obj
                           }, index=DateRange,
                           )
 for i in range(1,Φ+1):
@@ -401,4 +338,4 @@ for i in range(1,Φ+1):
   
 
 #save to Excel 
-df_results.to_excel("Results_V3/V3_"+Start_date+".xlsx")
+df_results.to_excel("Result_files/V3_bids_"+Start_date[:10]+"_"+End_date[:10]+ ".xlsx")
