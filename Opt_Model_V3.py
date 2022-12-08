@@ -369,7 +369,13 @@ a = [('P_pem_cap', model.P_pem_cap),
     ('bidres_aFRR', model.bidres_aFRR),
     ('R_mFRR_max', model.R_mFRR_max),
     ('R_mFRR_min', model.R_mFRR_min),
-    ('bidres_mFRR', model.bidres_mFRR)]
+    ('bidres_mFRR', model.bidres_mFRR),
+    ('Type of Scen Gen', Type),
+    ('n_clusters', n_clusters),
+    ('n_samples', n_samples),
+    ('Block size', blocksize),
+    ('Sample length', sample_length)
+    ]
 
 
 with open("Result_files/V3_Bids_Parameters_"+Start_date[:10]+"_"+End_date[:10]+ ".csv", 'w', newline='') as csvfile:

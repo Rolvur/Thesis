@@ -2,16 +2,16 @@ from datetime import date
 
 
 ### Model Simulation & PV ### 
-Start_date = '2020-03-01 00:00'
-End_date = '2020-03-07 23:59'
+Start_date = '2020-01-01 00:00'
+End_date = '2020-12-31 23:59'
 
 Demand_pattern = 'Weekly' # 'Hourly' , 'Daily' , 'Weekly'
-sEfficiency = 'k' # 'k': constant OR 'pw': piecewise 
+sEfficiency = 'pw' # 'k': constant OR 'pw': piecewise 
 
 #--------------------------------------------------------------------------
 ### Scenarios ### 
-Start_date_scen = '2021-01-01 00:00'
-End_date_scen = '2021-12-31 23:59'
+Start_date_scen = '2020-01-01 00:00'
+End_date_scen = '2020-12-31 23:59'
 
 ## Scenario Generation ## 
 Type = 'single' # single or combined # 
@@ -20,7 +20,7 @@ blocksize = 24 # 7days = 168 hours
 sample_length = blocksize*7 # sampling 52 weeks blocks 
 
 ## Scenario Reduction ## 
-n_clusters = 3
+n_clusters = 4
 
 # For PV # 
 PV_Cluster = 'false' ## Set 'True' to cluster weeks 
