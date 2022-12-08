@@ -39,6 +39,7 @@ model.P_grid_cap = P_grid_cap
 model.eff = eff
 model.r_in = r_in
 #model.r_out = r_out
+model.k_d = k_d
 model.m_Ro = m_Ro
 model.m_Pu = m_Pu
 model.S_Pu_max = S_Pu_max

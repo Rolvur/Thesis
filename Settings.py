@@ -2,16 +2,16 @@ from datetime import date
 
 
 ### Model Simulation & PV ### 
-Start_date = '2021-07-12 00:00'
-End_date = '2021-07-18 23:59'
+Start_date = '2020-07-27 00:00'
+End_date = '2020-08-02 23:59'
 
 Demand_pattern = 'Weekly' # 'Hourly' , 'Daily' , 'Weekly'
 sEfficiency = 'k' # 'k': constant OR 'pw': piecewise 
 
 #--------------------------------------------------------------------------
 ### Scenarios ### 
-Start_date_scen = '2020-01-27 00:00'
-End_date_scen = '2020-02-23 23:59'
+Start_date_scen = '2020-06-29 00:00'
+End_date_scen = '2020-07-26 23:59'
 
 ## Scenario Generation ## 
 Type = 'single' # single or combined # 
