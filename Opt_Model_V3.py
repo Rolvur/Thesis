@@ -6,7 +6,7 @@ from pyomo.core import *
 import pandas as pd 
 import numpy as np
 from Opt_Constants import *
-from Data_process import Start_date, Demand, DateRange, pem_setpoint, hydrogen_mass_flow
+from Data_process import Start_date, Demand, DateRange, pem_setpoint, hydrogen_mass_flow, P_PV_max
 from Settings import sEfficiency
 from Scenario import π_r, c_FCRs, c_aFRR_ups, c_aFRR_downs, c_mFRR_ups, Ω, c_DAs, Φ, π_DA
 
@@ -401,4 +401,4 @@ for i in range(1,Φ+1):
   
 
 #save to Excel 
-df_results.to_excel("Result_files/Model3_"+Start_date+".xlsx")
+df_results.to_excel("Results_V3/V3_"+Start_date+".xlsx")

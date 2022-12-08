@@ -316,7 +316,7 @@ m_ri = [Xinstance.m_Ri[i].value for i in range(1,T+1)]
 #c_mFRRup = [Xinstance.c_mFRR_up[i].value for i in range(1,T+1)]
 #c_DA = [Xinstance.c_DA[i].value for i in range(1,T+1)]
 vOPEX = [Xinstance.vOPEX[i].value for i in range(1,T+1)]
-
+print(sum(vOPEX))
 #Creating result DataFrame
 df_SolX = pd.DataFrame({#Col name : Value(list)
                           'P_PEM' : P_PEM,
@@ -337,8 +337,8 @@ df_SolX = pd.DataFrame({#Col name : Value(list)
                           'beta_aFRR_up': list(β_aFRR_up.values()),
                           'r_aFRR_up': r_aFRR_up,
                           'c_aFRR_up' : list(c_aFRR_up.values()),
-                          'b_aFRR_down': list(b_aFRR_down),
-                          'beta_aFRR_down': list(β_aFRR_down),
+                          'b_aFRR_down': list(b_aFRR_down.values()),
+                          'beta_aFRR_down': list(β_aFRR_down.values()),
                           'r_aFRR_down': r_aFRR_down,
                           'c_aFRRdown1' : list(c_aFRR_down.values()),
                           'Raw Storage1' : s_raw,
@@ -354,4 +354,4 @@ df_SolX = pd.DataFrame({#Col name : Value(list)
   #m_demand = 
 
 #save to Excel 
-df_SolX.to_excel("Result_files/SolX_"+Start_date+".xlsx")
+df_SolX.to_excel("Results_V3/SolX_"+Start_date+".xlsx")
