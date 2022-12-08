@@ -373,8 +373,13 @@ a = [('P_pem_cap', SolX.P_pem_cap),
     ('bidres_aFRR', SolX.bidres_aFRR),
     ('R_mFRR_max', SolX.R_mFRR_max),
     ('R_mFRR_min', SolX.R_mFRR_min),
-    ('bidres_mFRR', SolX.bidres_mFRR)]
-
+    ('bidres_mFRR', SolX.bidres_mFRR),
+    ('Type of Scen Gen', Type),
+    ('n_clusters', n_clusters),
+    ('n_samples', n_samples),
+    ('Block size', blocksize),
+    ('Sample length', sample_length)
+    ]
 
 with open("Result_files/V3_SolX_Parameters_"+Start_date[:10]+"_"+End_date[:10]+ ".csv", 'w', newline='') as csvfile:
     my_writer = csv.writer(csvfile,delimiter=',')
