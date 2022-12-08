@@ -6,7 +6,8 @@ import pandas as pd
 import numpy as np
 from Opt_Constants import *
 from Data_process import P_PV_max, DA, Demand, c_FCR, c_aFRR_up, c_aFRR_down, c_mFRR_up, DateRange, pem_setpoint, hydrogen_mass_flow
-from Settings import sEfficiency
+from Settings import *
+import csv
 #____________________________________________
 solver = po.SolverFactory('gurobi')
 model = pe.ConcreteModel()
@@ -38,7 +39,6 @@ model.P_pem_cap = P_pem_cap
 model.P_pem_min = P_pem_min
 model.P_com = P_com
 model.P_grid_cap = P_grid_cap
-model.k_CR = k_CR
 model.eff = eff
 model.r_in = r_in
 model.r_out = r_out
@@ -88,6 +88,7 @@ model.zmFRRup = pe.Var(model.T, domain = pe.Binary) #binary decision variable
 #model.zT = pe.Var(model.T, domain = pe.Binary) #binary decision variable
 #model.cT = pe.Var(model.T, domain = pe.Reals)
 model.z_grid = pe.Var(model.T, domain = pe.Binary) #binary decision variable
+model.c_obj = pe.Var(model.T, domain = pe.Reals)
 
 
 #Objective
@@ -309,67 +310,18 @@ for t in model.T:
   model.c21_2.add(model.p_pem[t] - model.P_pem_min >= model.r_FCR[t] + model.r_aFRR_up[t] + model.r_mFRR_up[t])
 
 
+model.cObj = pe.ConstraintList()
+for t in model.T:
+  model.cObj.add(model.c_obj[t] == (model.DA[t]+model.CT)*model.p_import[t] - (model.DA[t]-model.PT)*model.p_export[t] - (model.c_FCR[t]*model.r_FCR[t] + model.c_aFRR_up[t]*model.r_aFRR_up[t] + model.c_aFRR_down[t]*model.r_aFRR_down[t] + model.c_mFRR_up[t]*model.r_mFRR_up[t]))
+
+
+
 ###############SOLVE THE MODEL########################
 
 #model.dual = pe.Suffix(direction=pe.Suffix.IMPORT)
 instance = model.create_instance()
 results = solver.solve(instance)
 print(results)
-#instance.display()
-
-#print("Print values for each variable explicitly")
-#for i in instance.p_grid:
-#  print(str(instance.p_grid[i]), instance.p_grid[i].value)
-#  print(str(instance.zT[i]), instance.zT[i].value)
-#  print(str(instance.cT[i]), instance.cT[i].value)
-
-#for i in instance.p_PV:
-#  print(str(instance.p_PV[i]), instance.p_PV[i].value)
-#for i in instance.p_pem:
-#  print(str(instance.p_pem[i]), instance.p_pem[i].value)
-#for i in instance.r_FCR:
-#  print(str(instance.r_FCR[i]), instance.r_FCR[i].value)
-#for i in instance.rx_aFRR_up:
-#  print(str(instance.rx_aFRR_up[i]), instance.rx_aFRR_up[i].value)
-#for i in instance.r_aFRR_up:
-#  print(str(instance.r_aFRR_up[i]), instance.r_aFRR_up[i].value)
-#for i in instance.zaFRRup:
-#  print(str(instance.zaFRRup[i]), instance.zaFRRup[i].value)
-#for i in instance.r_aFRR_down:
-#  print(str(instance.r_aFRR_down[i]), instance.r_aFRR_down[i].value)
-#for i in instance.zaFRRdown:
-#  print(str(instance.zaFRRdown[i]), instance.zaFRRdown[i].value)
-#for i in instance.r_mFRR_up:
-#  print(str(instance.r_mFRR_up[i]), instance.r_mFRR_up[i].value)
-#for i in instance.zmFRRup:
-#  print(str(instance.zmFRRup[i]), instance.zmFRRup[i].value)
-
-
-#for i in instance.m_H2:
-#  print(str(instance.m_H2[i]), instance.m_H2[i].value)
-#for i in instance.m_CO2:
-#  print(str(instance.m_CO2[i]), instance.m_CO2[i].value)
-#CO2Mass = sum(instance.m_CO2)
-#print(CO2Mass)
-#for i in instance.m_Ri:
-#  print(str(instance.m_Ri[i]), instance.m_Ri[i].value)
-#for i in instance.m_Ro:
-#  print(str(instance.m_Ro[i]), instance.m_Ro[i].value)
-#for i in instance.m_H2O:
-#  print(str(instance.m_H2O[i]), instance.m_H2O[i].value)
-#for i in instance.m_Pu:
-#  print(str(instance.m_Pu[i]), instance.m_Pu[i].value)
-#for i in instance.m_Pu:
-#  print(str(instance.m_Pu[i]), instance.m_Pu[i].value)
-
-#for i in instance.s_raw:
-#  print(str(instance.s_raw[i]), instance.s_raw[i].value)
-#for i in instance.s_Pu:
-#  print(str(instance.s_Pu[i]), instance.s_Pu[i].value)
-
-
-#for i in instance.r_FCR:
- # print(str(instance.r_FCR[i]), instance.r_FCR[i].value)
 
 
 #Converting Pyomo resulst to list
@@ -382,6 +334,8 @@ P_grid = [P_import[i] - P_export[i] for i in range(0,len(P_import)) ]
 m_ri = [instance.m_Ri[i].value for i in instance.m_Ri]
 m_ro = [instance.m_Pu[i].value for i in instance.m_Pu]  
 m_pu = [instance.m_Pu[i].value for i in instance.m_Pu]  
+m_H2 = [instance.m_H2[i].value for i in instance.m_H2]  
+m_CO2 = [instance.m_CO2[i].value for i in instance.m_CO2]  
 P_PEM = [instance.p_pem[i].value for i in instance.p_pem]  
 R_FCR = [instance.r_FCR[i].value for i in instance.r_FCR]
 R_mFRRup = [instance.r_mFRR_up[i].value for i in instance.r_mFRR_up]
@@ -390,43 +344,77 @@ R_aFRRdown = [instance.r_aFRR_down[i].value for i in instance.r_aFRR_down]
 z_grid = [instance.z_grid[i].value for i in instance.z_grid]
 s_raw = [instance.s_raw[i].value for i in instance.s_raw]
 s_pu = [instance.s_Pu[i].value for i in instance.s_Pu]
-
+Obj = [instance.c_obj[i].value for i in instance.c_obj]
 
 
 #Creating result DataFrame
 df_results = pd.DataFrame({#Col name : Value(list)
                           'P_PEM' : P_PEM,
-                          'P_PV' : P_PV,
-                          'mFRR_up': R_mFRRup,
-                          'aFRR_up': R_aFRRup,
-                          'aFRR_down': R_aFRRdown,
-                          'Raw Storage' : sRaw,
-                          'Pure Storage' : s_pu,
                           'P_grid' : P_grid,
                           'P_import' : P_import,
                           'P_export' : P_export,
+                          'z_grid' : z_grid,
+                          'P_PV' : P_PV,
+                          'c_DA' : list(DA.values()),
+                          'r_FCR': R_FCR, 
+                          'c_FCR' : list(c_FCR.values()),
+                          'r_aFRR_up': R_aFRRup,
+                          'c_aFRR_up' : list(c_aFRR_up.values()),
+                          'r_aFRR_down': R_aFRRdown,
+                          'c_aFRR_down' : list(c_aFRR_down.values()),
+                          'r_mFRR_up': R_mFRRup,
+                          'c_mFRRup' : list(c_mFRR_up.values()),
                           'Raw_In' : m_ri,
                           'Raw_Out' : m_ro,
                           'Pure_In': m_pu,
-                          'z_grid' : z_grid,
-                          'DA' : list(DA.values()),
-                          'FCR "up"': R_FCR, 
-                          'FCR "down"': R_FCR,
-                          'cFCR' : list(c_FCR.values()),
-                          'caFRRup' : list(c_aFRR_up.values()),
-                          'caFRRdown' : list(c_aFRR_down.values()),
-                          'cmFRRup' : list(c_mFRR_up.values()),
-                          'Demand' : list(Demand.values())
+                          'm_H2': m_H2,
+                          'm_CO2' : m_CO2,
+                          'Raw Storage' : sRaw,
+                          'Pure Storage' : s_pu,
+                          'Demand' : list(Demand.values()),
+                          'Objective' : Obj
                           }, index=DateRange,
                           )
 
 
-
-
 #save to Excel 
-df_results.to_excel("Result_files/Model2_2020.xlsx")
+
+df_results.to_excel("Result_files/V2_"+Start_date[:10]+"_"+End_date[:10]+ ".xlsx")
 
 
 
+
+## Parameter file ## 
+
+a = [('P_pem_cap', model.P_pem_cap),
+    ('P_pem_min', model.P_pem_min),
+    ('P_com', model.P_com),
+    ('P_grid_cap', model.P_grid_cap),
+    ('r_in', model.r_in),
+    ('r_out', model.r_out),
+    ('k_d', model.k_d),
+    ('S_Pu_max', model.S_Pu_max),
+    ('S_raw_max', model.S_raw_max),
+    ('m_H2_max', model.m_H2_max),
+    ('ramp_pem', model.ramp_pem),
+    ('ramp_com', model.ramp_com),
+    ('P_PV_cap', model.P_PV_cap),
+    ('PT', model.PT),
+    ('CT', model.CT),
+    ('Demand Pattern', Demand_pattern),
+    ('Efficiency Type', sEfficiency),
+    ('R_FCR_max', model.R_FCR_max),
+    ('R_FCR_min', model.R_FCR_min),
+    ('R_aFRR_max', model.R_aFRR_max),
+    ('R_aFRR_min', model.R_aFRR_min),
+    ('bidres_aFRR', model.bidres_aFRR),
+    ('R_mFRR_max', model.R_mFRR_max),
+    ('R_mFRR_min', model.R_mFRR_min),
+    ('bidres_mFRR', model.bidres_mFRR)]
+
+
+with open("Result_files/V2_Parameters_"+Start_date[:10]+"_"+End_date[:10]+ ".csv", 'w', newline='') as csvfile:
+    my_writer = csv.writer(csvfile,delimiter=',')
+    my_writer.writerows(a)
 
  

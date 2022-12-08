@@ -6,7 +6,9 @@ import pandas as pd
 from Opt_Constants import *
 from Data_process import P_PV_max, DA, Demand, DateRange, pem_setpoint, hydrogen_mass_flow
 from Settings import *
+import csv
 #____________________________________________
+
 
 
 solver = po.SolverFactory('gurobi')
@@ -26,6 +28,7 @@ model.P_pem_cap = P_pem_cap
 model.P_pem_min = P_pem_min
 model.P_com = P_com
 model.P_grid_cap = P_grid_cap
+model.eff = eff
 model.r_in = r_in
 model.r_out = r_out
 model.k_d = k_d
@@ -37,6 +40,7 @@ model.ramp_com = ramp_com
 model.P_PV_cap = P_PV_cap
 model.PT = PT
 model.CT = CT
+
 #defining variables
 model.p_grid = pe.Var(model.T, domain=pe.Reals)
 model.p_PV = pe.Var(model.T, domain=pe.NonNegativeReals)
@@ -51,6 +55,8 @@ model.s_raw = pe.Var(model.T, domain=pe.NonNegativeReals)
 model.s_Pu = pe.Var(model.T, domain=pe.NonNegativeReals)
 model.zT = pe.Var(model.T, domain = pe.Binary) #binary decision variable
 model.cT = pe.Var(model.T, domain = pe.Reals)
+model.c_obj = pe.Var(model.T, domain = pe.Reals)
+
 #model.η = pe.Var(model.T, domain = pe.NonNegativeReals)
 #Objective
 expr = sum((model.DA[t]+model.cT[t])*model.p_grid[t] for t in model.T)
@@ -89,12 +95,20 @@ model.c4_2 = pe.ConstraintList()
 for t in model.T:
     model.c4_2.add(model.p_pem[t] <= model.P_pem_cap)
 
-model.c_piecewise = Piecewise(  model.T,
-                        model.m_H2,model.p_pem,
-                      pw_pts=pem_setpoint,
-                      pw_constr_type='EQ',
-                      f_rule=hydrogen_mass_flow,
-                      pw_repn='SOS2')
+
+if sEfficiency == 'pw':
+  model.c_piecewise = Piecewise(  model.T,
+                          model.m_H2,model.p_pem,
+                        pw_pts=pem_setpoint,
+                        pw_constr_type='EQ',
+                        f_rule=hydrogen_mass_flow,
+                        pw_repn='SOS2')
+                   
+if sEfficiency == 'k':
+  model.csimple = pe.ConstraintList()
+  for t in model.T:
+      model.csimple.add(model.p_pem[t] == model.m_H2[t]/model.eff)
+
 
 
 model.c6 = pe.ConstraintList()
@@ -172,6 +186,13 @@ model.c25_3 = pe.ConstraintList()
 for t in model.T:
   model.c25_3.add(model.cT[t] == (1-model.zT[t])*model.CT - model.zT[t]*model.PT)
 
+model.cObj = pe.ConstraintList()
+for t in model.T:
+  model.cObj.add(model.c_obj[t] == (model.DA[t]+model.cT[t])*model.p_grid[t])
+
+
+
+
 
 #model.dual = pe.Suffix(direction=pe.Suffix.IMPORT)
 results = solver.solve(model)
@@ -194,10 +215,7 @@ m_H2 = [model.m_H2[i].value for i in model.m_H2]
 zT = [model.zT[i].value for i in model.zT]
 s_raw = [model.s_raw[i].value for i in model.s_raw]
 s_pu = [model.s_Pu[i].value for i in model.s_Pu]
-
-
-
-
+Obj = [model.c_obj[i].value for i in model.c_obj]
 
 #Creating result DataFrame
 df_results = pd.DataFrame({#Col name : Value(list)
@@ -212,17 +230,46 @@ df_results = pd.DataFrame({#Col name : Value(list)
                           'DA' : list(DA.values()),
                           'm_H2': m_H2,
                           'm_CO2' : m_CO2,
-                          'm_H2O' : m_H2O,
                           'Demand' : list(Demand.values()), 
-                          'zT' : zT
-                          }, index=DateRange,
-
-                          )
+                          'zT' : zT,
+                          'Objective' : Obj
+                          }, index=DateRange,)
 
 
 
 
 #save to Excel 
-df_results.to_excel("Result_files/Model_2021.xlsx")
+df_results.to_excel("Result_files/V1_"+Start_date[:10]+"_"+End_date[:10]+"_"+ sEfficiency +".xlsx")
+
+
+## Parameter file ## 
+
+a = [('P_pem_cap', model.P_pem_cap),
+    ('P_pem_min', model.P_pem_min),
+    ('P_com', model.P_com),
+    ('P_grid_cap', model.P_grid_cap),
+    ('r_in', model.r_in),
+    ('r_out', model.r_out),
+    ('k_d', model.k_d),
+    ('S_Pu_max', model.S_Pu_max),
+    ('S_raw_max', model.S_raw_max),
+    ('m_H2_max', model.m_H2_max),
+    ('ramp_pem', model.ramp_pem),
+    ('ramp_com', model.ramp_com),
+    ('P_PV_cap', model.P_PV_cap),
+    ('PT', model.PT),
+    ('CT', model.CT),
+    ('Demand Pattern', Demand_pattern),
+    ('Efficiency Type', sEfficiency),
+    ('Efficiency K', model.eff)]
+
+
+with open("Result_files/V1_Parameters_"+Start_date[:10]+"_"+End_date[:10]+"_"+ sEfficiency+".csv", 'w', newline='') as csvfile:
+    my_writer = csv.writer(csvfile,delimiter=',')
+    my_writer.writerows(a)
+
+
+
+
 
 

@@ -4,7 +4,7 @@ import pandas as pd
 import random
 from Settings import*
 from sklearn_extra.cluster import KMedoids
-from Data_process import PV,df_aFRR_scen,df_mFRR_scen,df_FCR_DE_scen,DA_list_scen
+from Data_process import df_aFRR_scen,df_mFRR_scen,df_FCR_DE_scen,DA_list_scen
 import matplotlib.pyplot as plt
 random.seed(123)
 
@@ -38,8 +38,6 @@ n = len(data)
 #Split sample in blocks of length blocksize
 
 blocks = [data[i:i + blocksize ] for i in range (0,n,blocksize)]#Acces element by blocks[0][0][0]
-
-
 
 #Delete last block if length differs from blocksize 
 if len(blocks[-1]) != blocksize:
@@ -87,8 +85,6 @@ index = []
 
 #len(blocks[0][1])
 
-
-
 for j in range(0,len(Red_Scen[0])):   
     for x in range(0,weeks):     
         for i in range(0,sample_length):
@@ -96,7 +92,7 @@ for j in range(0,len(Red_Scen[0])):
             if Red_Scen[0][j][i] == np.mean(blocks[x][i]):
                 true = true+1
                 
-                if true == sample_length:
+                if true == sample_length: # true is a variable not bool True
                     index.append(x)
                     
             if Red_Scen[0][j][i] != np.mean(blocks[x][i]):
@@ -109,7 +105,7 @@ Rep_weeks = []
 
 for i in index:
     
-    d = "2020-W" + str(i)
+    d = "2021-W" + str(i)
     r = datetime.datetime.strptime(d + '-1', "%Y-W%W-%w")
     r.strftime("%m-%d-%Y %H:%M")
     Rep_weeks.append(r)
