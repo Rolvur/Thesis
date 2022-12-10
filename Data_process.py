@@ -68,6 +68,8 @@ TimeRangeFCR_Scen = (df_FCR_DE_raw['DATE_FROM'] >= Start_date_scen) & (df_FCR_DE
 df_FCR_DE = df_FCR_DE_raw[TimeRange_FCR]
 df_FCR_DE_scen = df_FCR_DE_raw[TimeRangeFCR_Scen]
 
+#df_FCR_DE.to_csv("Data/df_FCR.csv")
+
 
 #Convert from pandas data series to list
 list_FCR = df_FCR_DE['DE_SETTLEMENTCAPACITY_PRICE_[EUR/MW]'].tolist() 
@@ -85,9 +87,13 @@ df_mFRR = df_DKmFRR_raw.iloc[0:24095,:]
 df_mFRR_raw = df_mFRR[::-1]
 sum(df_mFRR['mFRR_UpPriceEUR'])
 
-
 TimeRange_mFRR = (df_mFRR_raw['HourDK'] >= Start_date) & (df_mFRR_raw['HourDK']  <= End_date)
 TimeRange_mFRR_Scen = (df_mFRR_raw['HourDK'] >= Start_date_scen) & (df_mFRR_raw['HourDK']  <= End_date_scen)
+
+#df_mFRR_raw2020and21 = df_mFRR_raw[TimeRange_mFRR]
+
+#df_mFRR_raw2020and21.to_csv("Data/df_mFRR.csv")
+
 
 df_mFRR = df_mFRR_raw[TimeRange_mFRR]
 df_mFRR_scen = df_mFRR_raw[TimeRange_mFRR_Scen]
