@@ -14,18 +14,19 @@ import os
 #Path to result files to import
 path = "Results_V3/"  # the "/" is important!
 
-# Import files representing a week in year 'string_to_match'
-string_to_match = "2020"
-
+# Import files representing a week in year 'find_year'
+find_year = "2020"
+find_model = 'V3_SolX' #V1, V2, V3_SolX are options
+find_unique = 'V' #can be used to look for specific model runs, e.g. 'pw' or for sensitivity analysis (high/low scen.)
 #---FUNCTION DEFINITIONS--------------------------------------------------------
 
 #Import and combine SolX files
-def import_SolX(path,string_to_match):
+def import_model_results(path,find_year,find_model, find_unique):
     files = os.listdir(path)
     files_xls = [f for f in files if f[-4:] == 'xlsx']
     df_import = pd.DataFrame()
     for f in files_xls:
-        if string_to_match in f:
+        if (find_year in f) and (find_model in f) and (find_unique in f) :
             data = pd.read_excel(path+f)
             df_import = df_import.append(data)
     return df_import
@@ -83,18 +84,67 @@ def Econ_Data_Constructor(dfEconParam):
                             )
     return df
 
-
-
-
+def import_model_param(path,find_year,find_model, find_unique)
+    files = os.listdir(path)
+    files_csv = [f for f in files if f[-3:] == 'csv']
+    dict_import = {}
+    for f in files_csv:
+        if (find_year in f) and (find_model in f) and (find_unique in f) :
+            key = find_year+'_'+find_model+'_'+find_unique
+            data = pd.read_csv(path+f)
+            dict_import[key] = data
+    return dict_import
 #
 dfEconParam = pd.read_excel("Data/Economics_Data.xlsx")
 dfEcon = Econ_Data_Constructor(dfEconParam)
 
 
 
-#Import SolX data
-df_import = import_SolX(path, string_to_match)
+#Import result data
+df_import = import_model_results(path, find_year, find_model, find_unique)
 sum(df_import['vOPEX'])/(len(df_import)/(365*24))
+
+
+# --------------- test loop, i.e multiple settings -------------------
+#   define to different types of files to be analyzed
+find_year = ['2020','2021']
+find_model = ['V1','V2','V3_SolX']
+find_unique = 'V' 
+
+#   Import ecnonomic data and store in dataframe
+dfEconParam = pd.read_excel("Data/Economics_Data.xlsx")
+dfEcon = Econ_Data_Constructor(dfEconParam)
+
+#   loop over all relevant files and create a dictionary with a dataframe for each "bundle" e.g. model 3 for 2020
+All_Data = {}
+All_Param = {}
+
+for m in range(0,len(find_model)):
+    for y in range(0,len(find_year)):
+        dict_key = 'df_'+find_model[m]+'_'+find_year[y]
+        All_Data[dict_key] = import_model_results(path,find_year[y],find_model[m],find_unique)
+        All_Param[dict_key] = import_model_param(path,find_year,find_model, find_unique)
+#What to calculate *hourly:
+#DA import cost
+        All_Data[dict_key]['DA_revenue'] = (All_Data[dict_key]['P_import']*All_Data[dict_key]['c_DA'])
+#DA export revenue
+        All_Data[dict_key]['DA_expenses'] = (All_Data[dict_key]['P_export']*All_Data[dict_key]['c_DA'])
+# Producer Tariff
+        All_Data[dict_key]['PT_expenses'] = (All_Data[dict_key]['P_export']*All_Data[dict_key]['c_DA'])
+
+#r_FCR revenue
+#r_aFRR_up revenue
+#r_aFRR_down revenue
+#r_mFRR_up revenue
+
+#What to calc yearly total
+#DA import cost
+#DA export revenue
+#r_FCR revenue
+#r_aFRR_up revenue
+#r_aFRR_down revenue
+#r_mFRR_up revenue
+
 
 #Bar plot example
 dfEcon_OPEX_disc = dfEcon[["PV_fOPEX_disc","PEM_fOPEX_disc","METH_fOPEX_disc","CO2_fOPEX_disc"]]
