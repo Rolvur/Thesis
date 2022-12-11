@@ -469,7 +469,7 @@ if PV_Cluster == 'True':
 
 
 
-#ScenariosPlots(Rep_scen,scenarios,sample_length,n_samples)
+ScenariosPlots(Rep_scen,scenarios,sample_length,n_samples)
 #PlotPV_Rep(PV_block,PV_rep)
 
 

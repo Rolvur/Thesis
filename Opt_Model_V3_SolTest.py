@@ -7,11 +7,12 @@ from Opt_Constants import *
 from Data_process import Start_date,End_date, P_PV_max, Demand, c_FCR, DA, c_aFRR_up, c_aFRR_down, c_mFRR_up, π_DA, DateRange, pem_setpoint, hydrogen_mass_flow
 from Settings import *
 import csv
+from pathlib import Path
 
 #def ReadResults(Start_date, End_date):
 def ReadResults(Start_date, End_date):
 #    df_results = pd.read_excel("Result_files/Model3_"+Start_date+"_"+End_date+".xlsx")    
-    df_results = pd.read_excel("Result_files/V3_Bids_"+Start_date[:10]+"_"+End_date[:10]+ ".xlsx")    
+    df_results = pd.read_excel("Result_files\V3_Bids_"+Start_date[:10]+"_"+End_date[:10]+ ".xlsx")    
 
     list_b_FCR = df_results["bidVol_FCR"].tolist();
     list_β_FCR = df_results["bidPrice_FCR"].tolist();
