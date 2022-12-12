@@ -68,7 +68,7 @@ df_V2 = importV2()
 
 # Plot start & end date 
 plot_start = '2021-01-01 00:00'
-plot_end = '2021-12-31 23:59'
+plot_end = '2021-09-30 23:59'
 
 TimeRangeSolX = (df_SolX['HourDK'] >= plot_start) & (df_SolX['HourDK']  <= plot_end)
 TimeRangeV2 = (df_V2['HourDK'] >= plot_start) & (df_V2['HourDK']  <= plot_end)
@@ -98,7 +98,6 @@ PieChartCap(df_SolX)
 
 
 ### Horizontal Bar Chart ### 
-
 def BarHCap(df_SolX,df_V2):
 
     Names = ['r_FCR','r_aFRR_up','r_aFRR_down','r_mFRR_up']
@@ -123,41 +122,42 @@ def BarHCap(df_SolX,df_V2):
 BarHCap(df_SolX,df_V2)
 
 
+## Horizontal revenue plot ## 
+def BarHRev(df_V2,df_SolX):
 
-# Calculate Revenue # 
+    # Calculate Revenue # 
 
-CapNames = ['r_FCR','r_aFRR_up','r_aFRR_down','r_mFRR_up']
-PriceNamesV2 = ['c_FCR','c_aFRR_up','c_aFRR_down','c_mFRRup']
-PriceNamesSolX = ['c_FCR','c_aFRR_up','c_aFRRdown','c_mFRR_up']
-Markets =['FCR','aFRR Up','aFRR Down','mFRR']
+    CapNames = ['r_FCR','r_aFRR_up','r_aFRR_down','r_mFRR_up']
+    PriceNamesV2 = ['c_FCR','c_aFRR_up','c_aFRR_down','c_mFRRup']
+    PriceNamesSolX = ['c_FCR','c_aFRR_up','c_aFRRdown','c_mFRR_up']
+    Markets =['FCR','aFRR Up','aFRR Down','mFRR']
 
-TotRevV2 = []
-TotRevSolX = []
-
-
-for i in range(0,len(Markets)):
-    RevV2 = 0
-    RevSolX = 0
-    for t in range(0,len(df_V2)):
-        RevV2 = RevV2 + df_V2[CapNames[i]].iloc[t]*df_V2[PriceNamesV2[i]].iloc[t]
-        RevSolX = RevSolX + df_SolX[CapNames[i]].iloc[t]*df_SolX[PriceNamesSolX[i]].iloc[t] 
-    
-    TotRevV2.append(RevV2)
-    TotRevSolX.append(RevSolX)
+    TotRevV2 = []
+    TotRevSolX = []
 
 
-
-df = pd.DataFrame({'Potential': [TotRevV2[i]/1000000 for i in range(0,len(TotRevV2))],
-                    'Realized': [TotRevSolX[i]/1000000 for i in range(0,len(TotRevSolX))]}, index=Markets)
-
-df.plot.barh(color=['#008fd5','#fc4f30'])
-plt.legend(loc='lower right')
-plt.xlabel('mEUR')
-plt.tight_layout()
-plt.show()
+    for i in range(0,len(Markets)):
+        RevV2 = 0
+        RevSolX = 0
+        for t in range(0,len(df_V2)):
+            RevV2 = RevV2 + df_V2[CapNames[i]].iloc[t]*df_V2[PriceNamesV2[i]].iloc[t]
+            RevSolX = RevSolX + df_SolX[CapNames[i]].iloc[t]*df_SolX[PriceNamesSolX[i]].iloc[t] 
+        
+        TotRevV2.append(RevV2)
+        TotRevSolX.append(RevSolX)
 
 
 
+    df = pd.DataFrame({'Potential': [TotRevV2[i]/1000000 for i in range(0,len(TotRevV2))],
+                        'Realized': [TotRevSolX[i]/1000000 for i in range(0,len(TotRevSolX))]}, index=Markets)
+
+    df.plot.barh(color=['#008fd5','#fc4f30'])
+    plt.legend(loc='lower right')
+    plt.xlabel('mEUR')
+    plt.tight_layout()
+    plt.show()
+
+BarHRev(df_V2,df_SolX)
 
 
 
