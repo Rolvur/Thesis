@@ -67,7 +67,7 @@ df_V2 = importV2()
 
 
 # Plot start & end date 
-plot_start = '2021-01-01 00:00'
+plot_start = '2020-08-31 00:00'
 plot_end = '2021-12-31 23:59'
 
 TimeRangeSolX = (df_SolX['HourDK'] >= plot_start) & (df_SolX['HourDK']  <= plot_end)
@@ -147,8 +147,8 @@ for i in range(0,len(Markets)):
 
 
 
-df = pd.DataFrame({'Potential': [TotRevV2[i]/1000 for i in range(0,len(TotRevV2))],
-                    'Realized': [TotRevSolX[i]/1000 for i in range(0,len(TotRevSolX))]}, index=Markets)
+df = pd.DataFrame({'Potential': [TotRevV2[i]/1000000 for i in range(0,len(TotRevV2))],
+                    'Realized': [TotRevSolX[i]/1000000 for i in range(0,len(TotRevSolX))]}, index=Markets)
 
 df.plot.barh(color=['#008fd5','#fc4f30'])
 plt.legend(loc='lower right')
