@@ -67,7 +67,7 @@ df_V2 = importV2()
 
 
 # Plot start & end date 
-plot_start = '2020-08-31 00:00'
+plot_start = '2021-01-01 00:00'
 plot_end = '2021-12-31 23:59'
 
 TimeRangeSolX = (df_SolX['HourDK'] >= plot_start) & (df_SolX['HourDK']  <= plot_end)
