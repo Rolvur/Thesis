@@ -9,6 +9,7 @@ import matplotlib.dates as md
 from statistics import mean
 from pathlib import Path
 import os, sys
+import seaborn as sns
 from IPython.display import display
 
 #Function for getting all SolX results files in as a combined DataFrame
@@ -65,10 +66,37 @@ def importV2():
 
 df_V2 = importV2()
 
+CapNames = ['r_FCR','r_aFRR_up','r_aFRR_down','r_mFRR_up']
+PriceNamesV2 = ['c_FCR','c_aFRR_up','c_aFRR_down','c_mFRRup']
+PriceNamesSolX = ['c_FCR','c_aFRR_up','c_aFRRdown','c_mFRR_up']
+Markets =['FCR','aFRR Up','aFRR Down','mFRR']
+
+
+
+TotRevV2 = []
+TotRevSolX = []
+
+
+
+for t in range(0,len(df_SolX)):
+    RevV2 = RevV2 + df_SolX['P_export'].iloc[t]*df_SolX[PriceNamesV2[i]].iloc[t]
+     
+
+TotRevV2.append(RevV2)
+TotRevSolX.append(RevSolX)
+
+
+
+
+
+
+## Reading Rep Weeks 
+file_to_open = Path("Result_files/") / 'RepWeeks.xlsx'
+df_RepWeeks = pd.read_excel(file_to_open)
 
 # Plot start & end date 
 plot_start = '2021-01-01 00:00'
-plot_end = '2021-09-30 23:59'
+plot_end = '2021-12-31 23:59'
 
 TimeRangeSolX = (df_SolX['HourDK'] >= plot_start) & (df_SolX['HourDK']  <= plot_end)
 TimeRangeV2 = (df_V2['HourDK'] >= plot_start) & (df_V2['HourDK']  <= plot_end)
@@ -76,8 +104,10 @@ TimeRangeV2 = (df_V2['HourDK'] >= plot_start) & (df_V2['HourDK']  <= plot_end)
 df_SolX = df_SolX[TimeRangeSolX]
 df_V2 = df_V2[TimeRangeV2]
 
-### Pie Chart ###  
+## Defingin Functions ## 
 def PieChartCap(df_results):
+
+
     Names = ['r_FCR','r_aFRR_up','r_aFRR_down','r_mFRR_up']
     Markets =['FCR','aFRR Up','aFRR Down','mFRR']
     TotVol = []
@@ -94,10 +124,7 @@ def PieChartCap(df_results):
 
     plt.tight_layout()
     plt.show()
-PieChartCap(df_SolX)
 
-
-### Horizontal Bar Chart ### 
 def BarHCap(df_SolX,df_V2):
 
     Names = ['r_FCR','r_aFRR_up','r_aFRR_down','r_mFRR_up']
@@ -119,10 +146,6 @@ def BarHCap(df_SolX,df_V2):
     plt.tight_layout()
     plt.show()
 
-BarHCap(df_SolX,df_V2)
-
-
-## Horizontal revenue plot ## 
 def BarHRev(df_V2,df_SolX):
 
     # Calculate Revenue # 
@@ -157,18 +180,130 @@ def BarHRev(df_V2,df_SolX):
     plt.tight_layout()
     plt.show()
 
+def AvgClPrice(df_SolX):
+
+    CapNames = ['r_FCR','r_aFRR_up','r_aFRR_down','r_mFRR_up']
+    PriceNamesSolX = ['c_FCR','c_aFRR_up','c_aFRRdown','c_mFRR_up']
+    Markets =['FCR','aFRR Up','aFRR Down','mFRR']
+
+
+    cP_reserves = []
+
+    for i in range(0,len(Markets)):
+        
+        cP = 0
+        count = 0
+
+        for t in range(0,len(df_SolX)):
+            if df_SolX[CapNames[i]].iloc[t] > 0: 
+
+                cP = cP + df_SolX[PriceNamesSolX[i]].iloc[t]
+                count +=1
+
+        cP_reserves.append(cP/count)
+
+
+    #           FCR,  aFRR_up , aFRR_down , mFRR
+    color = ['darkorange','royalblue','navy','goldenrod']
+
+
+    df = pd.DataFrame({'Avg Price': [cP_reserves[i] for i in range(0,len(cP_reserves))]}, index=Markets)
+
+    df.plot.bar(color = color[2])
+    plt.legend(loc='upper right')
+    plt.xlabel('EUR')
+    plt.tight_layout()
+    plt.show()
+    #If want to specify different colors for each market use this ## 
+    #plt.bar(df.index, df['Avg Price'], color=color)
+    #plt.show()
+
+
+## Change manually to switch between years
+def RepWeekToYear(df_SolX):
+
+    weeks = 168
+    Tot_obs = [] 
+
+
+    while weeks <= len(df_SolX):
+        
+        w = df_SolX.iloc[(weeks-168):weeks,:]
+        start = w.iloc[0,0]
+
+        for i in range(0,len(df_RepWeeks.iloc[:,0])):
+            
+            if start == df_RepWeeks.iloc[i,3]:
+                obs = w['P_PEM'].value_counts()
+                rep_obs = obs * (365/7)*df_RepWeeks.iloc[i,4]
+                Tot_obs.append(rep_obs)
+
+        
+        weeks += 168
+
+
+    df_obs = pd.DataFrame()
+    for i in range(0,len(Tot_obs)):
+        df_obs = pd.concat([df_obs, pd.DataFrame(Tot_obs[i])])
+
+
+
+
+    df_obs = df_obs.sort_index(axis=0,ascending=False)
+    
+    return df_obs
+
+
+
+### Pie Chart ###  
+PieChartCap(df_SolX)
+
+
+### Horizontal Bar Chart ### 
+BarHCap(df_SolX,df_V2)
+
+
+## Horizontal revenue plot ## 
 BarHRev(df_V2,df_SolX)
 
 
+## Average clearing price of accepted bids (SolX)## 
+AvgClPrice(df_SolX)
+
+
+## P_PEM setpoint distribution ## 
+
+#Converting Rep weeks to whole year
+
+##PLOT
+df_obs2020 = RepWeekToYear(df_SolX)
+df_obs2021 = RepWeekToYear(df_SolX)
+
+df_obsTot = [df_obs2020.index,df_obs2021.index]
+
+
+
+df_obs2020_Int = df_obs2020
+
+df_obs2020_Int.index = df_obs2020_Int.index.astype(int)
+
+df_obs2021_Int = df_obs2021
+
+df_obs2021_Int.index = df_obs2021_Int.index.astype(int)
+
+
+# matplotlib histogram of observations
+plt.bar(df_obs2020_Int.index-0.25,df_obs2020['P_PEM'] ,label='PEM Setpoint 2020',width=0.45, color = '#a83232')
+plt.bar(df_obs2021_Int.index+0.25,df_obs2021['P_PEM'] ,label='PEM Setpoint 2021',width=0.45, color ='#3255a8')
+plt.xlabel('MW')
+plt.legend()
+plt.ylabel('Hours')
+plt.show()
 
 
 
 
-
-
-
-
-
+## 
 
 
 
