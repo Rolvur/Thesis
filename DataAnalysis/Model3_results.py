@@ -147,8 +147,8 @@ for i in range(0,len(Markets)):
 
 
 
-df = pd.DataFrame({'Potential': [TotRevV2[i]/1000 for i in range(0,len(TotRevV2))],
-                    'Realized': [TotRevSolX[i]/1000 for i in range(0,len(TotRevSolX))]}, index=Markets)
+df = pd.DataFrame({'Potential': [TotRevV2[i]/1000000 for i in range(0,len(TotRevV2))],
+                    'Realized': [TotRevSolX[i]/1000000 for i in range(0,len(TotRevSolX))]}, index=Markets)
 
 df.plot.barh(color=['#008fd5','#fc4f30'])
 plt.legend(loc='lower right')
