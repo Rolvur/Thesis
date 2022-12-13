@@ -48,15 +48,15 @@ def import_w_model_results(path,find_year,find_model, find_unique, avoid):
     for f in files_xls:
         if (find_year in f) and (find_model in f) and (find_unique in f):
             if not f.startswith("~"):
-                # only necessary for weeks: if not f.endswith('12-31.xlsx'): #OBS!
-                print('file: '+f)
-                i,π = findRepWeek(f,find_year)
-                list_f.append(f)
-                list_pi.append(π)
-                list_i.append(i)
-                data = pd.read_excel(path+f)
-                df_import = df_import.append(data)
-    # only needed if weeks: df_import.index = (np.arange(0,1680,1))
+                if not f.endswith('12-31.xlsx'):# only necessary for weeks:  #OBS!
+                    print('file: '+f)
+                    i,π = findRepWeek(f,find_year)
+                    list_f.append(f)
+                    list_pi.append(π)
+                    list_i.append(i)
+                    data = pd.read_excel(path+f)
+                    df_import = df_import.append(data)
+    df_import.index = (np.arange(0,1680,1)) # only needed if weeks: 
     #print(list_pi)
     #print(list_i)
     #print(list_i)
@@ -299,10 +299,10 @@ path = "Result_files/"  # the "/" is important!
 #   define to different types of files to be analyzed
 #find_year = ['2020','2021']
 find_year = ['2020','2021']
-find_model = ['V2']
-find_unique = 'year' 
-data_length = 'year' #'week' or 'year'
-avoid = 'pw'
+find_model = ['V2','V3_SolX']
+find_unique = 'V' 
+data_length = 'week' #'week' or 'year'
+avoid = 'year'
 
 # Reading Rep Weeks
 if data_length == 'week': 
