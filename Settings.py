@@ -10,8 +10,8 @@ sEfficiency = 'k' # 'k': constant OR 'pw': piecewise
 
 #--------------------------------------------------------------------------
 ### Scenarios ### 
-Start_date_scen = '2021-01-25 00:00'
-End_date_scen = '2021-02-21 23:59'
+Start_date_scen = '2020-01-01 00:00'
+End_date_scen = '2021-12-31 23:59'
 
 ## Scenario Generation ## 
 Type = 'single' # single or combined # 
@@ -23,11 +23,11 @@ sample_length = blocksize*7 # sampling 52 weeks blocks
 n_clusters = 4
 
 # For PV # 
-PV_Cluster = 'false' ## Set 'True' to cluster weeks 
+PV_Cluster = 'True' ## Set 'True' to cluster weeks 
 
 n_clusters_PV = 1
 blocksize_PV = 24*7
-weeks = 3
+weeks = 1
 
 
 
