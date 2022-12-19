@@ -16,28 +16,32 @@ DataX = pd.ExcelFile(file_to_open)
 df_results = pd.read_excel(file_to_open, sheet_name=DataX.sheet_names)
 sheet = list(df_results)
 
-MethProd = 32000000
+MethProd = 32000000 #kg methanol 
+lifetime = 25  #years 
 
 
 #Model V1k
 
 fOpexV1k = df_results[sheet[0]]['fOPEX_sum'].sum() #2020 & 2021
-vOpexV1k = df_results[sheet[0]]['vOPEX_DA_revenue'].sum() + df_results[sheet[0]]['vOPEX_DA_expenses'].sum() + df_results[sheet[0]]['vOPEX_CT'].sum() + df_results[sheet[0]]['vOPEX_PT'].sum() + df_results[sheet[1]]['vOPEX_DA_expenses'].sum() + df_results[sheet[1]]['vOPEX_CT'].sum() + df_results[sheet[1]]['vOPEX_PT'].sum() #2020 & 2021
+vOpexV1k2020 = df_results[sheet[0]]['vOPEX_DA_revenue'].sum() + df_results[sheet[0]]['vOPEX_DA_expenses'].sum() + df_results[sheet[0]]['vOPEX_CT'].sum() + df_results[sheet[0]]['vOPEX_PT'].sum() #2020 
+vOpexV1k2021 = df_results[sheet[1]]['vOPEX_DA_revenue'].sum() + df_results[sheet[1]]['vOPEX_DA_expenses'].sum() + df_results[sheet[1]]['vOPEX_CT'].sum() + df_results[sheet[1]]['vOPEX_PT'].sum() #2021 
 CAPEXV1k = df_results[sheet[0]]['CAPEX_sum'][0]
 
-LCOMeV1k = 10**6*(fOpexV1k + vOpexV1k + CAPEXV1k)/(MethProd*25)
+LCOMeV1k2020 = 10**6*(fOpexV1k + vOpexV1k2020 + CAPEXV1k)/(MethProd*lifetime)
+LCOMeV1k2021 = 10**6*(fOpexV1k + vOpexV1k2021 + CAPEXV1k)/(MethProd*lifetime)
 
 
 
 #Model V1pw
 
 fOpexV1pw = df_results[sheet[2]]['fOPEX_sum'].sum() #2020 & 2021
-vOpexV12020pw = df_results[sheet[2]]['vOPEX_DA_revenue'].sum() + df_results[sheet[2]]['vOPEX_DA_expenses'].sum() + df_results[sheet[2]]['vOPEX_CT'].sum() + df_results[sheet[2]]['vOPEX_PT'].sum() #2020 & 2021
-vOpexV12021pw = df_results[sheet[3]]['vOPEX_DA_revenue'].sum() + df_results[sheet[3]]['vOPEX_DA_expenses'].sum() + df_results[sheet[3]]['vOPEX_CT'].sum() + df_results[sheet[3]]['vOPEX_PT'].sum() #2020 & 2021
+vOpexV12020pw = df_results[sheet[2]]['vOPEX_DA_revenue'].sum() + df_results[sheet[2]]['vOPEX_DA_expenses'].sum() + df_results[sheet[2]]['vOPEX_CT'].sum() + df_results[sheet[2]]['vOPEX_PT'].sum() #2020
+vOpexV12021pw = df_results[sheet[3]]['vOPEX_DA_revenue'].sum() + df_results[sheet[3]]['vOPEX_DA_expenses'].sum() + df_results[sheet[3]]['vOPEX_CT'].sum() + df_results[sheet[3]]['vOPEX_PT'].sum() #2021
 
 CAPEXV1pw = df_results[sheet[2]]['CAPEX_sum'][0]
 
-LCOMeV1pw = 10**6*(fOpexV1pw + vOpexV12020pw + CAPEXV1pw)/(MethProd*25)
+LCOMeV1pw2020 = 10**6*(fOpexV1pw + vOpexV12020pw + CAPEXV1pw)/(MethProd*lifetime)
+LCOMeV1pw2021 = 10**6*(fOpexV1pw + vOpexV12021pw + CAPEXV1pw)/(MethProd*lifetime)
 
 
 #Model V2 
@@ -49,7 +53,9 @@ vOpexV2pw2021 = df_results[sheet[5]]['vOPEX_DA_revenue'].sum() + df_results[shee
 
 CAPEXV1pw = df_results[sheet[4]]['CAPEX_sum'][0]
 
-LCOMeV2 = 10**6*(fOpexV2pw + vOpexV2pw2021 + CAPEXV1pw)/(MethProd*25)
+LCOMeV2_2020 = 10**6*(fOpexV2pw + vOpexV2pw2020 + CAPEXV1pw)/(MethProd*lifetime)
+LCOMeV2_2021 = 10**6*(fOpexV2pw + vOpexV2pw2021 + CAPEXV1pw)/(MethProd*lifetime)
+
 
 
 
