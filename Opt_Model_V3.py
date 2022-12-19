@@ -341,9 +341,9 @@ for i in range(1,Φ+1):
   
 
 #save to Excel 
-df_results.to_excel("Result_files/V3_Bids_"+Start_date[:10]+"_"+End_date[:10]+ ".xlsx")
+#df_results.to_excel("Result_files/V3_Bids_"+Start_date[:10]+"_"+End_date[:10]+ ".xlsx")
 
-
+df_results.to_excel("Result_files/V3_Bids_"+Type+"_"+Start_date[:10]+"_"+End_date[:10]+ ".xlsx")
 ## Parameter file ## 
 
 a = [('P_pem_cap', model.P_pem_cap),
@@ -377,7 +377,7 @@ a = [('P_pem_cap', model.P_pem_cap),
     ]
 
 
-with open("Result_files/V3_Bids_Parameters_"+Start_date[:10]+"_"+End_date[:10]+ ".csv", 'w', newline='') as csvfile:
+with open("Result_files/V3_Bids_Parameters_"+Type+"_"+Start_date[:10]+"_"+End_date[:10]+ ".csv", 'w', newline='') as csvfile:
     my_writer = csv.writer(csvfile,delimiter=',')
     my_writer.writerows(a)
 

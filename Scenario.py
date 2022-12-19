@@ -402,7 +402,7 @@ if Type == 'combined':
     Data_names_FCR = ['FCR']
     Type = 'single'
     scenarios_DA = Bootsrap(Type,Data_FCR,Data_names_FCR,n_samples,blocksize,sample_length)
-    kmedoids = KMedoids(n_clusters=n_clusters,metric='euclidean').fit(scenarios_DA)
+    kmedoids = KMedoids(n_clusters=n_clusters,metric='euclidean').fit(scenarios_DA[1])
 
     FCR_red_scen = kmedoids.cluster_centers_
 
