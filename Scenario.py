@@ -4,7 +4,7 @@ import pandas as pd
 import random
 from Settings import*
 from sklearn_extra.cluster import KMedoids
-from Data_process import PV,df_aFRR_scen,df_mFRR_scen,df_FCR_DE_scen,DA_list_scen
+from Data_process import PV_scenPower,df_aFRR_scen,df_mFRR_scen,df_FCR_DE_scen,DA_list_scen
 import matplotlib.pyplot as plt
 random.seed(123)
 
@@ -21,7 +21,7 @@ Data_names = ['DA','FCR','aFRR Up','aFRR Down','mFRR']
 Data_comb = [DA,aFRR_up,aFRR_down,mFRR]
 Data_comb_names = ['DA','aFRR Up','aFRR Down','mFRR']
 
-
+PV = PV_scenPower
 
 
 #Defining functions
@@ -451,11 +451,6 @@ if PV_Cluster == 'True':
     
     for t in range(1,len(PV_rep[0])+1):
         P_PV_max[t] = PV_rep[0][t-1]
-
-
-
-
-
 
 
 

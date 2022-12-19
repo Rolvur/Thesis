@@ -389,6 +389,56 @@ plt.show()
 
 
 
+########## PV Weeks investigation ###### 
+file_to_open = Path("Data/") / "PV_data.xlsx"
+PV_data = pd.read_excel(file_to_open)
+
+start_dates_Rep2020 = ['2020-02-24 00:00','2020-07-27 00:00','2020-06-08 00:00','2020-06-15 00:00','2020-08-17 00:00','2020-08-10 00:00','2020-06-22 00:00','2020-08-31 00:00','2020-04-27 00:00','2020-01-13 00:00']
+end_dates_Rep2020 = ['2020-03-01 23:59','2020-08-02 23:59','2020-06-14 23:59','2020-06-21 23:59','2020-08-23 23:59','2020-08-16 23:59','2020-06-28 23:59','2020-09-06 23:59','2020-05-03 23:59','2020-01-19 23:59']
+
+start_dates_Rep2021 = ['2021-02-22 00:00','2021-07-26 00:00','2021-08-16 00:00','2021-06-28 00:00','2021-09-20 00:00','2021-08-09 00:00','2021-07-12 00:00','2021-04-19 00:00','2021-05-31 00:00','2021-09-06 00:00']
+end_dates_Rep2021 = ['2021-02-28 23:59','2021-08-01 23:59','2021-08-22 23:59','2021-07-04 23:59','2021-09-26 23:59','2021-08-15 23:59','2021-07-18 23:59','2021-04-25 23:59','2021-06-06 23:59','2021-09-12 23:59']
+
+
+PV_dict_2020 = {}
+PV_dict_2021 = {}
+
+for i in range(0,len(start_dates_Rep2020)):
+
+    week2020 = (PV_data['Hour UTC'] >= start_dates_Rep2020[i]) & (PV_data['Hour UTC']  <= end_dates_Rep2020[i])
+    print(len(PV_data[week2020]['Power [MW]']))
+    PV_dict_2020[start_dates_Rep2020[i]] = PV_data[week2020]['Power [MW]'].mean()
+    week2021 = (PV_data['Hour UTC'] >= start_dates_Rep2021[i]) & (PV_data['Hour UTC']  <= end_dates_Rep2021[i])
+    print(len(PV_data[week2021]['Power [MW]']))
+    PV_dict_2021[start_dates_Rep2021[i]] = PV_data[week2021]['Power [MW]'].mean()
+
+
+
+#Getting average for rep weeks
+AvgWeeks_2020 = sum(PV_dict_2020.values()) / len(PV_dict_2020)
+
+AvgWeeks_2021 = sum(PV_dict_2021.values()) / len(PV_dict_2021)
+
+
+#Getting average yearly PV prod
+year2020 = (PV_data['Hour UTC'] >= '2020-01-01 00:00') & (PV_data['Hour UTC']  <= '2020-12-31 23:59')
+year2021 = (PV_data['Hour UTC'] >= '2021-01-01 00:00') & (PV_data['Hour UTC']  <= '2021-12-31 23:59')
+
+PV_avg_2020 = PV_data[year2020]['Power [MW]'].mean()
+PV_avg_2021 = PV_data[year2021]['Power [MW]'].mean()
+
+
+
+## Getting weekly average 
+PV2020 = PV_data[year2020]
+PV2021 = PV_data[year2021]
+PV_avgWeek_2020 = PV2020.groupby(pd.PeriodIndex(PV2020['Hour UTC'], freq='W'))['Power [MW]'].mean()
+PV_avgWeek_2021 = PV2021.groupby(pd.PeriodIndex(PV2021['Hour UTC'], freq='W'))['Power [MW]'].mean()
+
+#Locating new rep weeks
+Rep_week2020byAvg = PV_data[(PV_data['Hour UTC'] >= '2020-08-24 00:00') & (PV_data['Hour UTC']  <= '2020-08-30 23:59')]
+Rep_week2021byAvg = PV_data[(PV_data['Hour UTC'] >= '2021-03-15 00:00') & (PV_data['Hour UTC']  <= '2021-03-21 23:59')]
+
 
 ####################### Plot Input Data #######################
 

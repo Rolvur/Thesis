@@ -14,13 +14,18 @@ from pathlib import Path
 file_to_open = Path("Data/") / "PV_data.xlsx"
 df_solar_prod = pd.read_excel(file_to_open)
 
+#Rep_week2020byAvg = PV_data[(PV_data['Hour UTC'] >= '2020-08-24 00:00') & (PV_data['Hour UTC']  <= '2020-08-30 23:59')]
+#Rep_week2021byAvg = PV_data[(PV_data['Hour UTC'] >= '2021-03-15 00:00') & (PV_data['Hour UTC']  <= '2021-03-21 23:59')]
 
-TimeRangePV = (df_solar_prod['Hour UTC'] >= Start_date) & (df_solar_prod['Hour UTC']  <= End_date)
+
+
+TimeRangePV = (df_solar_prod['Hour UTC'] >= '2021-03-15 00:00') & (df_solar_prod['Hour UTC']  <= '2021-03-21 23:59')
 TimeRangePV_scen = (df_solar_prod['Hour UTC'] >= Start_date_scen) & (df_solar_prod['Hour UTC']  <= End_date_scen)
 
 df_solar_prod_time = df_solar_prod[TimeRangePV]
 PV_scen = df_solar_prod[TimeRangePV_scen]
 
+PV_scenPower = PV_scen['Power [MW]'].tolist() #Convert from pandas data series to list
 
 PV = df_solar_prod_time['Power [MW]'].tolist() #Convert from pandas data series to list
 
