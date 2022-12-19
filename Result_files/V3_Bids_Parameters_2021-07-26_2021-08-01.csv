@@ -3,8 +3,6 @@ P_pem_min,2.625
 P_com,5.202435706602566
 P_grid_cap,238
 r_in,7.2767857142857135
-r_out,1.7784902593798153
-k_d,3652.9680365296804
 S_Pu_max,681887.3668188737
 S_raw_max,79798.824
 m_H2_max,1.0131135290207465
@@ -23,7 +21,7 @@ bidres_aFRR,0.1
 R_mFRR_max,50
 R_mFRR_min,5
 bidres_mFRR,0.1
-Type of Scen Gen,combined
+Type of Scen Gen,single
 n_clusters,4
 n_samples,10000
 Block size,24
