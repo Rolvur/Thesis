@@ -455,11 +455,6 @@ if PV_Cluster == 'True':
 
 
 
-PV_rep.mean()
-
-avg_reg_week = sum(P_PV_max.values()) / len(P_PV_max)
-
-
 
 
 
