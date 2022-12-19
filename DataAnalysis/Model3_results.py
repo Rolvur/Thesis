@@ -83,7 +83,7 @@ for t in range(0,len(df_SolX)):
      
 
 TotRevV2.append(RevV2)
-TotRevSolX.append(RevSolX)
+TotRevSolX.append(RevSolX(y))
 
 
 
