@@ -1,0 +1,15 @@
+
+
+Notes til results av model 3: 
+
+Fyrst i kapitlinum: Validerda at V2 week kann brúkast sum rep year. Hetta vid at samanlikna vOPEX fyri V2_year og V2_repweeks
+
+
+Gera horizontal plots av hvørjum marknad vid trimum modellum i.e. V2_week, V3_single, V3_combined
+
+Investigate when we are bidding on different markets simutaneusly and what markets they are 
+
+Hvat tídspunkt bjóda vit inn á ymskar marknadir, og hvat er tendensurin i.e. bjóda vit á aFRR tá DA ella PV er høgt? osv.  
+
+Bid win percentage? og hygg nær(kl ella dato/season) win percentage er høgt/lágt. Ella er tad altíd høgt fyri onkrar markets og umvent  
+
