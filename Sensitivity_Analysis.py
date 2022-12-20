@@ -309,11 +309,55 @@ plt.tight_layout()
 plt.show()
 
 
+# SENSITIVITY OF MODEL PARAMETERS 80-120%
+def sum_vOPEX(dict,columns):
+    vOPEX = 0
+    for i in range(0,len(columns)):
+        vOPEX = vOPEX + dict[columns[i]].sum()
+    return vOPEX
+#keys=['P_PEM','P_grid','P_import','P_export','z_grid','P_PV','c_DA','r_FCR','c_FCR','r_aFRR_up','c_aFRR_up','r_aFRR_down','c_aFRR_down','r_mFRR_up','c_mFRRup','Raw_In','Raw_Out','Pure_In','m_H2','m_CO2','Raw Storage','Pure Storage','Demand','Objective']
+#columns = [keys[],]
+df_eff_080_2020 = pd.read_excel("Result_files/Sens_eff_080_V2_year_2020-01-01_2020-12-31.xlsx")
+df_eff_085_2020 = pd.read_excel("Result_files/Sens_eff_085_V2_year_2020-01-01_2020-12-31.xlsx")
+df_eff_090_2020 = pd.read_excel("Result_files/Sens_eff_090_V2_year_2020-01-01_2020-12-31.xlsx")
+df_eff_095_2020 = pd.read_excel("Result_files/Sens_eff_095_V2_year_2020-01-01_2020-12-31.xlsx")
+df_eff_100_2020 = pd.read_excel("Result_files/Sens_eff_100_V2_year_2020-01-01_2020-12-31.xlsx")
+df_eff_105_2020 = pd.read_excel("Result_files/Sens_eff_105_V2_year_2020-01-01_2020-12-31.xlsx")
+df_eff_110_2020 = pd.read_excel("Result_files/Sens_eff_110_V2_year_2020-01-01_2020-12-31.xlsx")
+df_eff_115_2020 = pd.read_excel("Result_files/Sens_eff_115_V2_year_2020-01-01_2020-12-31.xlsx")
+df_eff_120_2020 = pd.read_excel("Result_files/Sens_eff_120_V2_year_2020-01-01_2020-12-31.xlsx")
+
+df_eff_080_2021 = pd.read_excel("Result_files/Sens_eff_080_V2_year_2021-01-01_2021-12-31.xlsx")
+df_eff_085_2021 = pd.read_excel("Result_files/Sens_eff_085_V2_year_2021-01-01_2021-12-31.xlsx")
+df_eff_090_2021 = pd.read_excel("Result_files/Sens_eff_090_V2_year_2021-01-01_2021-12-31.xlsx")
+df_eff_095_2021 = pd.read_excel("Result_files/Sens_eff_095_V2_year_2021-01-01_2021-12-31.xlsx")
+df_eff_100_2021 = pd.read_excel("Result_files/Sens_eff_100_V2_year_2021-01-01_2021-12-31.xlsx")
+df_eff_105_2021 = pd.read_excel("Result_files/Sens_eff_105_V2_year_2021-01-01_2021-12-31.xlsx")
+df_eff_110_2021 = pd.read_excel("Result_files/Sens_eff_110_V2_year_2021-01-01_2021-12-31.xlsx")
+df_eff_115_2021 = pd.read_excel("Result_files/Sens_eff_115_V2_year_2021-01-01_2021-12-31.xlsx")
+df_eff_120_2021 = pd.read_excel("Result_files/Sens_eff_120_V2_year_2021-01-01_2021-12-31.xlsx")
+
+
+efficiency_2020 = []
+efficiency_2021
+efficiency_2020
+efficiency_2020
+efficiency_2020
+efficiency_2020
+efficiency_2020
+efficiency_2020
+efficiency_2020
+efficiency_2020
+efficiency_2020
 
 
 
 
 
+file_to_open = Path("DataAnalysis/BASE/") / 'BASE_EconResults_All.xlsx'
+DataX = pd.ExcelFile(file_to_open)
+df_results = pd.read_excel(file_to_open, sheet_name=DataX.sheet_names)
+sheet = list(df_results)
 
 
 

@@ -48,15 +48,15 @@ def import_w_model_results(path,find_year,find_model, find_unique, avoid):
     for f in files_xls:
         if (find_year in f) and (find_model in f) and (find_unique in f):
             if not f.startswith("~"):
-                if not f.endswith('12-31.xlsx'):# only necessary for weeks:  #OBS!
-                    print('file: '+f)
-                    i,π = findRepWeek(f,find_year)
-                    list_f.append(f)
-                    list_pi.append(π)
-                    list_i.append(i)
-                    data = pd.read_excel(path+f)
-                    df_import = df_import.append(data)
-    df_import.index = (np.arange(0,1680,1)) # only needed if weeks: 
+                #if not f.endswith('12-31.xlsx'):# only necessary for weeks:  #OBS!
+                print('file: '+f)
+                i,π = findRepWeek(f,find_year)
+                list_f.append(f)
+                #list_pi.append(π)
+                #list_i.append(i)
+                data = pd.read_excel(path+f)
+                df_import = df_import.append(data)
+    #df_import.index = (np.arange(0,1680,1)) # only needed if weeks: 
     #print(list_pi)
     #print(list_i)
     #print(list_i)
@@ -147,16 +147,16 @@ def calc_vOPEX_year(find_model, find_year,All_Data, All_Pi,data_length):
             if data_length == 'year':
                 print('data_length = year')
                 print('DA_revenue: ')
-                vOPEX_year[dict_key]['DA_revenue'] = sum(All_Data[dict_key]['DA_revenue'])*((365*24)/len(All_Data[dict_key]))
+                vOPEX_year[dict_key]['DA_revenue'] = sum(All_Data[dict_key]['DA_revenue'])#*((365*24)/len(All_Data[dict_key]))
                 print(vOPEX_year[dict_key]['DA_revenue'])
-                vOPEX_year[dict_key]['DA_expenses'] = sum(All_Data[dict_key]['DA_expenses'])*((365*24)/len(All_Data[dict_key]))
-                vOPEX_year[dict_key]['CT_expenses'] = sum(All_Data[dict_key]['CT_expenses'])*((365*24)/len(All_Data[dict_key]))
-                vOPEX_year[dict_key]['PT_expenses'] = sum(All_Data[dict_key]['PT_expenses'])*((365*24)/len(All_Data[dict_key]))
+                vOPEX_year[dict_key]['DA_expenses'] = sum(All_Data[dict_key]['DA_expenses'])#*((365*24)/len(All_Data[dict_key]))
+                vOPEX_year[dict_key]['CT_expenses'] = sum(All_Data[dict_key]['CT_expenses'])#*((365*24)/len(All_Data[dict_key]))
+                vOPEX_year[dict_key]['PT_expenses'] = sum(All_Data[dict_key]['PT_expenses'])#*((365*24)/len(All_Data[dict_key]))
                 if find_model[m] != 'V1':
-                    vOPEX_year[dict_key]['aFRRup_revenue'] = sum(All_Data[dict_key]['aFRRup_revenue'])*((365*24)/len(All_Data[dict_key]))
-                    vOPEX_year[dict_key]['aFRRdown_revenue'] = sum(All_Data[dict_key]['aFRRdown_revenue'])*((365*24)/len(All_Data[dict_key]))
-                    vOPEX_year[dict_key]['mFRRup_revenue'] = sum(All_Data[dict_key]['mFRRup_revenue'])*((365*24)/len(All_Data[dict_key]))
-                    vOPEX_year[dict_key]['FCR_revenue'] = sum(All_Data[dict_key]['FCR_revenue'])*((365*24)/len(All_Data[dict_key]))
+                    vOPEX_year[dict_key]['aFRRup_revenue'] = sum(All_Data[dict_key]['aFRRup_revenue'])#*((365*24)/len(All_Data[dict_key]))
+                    vOPEX_year[dict_key]['aFRRdown_revenue'] = sum(All_Data[dict_key]['aFRRdown_revenue'])#*((365*24)/len(All_Data[dict_key]))
+                    vOPEX_year[dict_key]['mFRRup_revenue'] = sum(All_Data[dict_key]['mFRRup_revenue'])#*((365*24)/len(All_Data[dict_key]))
+                    vOPEX_year[dict_key]['FCR_revenue'] = sum(All_Data[dict_key]['FCR_revenue'])#*((365*24)/len(All_Data[dict_key]))
             if data_length == 'week':
                 vOPEX_year[dict_key]['DA_revenue'] = sum(sum(All_Data[dict_key]['DA_revenue'][π*168:(π+1)*168])*All_Pi[dict_key][π] for π in range(0,len(All_Pi[dict_key]))) * (365/7)
                 vOPEX_year[dict_key]['DA_expenses'] = sum(sum(All_Data[dict_key]['DA_expenses'][π*168:(π+1)*168])*All_Pi[dict_key][π] for π in range(0,len(All_Pi[dict_key]))) * (365/7)            
@@ -298,11 +298,11 @@ def Econ_Data_Constructor(dfEconParam,dict_vOPEX):
 path = "Result_files/"  # the "/" is important!
 #   define to different types of files to be analyzed
 #find_year = ['2020','2021']
-find_year = ['2020','2021']
-find_model = ['V2','V3_SolX']
-find_unique = 'V' 
-data_length = 'week' #'week' or 'year'
-avoid = 'year'
+find_year = ['2020']
+find_model = ['V2']
+find_unique = 'eff_120' 
+data_length = 'year' #'week' or 'year'
+avoid = 'week'
 
 # Reading Rep Weeks
 if data_length == 'week': 
