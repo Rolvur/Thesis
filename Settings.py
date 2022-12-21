@@ -2,8 +2,8 @@
 
 
 ### Model Simulation & PV ### 
-Start_date = '2021-09-06 00:00'
-End_date = '2021-09-12 23:59'
+Start_date = '2020-01-13 00:00'
+End_date = '2020-01-19 23:59'
 
 Demand_pattern = 'Weekly' # 'Hourly' , 'Daily' , 'Weekly'
 sEfficiency = 'k' # 'k': constant OR 'pw': piecewise 
