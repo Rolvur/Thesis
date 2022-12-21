@@ -16,46 +16,82 @@ DataX = pd.ExcelFile(file_to_open)
 df_results = pd.read_excel(file_to_open, sheet_name=DataX.sheet_names)
 sheet = list(df_results)
 
-MethProd = 32000000 #kg methanol 
+MethProd = 32 #kton methanol 
 lifetime = 25  #years 
+r = 0.05
 
 
 #Model V1k
 
-fOpexV1k = df_results[sheet[0]]['fOPEX_sum'].sum() #2020 & 2021
-vOpexV1k2020 = df_results[sheet[0]]['vOPEX_DA_revenue'].sum() + df_results[sheet[0]]['vOPEX_DA_expenses'].sum() + df_results[sheet[0]]['vOPEX_CT'].sum() + df_results[sheet[0]]['vOPEX_PT'].sum() #2020 
-vOpexV1k2021 = df_results[sheet[1]]['vOPEX_DA_revenue'].sum() + df_results[sheet[1]]['vOPEX_DA_expenses'].sum() + df_results[sheet[1]]['vOPEX_CT'].sum() + df_results[sheet[1]]['vOPEX_PT'].sum() #2021 
-CAPEXV1k = df_results[sheet[0]]['CAPEX_sum'][0]
+fOpexV1k = df_results[sheet[0]]['fOPEX_sum'][1] #2020 & 2021
+vOpexV1k2020 = df_results[sheet[0]]['vOPEX_DA_revenue'][1] + df_results[sheet[0]]['vOPEX_DA_expenses'][1] + df_results[sheet[0]]['vOPEX_CT'][1] + df_results[sheet[0]]['vOPEX_PT'][1] #2020 
+vOpexV1k2021 = df_results[sheet[1]]['vOPEX_DA_revenue'][1] + df_results[sheet[1]]['vOPEX_DA_expenses'][1] + df_results[sheet[1]]['vOPEX_CT'][1] + df_results[sheet[1]]['vOPEX_PT'][1] #2021 
+CAPEXV1k = df_results[sheet[0]]['PV_CAPEX'][0]+df_results[sheet[0]]['PEM_CAPEX'][0]+df_results[sheet[0]]['METH_CAPEX'][0]+df_results[sheet[0]]['CO2_CAPEX'][0]+df_results[sheet[0]]['GRID_CAPEX'][0]
 
-LCOMeV1k2020 = 10**6*(fOpexV1k + vOpexV1k2020 + CAPEXV1k)/(MethProd*lifetime)
-LCOMeV1k2021 = 10**6*(fOpexV1k + vOpexV1k2021 + CAPEXV1k)/(MethProd*lifetime)
+LCOMeV1k2020 = (CAPEXV1k + sum((fOpexV1k + vOpexV1k2020)/(1+r)**t for t in range(1,lifetime+1)))/sum(MethProd/(1+r)**t for t in range(1,lifetime+1))
+LCOMeV1k2021 = (CAPEXV1k + sum((fOpexV1k + vOpexV1k2021)/(1+r)**t for t in range(1,lifetime+1)))/sum(MethProd/(1+r)**t for t in range(1,lifetime+1))
+
 
 
 
 #Model V1pw
 
-fOpexV1pw = df_results[sheet[2]]['fOPEX_sum'].sum() #2020 & 2021
-vOpexV12020pw = df_results[sheet[2]]['vOPEX_DA_revenue'].sum() + df_results[sheet[2]]['vOPEX_DA_expenses'].sum() + df_results[sheet[2]]['vOPEX_CT'].sum() + df_results[sheet[2]]['vOPEX_PT'].sum() #2020
-vOpexV12021pw = df_results[sheet[3]]['vOPEX_DA_revenue'].sum() + df_results[sheet[3]]['vOPEX_DA_expenses'].sum() + df_results[sheet[3]]['vOPEX_CT'].sum() + df_results[sheet[3]]['vOPEX_PT'].sum() #2021
+fOpexV1pw = df_results[sheet[2]]['fOPEX_sum'][1] #2020 & 2021
+vOpexV12020pw = df_results[sheet[2]]['vOPEX_DA_revenue'][1] + df_results[sheet[2]]['vOPEX_DA_expenses'][1] + df_results[sheet[2]]['vOPEX_CT'][1] + df_results[sheet[2]]['vOPEX_PT'][1] #2020
+vOpexV12021pw = df_results[sheet[3]]['vOPEX_DA_revenue'][1] + df_results[sheet[3]]['vOPEX_DA_expenses'][1] + df_results[sheet[3]]['vOPEX_CT'][1] + df_results[sheet[3]]['vOPEX_PT'][1] #2021
 
-CAPEXV1pw = df_results[sheet[2]]['CAPEX_sum'][0]
-
-LCOMeV1pw2020 = 10**6*(fOpexV1pw + vOpexV12020pw + CAPEXV1pw)/(MethProd*lifetime)
-LCOMeV1pw2021 = 10**6*(fOpexV1pw + vOpexV12021pw + CAPEXV1pw)/(MethProd*lifetime)
+LCOMeV1pw2020 = (CAPEXV1k + sum((fOpexV1pw + vOpexV12020pw)/(1+r)**t for t in range(1,lifetime+1)))/sum(MethProd/(1+r)**t for t in range(1,lifetime+1))
+LCOMeV1pw2021 = (CAPEXV1k + sum((fOpexV1pw + vOpexV12021pw)/(1+r)**t for t in range(1,lifetime+1)))/sum(MethProd/(1+r)**t for t in range(1,lifetime+1))
 
 
 #Model V2 
 
-fOpexV2pw = df_results[sheet[4]]['fOPEX_sum'].sum() #2020 & 2021
-vOpexV2pw2020 = df_results[sheet[4]]['vOPEX_DA_revenue'].sum() + df_results[sheet[4]]['vOPEX_DA_expenses'].sum() + df_results[sheet[4]]['vOPEX_CT'].sum() + df_results[sheet[4]]['vOPEX_PT'].sum() + df_results[sheet[4]]['vOPEX_FCR'].sum() + df_results[sheet[4]]['vOPEX_aFRRup'].sum() + df_results[sheet[4]]['vOPEX_aFRRdown'].sum()+ df_results[sheet[4]]['vOPEX_mFRRup'].sum() #2020 & 2021
-vOpexV2pw2021 = df_results[sheet[5]]['vOPEX_DA_revenue'].sum() + df_results[sheet[5]]['vOPEX_DA_expenses'].sum() + df_results[sheet[5]]['vOPEX_CT'].sum() + df_results[sheet[5]]['vOPEX_PT'].sum() + df_results[sheet[5]]['vOPEX_FCR'].sum() + df_results[sheet[5]]['vOPEX_aFRRup'].sum() + df_results[sheet[5]]['vOPEX_aFRRdown'].sum()+ df_results[sheet[5]]['vOPEX_mFRRup'].sum() #2020 & 2021
+fOpexV2 = df_results[sheet[4]]['fOPEX_sum'][1] #2020 & 2021
+vOpexV2_2020 = df_results[sheet[4]]['vOPEX_DA_revenue'][1] + df_results[sheet[4]]['vOPEX_DA_expenses'][1] + df_results[sheet[4]]['vOPEX_CT'][1] + df_results[sheet[4]]['vOPEX_PT'][1] + df_results[sheet[4]]['vOPEX_FCR'][1] + df_results[sheet[4]]['vOPEX_aFRRup'][1] + df_results[sheet[4]]['vOPEX_aFRRdown'][1]+ df_results[sheet[4]]['vOPEX_mFRRup'][1] #2020 & 2021
+vOpexV2_2021 = df_results[sheet[5]]['vOPEX_DA_revenue'][1] + df_results[sheet[5]]['vOPEX_DA_expenses'][1] + df_results[sheet[5]]['vOPEX_CT'][1] + df_results[sheet[5]]['vOPEX_PT'][1] + df_results[sheet[5]]['vOPEX_FCR'][1] + df_results[sheet[5]]['vOPEX_aFRRup'][1] + df_results[sheet[5]]['vOPEX_aFRRdown'][1]+ df_results[sheet[5]]['vOPEX_mFRRup'][1] #2020 & 2021
 
 
-CAPEXV1pw = df_results[sheet[4]]['CAPEX_sum'][0]
+LCOMeV2_2020 = (CAPEXV1k + sum((fOpexV2 + vOpexV2_2020)/(1+r)**t for t in range(1,lifetime+1)))/sum(MethProd/(1+r)**t for t in range(1,lifetime+1))
+LCOMeV2_2021 = (CAPEXV1k + sum((fOpexV2 + vOpexV2_2021)/(1+r)**t for t in range(1,lifetime+1)))/sum(MethProd/(1+r)**t for t in range(1,lifetime+1))
 
-LCOMeV2_2020 = 10**6*(fOpexV2pw + vOpexV2pw2020 + CAPEXV1pw)/(MethProd*lifetime)
-LCOMeV2_2021 = 10**6*(fOpexV2pw + vOpexV2pw2021 + CAPEXV1pw)/(MethProd*lifetime)
 
+## LCOMe PLOT ##
+
+names = ['V1k_2020','V1k_2021','V1pw_2020','V1pw_2021','V2_2020','V2_2021']
+LCOMe = [LCOMeV1k2020,LCOMeV1k2021,LCOMeV1pw2020,LCOMeV1pw2021,LCOMeV2_2020,LCOMeV2_2021]
+
+
+df_LCOMe = pd.DataFrame({'Name': names,
+                        'LCOMe': LCOMe}) 
+
+
+x = np.arange(0,4,2)
+width = 0.3
+
+
+fig , ax = plt.subplots(nrows=1,ncols=1)
+
+
+ax.bar(x-width, [df_LCOMe.iloc[0,1],df_LCOMe.iloc[1,1]], color ='#148710', label = 'Model 1 k', width=width-0.05)
+ax.bar(x, [df_LCOMe.iloc[2,1],df_LCOMe.iloc[3,1]], color ='#1f1485', label = 'Model 1 pw', width=width-0.05)
+ax.bar(x+width, [df_LCOMe.iloc[4,1],df_LCOMe.iloc[5,1]], color ='#E66101', label = 'Model 2', width=width-0.05)
+
+#loc='upper center', bbox_to_anchor=(0.5, 1.05),
+#          ncol=3, fancybox=True, shadow=True
+
+ax.set_ylabel('€/kg',labelsize=10)
+ax.legend(loc='upper center',bbox_to_anchor=(0.5, 1.1), ncol=3)
+
+#ax1.set_ylim([0,15])
+
+
+
+
+ax.tick_params(axis='x', rotation=0,labelsize=10)
+ax.tick_params(axis='y', labelsize=10)
+plt.xticks(x, ('2020', '2021'))
+plt.tight_layout()
+plt.show()
 
 
 

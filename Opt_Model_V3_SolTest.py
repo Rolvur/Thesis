@@ -12,7 +12,7 @@ import csv
 #def ReadResults(Start_date, End_date):
 def ReadResults(Start_date, End_date):
 #    df_results = pd.read_excel("Result_files/Model3_"+Start_date+"_"+End_date+".xlsx")    
-    df_results = pd.read_excel("Result_files/V3_Bids_"+Start_date[:10]+"_"+End_date[:10]+ ".xlsx")    
+    df_results = pd.read_excel("Result_files/V3_Bids_"+Type+"_"+Start_date[:10]+"_"+End_date[:10]+ ".xlsx")    
 
     list_b_FCR = df_results["bidVol_FCR"].tolist();
     list_β_FCR = df_results["bidPrice_FCR"].tolist();
@@ -342,7 +342,7 @@ df_SolX = pd.DataFrame({#Col name : Value(list)
 
 
 #save to Excel 
-df_SolX.to_excel("Result_files/V3_SolX_"+Start_date[:10]+"_"+End_date[:10]+ ".xlsx")
+df_SolX.to_excel("Result_files/V3_SolX_"+Type+"_"+Start_date[:10]+"_"+End_date[:10]+ ".xlsx")
 
 
 
@@ -382,7 +382,7 @@ a = [('P_pem_cap', SolX.P_pem_cap),
     ('Sample length', sample_length)
     ]
 
-with open("Result_files/V3_SolX_Parameters_"+Start_date[:10]+"_"+End_date[:10]+ ".csv", 'w', newline='') as csvfile:
+with open("Result_files/V3_SolX_Parameters_"+Type+"_"+Start_date[:10]+"_"+End_date[:10]+ ".csv", 'w', newline='') as csvfile:
     my_writer = csv.writer(csvfile,delimiter=',')
     my_writer.writerows(a)
 
