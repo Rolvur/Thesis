@@ -19,7 +19,7 @@ df_solar_prod = pd.read_excel(file_to_open)
 
 
 
-TimeRangePV = (df_solar_prod['Hour UTC'] >= '2020-08-24 00:00') & (df_solar_prod['Hour UTC']  <= '2020-08-30 23:59')
+TimeRangePV = (df_solar_prod['Hour UTC'] >= '2021-03-15 00:00') & (df_solar_prod['Hour UTC']  <= '2021-03-21 23:59')
 TimeRangePV_scen = (df_solar_prod['Hour UTC'] >= Start_date_scen) & (df_solar_prod['Hour UTC']  <= End_date_scen)
 
 df_solar_prod_time = df_solar_prod[TimeRangePV]
