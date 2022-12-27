@@ -380,7 +380,7 @@ def PieChartCap(df_results):
     plt.tight_layout()
     plt.show()
 
-def BarHCap(df_SolXSingle,df_SolXCombined,df_V2):
+def BarHCap(df_SolXSingle,df_SolXCombined,df_V2): #Not weighted yet Should be done!! 
 
     Names = ['r_FCR','r_aFRR_up','r_aFRR_down','r_mFRR_up']
     Markets =['FCR','aFRR Up','aFRR Down','mFRR']
@@ -407,8 +407,8 @@ def BarHCap(df_SolXSingle,df_SolXCombined,df_V2):
 
 
 
-
-def BarHRev(df_V2,df_SolX):
+#Not weighted yet Should be done!!
+def BarHRev(df_V2,df_SolXsingle,df_SolXcombined):
 
     # Calculate Revenue # 
 
@@ -418,29 +418,37 @@ def BarHRev(df_V2,df_SolX):
     Markets =['FCR','aFRR Up','aFRR Down','mFRR']
 
     TotRevV2 = []
-    TotRevSolX = []
+    TotRevSolXSingle = []
+    TotRevSolXCombined = []
 
 
     for i in range(0,len(Markets)):
         RevV2 = 0
-        RevSolX = 0
+        RevSolXsingle = 0
+        RevSolXcombined = 0
+        
+
         for t in range(0,len(df_V2)):
             RevV2 = RevV2 + df_V2[CapNames[i]].iloc[t]*df_V2[PriceNamesV2[i]].iloc[t]
-            RevSolX = RevSolX + df_SolX[CapNames[i]].iloc[t]*df_SolX[PriceNamesSolX[i]].iloc[t] 
+            RevSolXsingle = RevSolXsingle + df_SolXsingle[CapNames[i]].iloc[t]*df_SolXsingle[PriceNamesSolX[i]].iloc[t] 
+            RevSolXcombined = RevSolXcombined + df_SolXcombined[CapNames[i]].iloc[t]*df_SolXcombined[PriceNamesSolX[i]].iloc[t] 
         
         TotRevV2.append(RevV2)
-        TotRevSolX.append(RevSolX)
+        TotRevSolXSingle.append(RevSolXsingle)
+        TotRevSolXCombined.append(RevSolXcombined)
 
 
 
     df = pd.DataFrame({'Potential': [TotRevV2[i]/1000000 for i in range(0,len(TotRevV2))],
-                        'Realized': [TotRevSolX[i]/1000000 for i in range(0,len(TotRevSolX))]}, index=Markets)
+                        'Realized IS': [TotRevSolXSingle[i]/1000000 for i in range(0,len(TotRevSolXSingle))],
+                        'Realized DS': [TotRevSolXCombined[i]/1000000 for i in range(0,len(TotRevSolXCombined))]}, index=Markets)
 
-    df.plot.barh(color=['#008fd5','#fc4f30'])
+    df.plot.barh(color=['#008fd5','#fc4f30','#43eb34'])
     plt.legend(loc='lower right')
     plt.xlabel('mEUR')
     plt.tight_layout()
     plt.show()
+
 
 def AvgClPrice(df_SolX):
 
@@ -526,7 +534,7 @@ BarHCap(df_SolX_singlePLot,df_SolX_combinedPLot,df_V2PLot)
 
 
 ## Horizontal revenue plot ## 
-BarHRev(df_V2,df_SolX)
+BarHRev(df_V2PLot,df_SolX_singlePLot,df_SolX_combinedPLot)
 
 
 ## Average clearing price of accepted bids (SolX)## 
