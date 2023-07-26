@@ -1,0 +1,8 @@
+Finland
+https://data.fingrid.fi/en/dataset/?q=aFRR&groups=affr
+
+Sweden
+https://mimer.svk.se/AutomaticFrequencyRestorationReserve
+
+Norway: 
+https://www.nucs.net/balancing/r2/pricesAndVolumesOfProcuredBalancingReserve/show?name=&defaultValue=false&viewType=TABLE&areaType=MBA&atch=false&dateTime.dateTime=01.01.2022+00:00|CET|DAYTIMERANGE&dateTime.endDateTime=01.01.2022+00:00|CET|DAYTIMERANGE&areaSelectType=USER_SELECTED&marketArea.values=CTY|10YNO-0--------C!MBA|10YNO-1--------2&marketArea.values=CTY|10YNO-0--------C!MBA|10YNO-2--------T&marketArea.values=CTY|10YNO-0--------C!MBA|10YNO-3--------J&marketArea.values=CTY|10YNO-0--------C!MBA|10YNO-4--------9&marketArea.values=CTY|10YNO-0--------C!MBA|10Y1001A1001A48H&balancingDirection.values=A01&dataItems.values=PRICE&dataItems.values=VOLUME&reserveType.values=A96&balancingTypes=SECONDARY&reserveSource.values=ALL
